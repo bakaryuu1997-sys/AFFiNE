@@ -8,7 +8,6 @@ import {
   RowInput,
 } from '@affine/component';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
-import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import {
   DocGrantedUsersService,
   type Member,
@@ -94,7 +93,6 @@ export const InviteMemberEditor = ({
     },
     [composing, debouncedSearch]
   );
-  const workspaceDialogService = useService(WorkspaceDialogService);
 
   const onInvite = useAsyncCallback(async () => {
     const selectedMemberIds = selectedMembers.map(member => member.id);
@@ -157,12 +155,6 @@ export const InviteMemberEditor = ({
     },
     [focusInput]
   );
-
-  const switchToMemberManagementTab = useCallback(() => {
-    workspaceDialogService.open('setting', {
-      activeTab: 'workspace:members',
-    });
-  }, [workspaceDialogService]);
 
   const handleClickMember = useCallback(
     (member: Member) => {
@@ -242,12 +234,6 @@ export const InviteMemberEditor = ({
         </div>
       </div>
       <div className={styles.footerStyle}>
-        <span
-          className={styles.manageMemberStyle}
-          onClick={switchToMemberManagementTab}
-        >
-          {t['com.affine.share-menu.invite-editor.manage-members']()}
-        </span>
         <div className={styles.buttonsContainer}>
           <Button className={styles.button} onClick={onClickCancel}>
             {t['Cancel']()}

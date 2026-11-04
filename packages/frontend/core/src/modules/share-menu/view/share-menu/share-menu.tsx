@@ -2,7 +2,6 @@ import { Tabs, Tooltip, useConfirmModal } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import { Menu } from '@affine/component/ui/menu';
 import { ServerService } from '@affine/core/modules/cloud';
-import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceQuotaService } from '@affine/core/modules/quota';
 import { ShareInfoService } from '@affine/core/modules/share-doc';
@@ -72,8 +71,6 @@ export const ShareMenuContent = (props: ShareMenuProps) => {
   const permissionService = useService(WorkspacePermissionService);
   const isOwner = useLiveData(permissionService.permission.isOwner$);
 
-  const workspaceDialogService = useService(WorkspaceDialogService);
-
   const onValueChange = useCallback((value: string) => {
     setCurrentTab(value as ShareMenuTab);
   }, []);
@@ -88,12 +85,8 @@ export const ShareMenuContent = (props: ShareMenuProps) => {
     if (!isOwner) {
       return;
     }
-    workspaceDialogService.open('setting', {
-      activeTab: 'plans',
-      scrollAnchor: 'cloudPricingPlan',
-    });
     return;
-  }, [isOwner, workspaceDialogService]);
+  }, [isOwner]);
 
   const openPaywallModal = useCallback(() => {
     openConfirmModal({

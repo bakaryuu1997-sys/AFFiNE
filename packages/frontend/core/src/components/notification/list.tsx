@@ -370,7 +370,6 @@ const InvitationReviewRequestNotificationItem = ({
   notification: Notification;
 }) => {
   const notificationListService = useService(NotificationListService);
-  const { jumpToWorkspaceSettings } = useNavigateHelper();
   const t = useI18n();
   const body = notification.body as InvitationReviewRequestNotificationBodyType;
   const memberInactived = !body.createdByUser;
@@ -383,11 +382,7 @@ const InvitationReviewRequestNotificationItem = ({
     notificationListService.readNotification(notification.id).catch(err => {
       console.error(err);
     });
-    if (!body.workspace?.id) {
-      return;
-    }
-    jumpToWorkspaceSettings(body.workspace.id, 'workspace:members');
-  }, [body, jumpToWorkspaceSettings, notification, notificationListService]);
+  }, [notification, notificationListService]);
 
   return (
     <div className={styles.itemContainer} onClick={handleClick}>
@@ -562,7 +557,6 @@ const InvitationAcceptedNotificationItem = ({
   notification: Notification;
 }) => {
   const notificationListService = useService(NotificationListService);
-  const { jumpToWorkspaceSettings } = useNavigateHelper();
   const t = useI18n();
   const body = notification.body as InvitationAcceptedNotificationBodyType;
   const memberInactived = !body.createdByUser;
@@ -575,11 +569,7 @@ const InvitationAcceptedNotificationItem = ({
     notificationListService.readNotification(notification.id).catch(err => {
       console.error(err);
     });
-    if (!body.workspace?.id) {
-      return;
-    }
-    jumpToWorkspaceSettings(body.workspace.id, 'workspace:members');
-  }, [body, jumpToWorkspaceSettings, notification, notificationListService]);
+  }, [notification, notificationListService]);
 
   return (
     <div className={styles.itemContainer} onClick={handleClick}>
@@ -618,7 +608,6 @@ const InvitationBlockedNotificationItem = ({
   notification: Notification;
 }) => {
   const notificationListService = useService(NotificationListService);
-  const { jumpToWorkspaceSettings } = useNavigateHelper();
   const t = useI18n();
   const body = notification.body as InvitationBlockedNotificationBodyType;
   const workspaceInactived = !body.workspace;
@@ -631,11 +620,7 @@ const InvitationBlockedNotificationItem = ({
     notificationListService.readNotification(notification.id).catch(err => {
       console.error(err);
     });
-    if (!body.workspace?.id) {
-      return;
-    }
-    jumpToWorkspaceSettings(body.workspace.id, 'workspace:members');
-  }, [body, jumpToWorkspaceSettings, notification, notificationListService]);
+  }, [notification, notificationListService]);
 
   return (
     <div className={styles.itemContainer} onClick={handleClick}>

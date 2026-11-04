@@ -11,7 +11,8 @@ function createSentry() {
   let client: Sentry.BrowserClient | undefined;
   const wrapped = {
     init() {
-      if (!globalThis.SENTRY_RELEASE) {
+      // Sentry is permanently disabled in this fork.
+      if (false as boolean) {
         // https://docs.sentry.io/platforms/javascript/guides/react/#configure
         client = Sentry.init({
           dsn: BUILD_CONFIG.SENTRY_DSN,
@@ -36,9 +37,7 @@ function createSentry() {
       }
     },
     enable() {
-      if (client) {
-        client.getOptions().enabled = true;
-      }
+      // never re-enable error reporting in this fork
     },
     disable() {
       if (client) {

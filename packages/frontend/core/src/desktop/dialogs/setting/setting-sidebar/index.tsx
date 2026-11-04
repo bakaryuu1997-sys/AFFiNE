@@ -1,7 +1,5 @@
 import { Scrollable } from '@affine/component';
 import { Avatar } from '@affine/component/ui/avatar';
-import { UserPlanButton } from '@affine/core/components/affine/auth/user-plan-button';
-import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import { AuthService } from '@affine/core/modules/cloud';
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import type { SettingTab } from '@affine/core/modules/dialogs/constant';
@@ -32,16 +30,8 @@ export type UserInfoProps = {
   active?: boolean;
 };
 
-export const UserInfo = ({
-  onAccountSettingClick,
-  onTabChange,
-  active,
-}: UserInfoProps) => {
+export const UserInfo = ({ onAccountSettingClick, active }: UserInfoProps) => {
   const account = useLiveData(useService(AuthService).session.account$);
-
-  const onClick = useCatchEventCallback(() => {
-    onTabChange('plans', null);
-  }, [onTabChange]);
 
   if (!account) {
     // TODO(@eyhn): loading ui
@@ -68,7 +58,6 @@ export const UserInfo = ({
           <div className="name" title={account.label}>
             {account.label}
           </div>
-          <UserPlanButton onClick={onClick} />
         </div>
 
         <div className="email" title={account.email}>

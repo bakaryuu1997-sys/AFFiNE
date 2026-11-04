@@ -99,7 +99,8 @@ export const tracker = {
   },
 
   opt_in_tracking() {
-    trackerState.enabled = true;
+    // telemetry is permanently disabled in this fork
+    trackerState.enabled = false;
   },
 
   has_opted_in_tracking() {

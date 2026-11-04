@@ -11,7 +11,6 @@ import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hoo
 import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import { Upload } from '@affine/core/components/pure/file-upload';
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
-import { SubscriptionPlan } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
 import { ArrowRightSmallIcon, CameraIcon } from '@blocksuite/icons/rc';
@@ -24,10 +23,8 @@ import {
   ServerService,
 } from '../../../../modules/cloud';
 import type { SettingState } from '../types';
-import { AIUsagePanel } from './ai-usage-panel';
 import { DeleteAccount } from './delete-account';
 import { IntegrationsPanel } from './integrations-panel';
-import { StorageProgress } from './storage-progress';
 import * as styles from './style.css';
 
 export const UserAvatar = () => {
@@ -142,34 +139,6 @@ export const AvatarAndName = () => {
           </FlexWrapper>
         </div>
       </FlexWrapper>
-    </SettingRow>
-  );
-};
-
-const StoragePanel = ({
-  onChangeSettingState,
-}: {
-  onChangeSettingState?: (settingState: SettingState) => void;
-}) => {
-  const t = useI18n();
-
-  const onUpgrade = useCallback(() => {
-    track.$.settingsPanel.accountUsage.viewPlans({
-      plan: SubscriptionPlan.Pro,
-    });
-    onChangeSettingState?.({
-      activeTab: 'plans',
-      scrollAnchor: 'cloudPricingPlan',
-    });
-  }, [onChangeSettingState]);
-
-  return (
-    <SettingRow
-      name={t['com.affine.storage.title']()}
-      desc=""
-      spreadCol={false}
-    >
-      <StorageProgress onUpgrade={onUpgrade} />
     </SettingRow>
   );
 };
@@ -292,7 +261,6 @@ export const AccountSetting = ({
     ServerService,
     GlobalDialogService,
   });
-  const serverFeatures = useLiveData(serverService.server.features$);
   const t = useI18n();
   const session = authService.session;
   useEffect(() => {
@@ -357,10 +325,6 @@ export const AccountSetting = ({
           </Button>
         </SettingRow>
         <DevicesPanel />
-        <StoragePanel onChangeSettingState={onChangeSettingState} />
-        {serverFeatures?.copilot && (
-          <AIUsagePanel onChangeSettingState={onChangeSettingState} />
-        )}
         <IntegrationsPanel onChangeSettingState={onChangeSettingState} />
         <SettingRow
           name={t[`Sign out`]()}

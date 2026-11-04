@@ -19,10 +19,8 @@ import { OthersGroup } from './others';
 import { DeleteAccount } from './others/delete-account';
 import { RowLayout } from './row.layout';
 import * as styles from './style.css';
-import { PlansGroup } from './subscription';
 import { SwipeDialog } from './swipe-dialog';
 import { UserProfile } from './user-profile';
-import { UserUsage } from './user-usage';
 
 const AFFINE_MOBILE_STORE_URL = BUILD_CONFIG.isIOS
   ? 'https://apps.apple.com/app/notes-whiteboard-ai-affine/id6736937980'
@@ -119,8 +117,6 @@ const MobileSetting = ({
   return (
     <div className={styles.root}>
       <UserProfile />
-      <UserUsage />
-      <PlansGroup />
       {status === 'authenticated' ? <DevicesGroup /> : null}
       <AppearanceGroup />
       <AboutGroup />

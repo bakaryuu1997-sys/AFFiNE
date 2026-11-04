@@ -551,30 +551,11 @@ export class AtMenuConfigService extends Service {
       };
     };
 
-    const inviteItem: LinkedMenuItem = {
-      key: 'invite',
-      name: 'Invite...',
-      icon: UserIcon(),
-      action: () => {
-        close();
-
-        track.doc.editor.atMenu.mentionMember({
-          type: 'invite',
-        });
-
-        this.dialogService.open('setting', {
-          activeTab: 'workspace:members',
-        });
-      },
-    };
-
     const items = computed<LinkedMenuItem[]>(() => {
       const members = this.memberSearchService.result$.signal.value;
       const currentUser =
         this.workspaceServerService.server?.scope.get(AuthService).session
           .account$.signal.value;
-      const canUserManage = this.guardService.can$('Workspace_Users_Manage')
-        .signal.value;
 
       if (query.length === 0) {
         return [
@@ -594,7 +575,6 @@ export class AtMenuConfigService extends Service {
             .map(member =>
               getMenuItem(member.id, member.name, member.avatarUrl)
             ),
-          ...(canUserManage ? [inviteItem] : []),
         ];
       }
 
@@ -608,26 +588,23 @@ export class AtMenuConfigService extends Service {
       });
       const searchResults = fuse.search(query);
 
-      return [
-        ...searchResults.map(result => {
-          const member = result.item;
-          const displayName = this.highlightFuseTitle(
-            result.matches,
-            member.name ?? 'Unknown',
-            'name'
-          );
-          return {
-            ...getMenuItem(
-              member.id,
-              member.name,
-              member.avatarUrl,
-              member.id !== currentUser?.id
-            ),
-            name: html`${unsafeHTML(displayName)}`,
-          };
-        }),
-        ...(canUserManage ? [inviteItem] : []),
-      ];
+      return searchResults.map(result => {
+        const member = result.item;
+        const displayName = this.highlightFuseTitle(
+          result.matches,
+          member.name ?? 'Unknown',
+          'name'
+        );
+        return {
+          ...getMenuItem(
+            member.id,
+            member.name,
+            member.avatarUrl,
+            member.id !== currentUser?.id
+          ),
+          name: html`${unsafeHTML(displayName)}`,
+        };
+      });
     });
     const hidden = computed(() => {
       const members = this.memberSearchService.result$.signal.value;

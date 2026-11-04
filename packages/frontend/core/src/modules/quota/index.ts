@@ -1,5 +1,4 @@
 export { WorkspaceQuotaService } from './services/quota';
-export { QuotaCheck } from './views/quota-check';
 
 import { type Framework } from '@toeverything/infra';
 
