@@ -1,3 +1,4 @@
+import { t } from '@blocksuite/affine-shared/utils';
 import { IS_MOBILE } from '@blocksuite/global/env';
 import { computed, signal } from '@preact/signals-core';
 import type { TemplateResult } from 'lit';
@@ -161,7 +162,11 @@ export class Menu {
   }
 
   search(name: string) {
-    return name.toLowerCase().includes(this.searchName$.value.toLowerCase());
+    const query = this.searchName$.value.toLowerCase();
+    return (
+      name.toLowerCase().includes(query) ||
+      t(name).toLowerCase().includes(query)
+    );
   }
 
   setFocusOnly(ele?: MenuFocusable) {

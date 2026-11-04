@@ -1,11 +1,13 @@
 import { notify } from '@affine/component';
 import { DebugLogger } from '@affine/debug';
 import {
+  EDITOR_UI_TRANSLATIONS,
   getOrCreateI18n,
   i18nCompletenesses,
   type Language,
   SUPPORTED_LANGUAGES,
 } from '@affine/i18n';
+import { setUiTranslations } from '@blocksuite/affine/shared/utils';
 import { effect, Entity, fromPromise, LiveData } from '@toeverything/infra';
 import { catchError, EMPTY, exhaustMap } from 'rxjs';
 
@@ -55,14 +57,29 @@ export class I18n extends Entity {
     super();
     this.i18n.on('languageChanged', (language: Language) => {
       this.applyDocumentLanguage(language);
+      this.loadEditorTranslations(language);
       this.cache.set('i18n_lng', language);
     });
   }
 
   init() {
-    const language = this.currentLanguageKey$.value ?? 'en';
+    const language = this.currentLanguageKey$.value ?? 'vi';
     this.applyDocumentLanguage(language);
     this.changeLanguage(language);
+  }
+
+  /** BlockSuite has no i18n of its own; feed it a dictionary for the active language. */
+  private loadEditorTranslations(language: Language) {
+    const loader = EDITOR_UI_TRANSLATIONS[language];
+    if (!loader) {
+      setUiTranslations({});
+      return;
+    }
+    loader()
+      .then(module => setUiTranslations(module.default))
+      .catch(error =>
+        logger.error('Failed to load editor translations', error)
+      );
   }
 
   private applyDocumentLanguage(language: Language) {

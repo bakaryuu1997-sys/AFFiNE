@@ -25,7 +25,8 @@ export type Language =
   | 'fa'
   | 'nb-NO'
   | 'kk'
-  | 'tr';
+  | 'tr'
+  | 'vi';
 
 export type LanguageResource = typeof en;
 export const SUPPORTED_LANGUAGES: Record<
@@ -193,4 +194,20 @@ export const SUPPORTED_LANGUAGES: Record<
     flagEmoji: '🇹🇷',
     resource: () => import('./tr.json'),
   },
+  vi: {
+    name: 'Vietnamese',
+    originalName: 'Tiếng Việt',
+    flagEmoji: '🇻🇳',
+    resource: () => import('./vi.json'),
+  },
+};
+
+/**
+ * Dictionaries (English text -> translated text) for the BlockSuite editor UI,
+ * which has no i18n dependency of its own. See `t()` in `@blocksuite/affine/shared/utils`.
+ */
+export const EDITOR_UI_TRANSLATIONS: Partial<
+  Record<Language, () => Promise<{ default: Record<string, string> }>>
+> = {
+  vi: () => import('./editor-vi.json'),
 };

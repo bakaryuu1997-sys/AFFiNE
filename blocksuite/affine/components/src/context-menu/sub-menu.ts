@@ -1,3 +1,4 @@
+import { t } from '@blocksuite/affine-shared/utils';
 import { IS_MOBILE } from '@blocksuite/global/env';
 import { ArrowRightSmallIcon } from '@blocksuite/icons/lit';
 import {
@@ -257,7 +258,7 @@ export const subMenuItems = {
         content: () =>
           html`${config.prefix}
             <div class="affine-menu-action-text">
-              ${config.label?.() ?? config.name}
+              ${config.label?.() ?? t(config.name)}
             </div>
             ${config.postfix}
             ${config.disableArrow ? nothing : ArrowRightSmallIcon()} `,

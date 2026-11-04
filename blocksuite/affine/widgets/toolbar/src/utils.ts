@@ -10,6 +10,7 @@ import {
   type ToolbarContext,
   type ToolbarPlacement,
 } from '@blocksuite/affine-shared/services';
+import { t } from '@blocksuite/affine-shared/utils';
 import { nextTick } from '@blocksuite/global/utils';
 import { MoreVerticalIcon } from '@blocksuite/icons/lit';
 import type {
@@ -272,7 +273,7 @@ export function renderToolbar(
               .button=${html`
                 <editor-icon-button
                   aria-label="More"
-                  .tooltip="${'More'}"
+                  .tooltip="${t('More')}"
                   .iconContainerPadding=${innerToolbar ? 4 : 2}
                   .iconSize=${innerToolbar ? '16px' : undefined}
                 >
@@ -363,6 +364,11 @@ function renderActions(
     .filter(action => action !== null);
 }
 
+/** Translate plain-string labels/tooltips; leave templates untouched. */
+function trText<T>(value: T): T {
+  return (typeof value === 'string' ? t(value) : value) as T;
+}
+
 // TODO(@fundon): supports templates
 function renderActionItem(action: ToolbarAction, context: ToolbarContext) {
   const innerToolbar = context.placement$.value === 'inner';
@@ -381,10 +387,10 @@ function renderActionItem(action: ToolbarAction, context: ToolbarContext) {
   return html`
     <editor-icon-button
       data-testid=${ifDefined(id)}
-      aria-label=${ifDefined(label)}
+      aria-label=${ifDefined(trText(label))}
       ?active=${actived}
       ?disabled=${disabled}
-      .tooltip=${action.tooltip}
+      .tooltip=${trText(action.tooltip)}
       .iconContainerPadding=${innerToolbar ? 4 : 2}
       .iconSize=${innerToolbar ? '16px' : undefined}
       @click=${() => action.run?.(context)}
@@ -392,7 +398,7 @@ function renderActionItem(action: ToolbarAction, context: ToolbarContext) {
       ${action.icon}
       ${
         action.showLabel && action.label
-          ? html`<span class="label">${action.label}</span>`
+          ? html`<span class="label">${trText(action.label)}</span>`
           : null
       }
     </editor-icon-button>
@@ -417,17 +423,17 @@ function renderMenuActionItem(action: ToolbarAction, context: ToolbarContext) {
   return html`
     <editor-menu-action
       data-testid=${ifDefined(id)}
-      aria-label=${ifDefined(label)}
+      aria-label=${ifDefined(trText(label))}
       class="${ifDefined(destructive)}"
       ?active=${actived}
       ?disabled=${disabled}
-      .tooltip=${ifDefined(action.tooltip)}
+      .tooltip=${ifDefined(trText(action.tooltip))}
       .iconContainerPadding=${innerToolbar ? 4 : 2}
       .iconSize=${innerToolbar ? '16px' : undefined}
       @click=${() => action.run?.(context)}
     >
       ${action.icon}
-      ${action.label ? html`<span class="label">${action.label}</span>` : null}
+      ${action.label ? html`<span class="label">${trText(action.label)}</span>` : null}
     </editor-menu-action>
   `;
 }

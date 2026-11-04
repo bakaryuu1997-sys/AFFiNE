@@ -51,6 +51,7 @@ const DEFAULT_ELECTRON_LOCALES_KEEP = new Set([
   'pt_BR',
   'fa',
   'nb',
+  'vi',
 ]);
 
 const getElectronLocalesKeep = () => {

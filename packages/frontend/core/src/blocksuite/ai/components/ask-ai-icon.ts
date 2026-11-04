@@ -1,5 +1,6 @@
 import { AIStarIcon } from '@blocksuite/affine/components/icons';
 import { WithDisposable } from '@blocksuite/affine/global/lit';
+import { t } from '@blocksuite/affine/shared/utils';
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
@@ -64,7 +65,7 @@ export class AskAIIcon extends WithDisposable(LitElement) {
         height=${buttonHeightMap[this.size]}
       >
         ${AIStarIcon}
-        <span>Ask AI</span>
+        <span>${t('Ask AI')}</span>
       </icon-button>
     `;
   }
