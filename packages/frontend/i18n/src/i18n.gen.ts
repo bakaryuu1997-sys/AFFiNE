@@ -9817,6 +9817,142 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.realtime.connection-error.timeout"](): string;
     /**
+      * `Local AI`
+      */
+    ["com.affine.localAI.title"](): string;
+    /**
+      * `Provider`
+      */
+    ["com.affine.localAI.provider"](): string;
+    /**
+      * `Model`
+      */
+    ["com.affine.localAI.model"](): string;
+    /**
+      * `Reload models`
+      */
+    ["com.affine.localAI.refreshModels"](): string;
+    /**
+      * `Provider settings`
+      */
+    ["com.affine.localAI.settings"](): string;
+    /**
+      * `Ask anything… (Enter to send, Shift+Enter for a new line)`
+      */
+    ["com.affine.localAI.placeholder"](): string;
+    /**
+      * `Send`
+      */
+    ["com.affine.localAI.send"](): string;
+    /**
+      * `Stop`
+      */
+    ["com.affine.localAI.stop"](): string;
+    /**
+      * `New chat`
+      */
+    ["com.affine.localAI.clear"](): string;
+    /**
+      * `Copy reply`
+      */
+    ["com.affine.localAI.copy"](): string;
+    /**
+      * `Chat with your own models`
+      */
+    ["com.affine.localAI.empty.title"](): string;
+    /**
+      * `Connect 9router, Ollama or any OpenAI-compatible endpoint in the provider settings.`
+      */
+    ["com.affine.localAI.empty.desc"](): string;
+    /**
+      * `No models found. Check the provider URL and API key.`
+      */
+    ["com.affine.localAI.noModels"](): string;
+    /**
+      * `Add a provider first.`
+      */
+    ["com.affine.localAI.noProvider"](): string;
+    /**
+      * `Request failed: {{message}}`
+      */
+    ["com.affine.localAI.error"](options: {
+        readonly message: string;
+    }): string;
+    /**
+      * `Summarize`
+      */
+    ["com.affine.localAI.quick.summarize"](): string;
+    /**
+      * `Rewrite`
+      */
+    ["com.affine.localAI.quick.rewrite"](): string;
+    /**
+      * `To Vietnamese`
+      */
+    ["com.affine.localAI.quick.translate.vi"](): string;
+    /**
+      * `To English`
+      */
+    ["com.affine.localAI.quick.translate.en"](): string;
+    /**
+      * `To Japanese`
+      */
+    ["com.affine.localAI.quick.translate.ja"](): string;
+    /**
+      * `AI providers`
+      */
+    ["com.affine.localAI.settings.title"](): string;
+    /**
+      * `Add provider`
+      */
+    ["com.affine.localAI.settings.add"](): string;
+    /**
+      * `Name`
+      */
+    ["com.affine.localAI.settings.name"](): string;
+    /**
+      * `Base URL (OpenAI-compatible)`
+      */
+    ["com.affine.localAI.settings.baseUrl"](): string;
+    /**
+      * `API key (optional)`
+      */
+    ["com.affine.localAI.settings.apiKey"](): string;
+    /**
+      * `Keys are stored only in this browser.`
+      */
+    ["com.affine.localAI.settings.keyHint"](): string;
+    /**
+      * `Use the local CORS proxy first`
+      */
+    ["com.affine.localAI.settings.viaProxy"](): string;
+    /**
+      * `Proxy URL (run: node scripts/ai-proxy.mjs)`
+      */
+    ["com.affine.localAI.settings.proxyUrl"](): string;
+    /**
+      * `System prompt`
+      */
+    ["com.affine.localAI.settings.systemPrompt"](): string;
+    /**
+      * `Test connection`
+      */
+    ["com.affine.localAI.settings.test"](): string;
+    /**
+      * `Connected — {{count}} models`
+      */
+    ["com.affine.localAI.settings.testOk"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Remove`
+      */
+    ["com.affine.localAI.settings.remove"](): string;
+    /**
+      * `Done`
+      */
+    ["com.affine.localAI.settings.done"](): string;
+    /**
       * `An internal error occurred.`
       */
     ["error.INTERNAL_SERVER_ERROR"](): string;

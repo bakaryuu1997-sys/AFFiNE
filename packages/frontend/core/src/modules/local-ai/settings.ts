@@ -1,0 +1,115 @@
+import { useSyncExternalStore } from 'react';
+
+/**
+ * Settings store for the in-app AI panel.
+ *
+ * Providers are any OpenAI-compatible endpoints (9router, Ollama, LM Studio,
+ * OpenRouter, ...). Everything is kept in this browser's localStorage; API keys
+ * never leave the device except in requests to the provider you configured.
+ */
+export type AIProvider = {
+  id: string;
+  name: string;
+  /** e.g. http://localhost:11434/v1 */
+  baseUrl: string;
+  apiKey: string;
+  /** try the local CORS proxy before a direct request */
+  viaProxy: boolean;
+  /** last model picked for this provider */
+  model?: string;
+};
+
+export type LocalAISettings = {
+  providers: AIProvider[];
+  activeProviderId: string;
+  proxyUrl: string;
+  systemPrompt: string;
+};
+
+const STORAGE_KEY = 'affine-local-ai-settings-v1';
+
+export const DEFAULT_PROXY_URL = 'http://127.0.0.1:20129';
+
+export function createDefaultSettings(): LocalAISettings {
+  return {
+    providers: [
+      {
+        id: '9router',
+        name: '9router',
+        baseUrl: 'http://localhost:20128/v1',
+        apiKey: '',
+        viaProxy: true,
+      },
+      {
+        id: 'ollama',
+        name: 'Ollama',
+        baseUrl: 'http://localhost:11434/v1',
+        apiKey: '',
+        viaProxy: false,
+      },
+    ],
+    activeProviderId: 'ollama',
+    proxyUrl: DEFAULT_PROXY_URL,
+    systemPrompt:
+      'Bạn là trợ lý viết và ghi chú. Trả lời ngắn gọn, đúng trọng tâm, cùng ngôn ngữ với người dùng.',
+  };
+}
+
+function load(): LocalAISettings {
+  const fallback = createDefaultSettings();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw) as Partial<LocalAISettings>;
+    const providers = Array.isArray(parsed.providers)
+      ? parsed.providers.filter(p => p && typeof p.id === 'string')
+      : fallback.providers;
+    return {
+      providers,
+      activeProviderId:
+        providers.find(p => p.id === parsed.activeProviderId)?.id ??
+        providers[0]?.id ??
+        '',
+      proxyUrl: parsed.proxyUrl || fallback.proxyUrl,
+      systemPrompt: parsed.systemPrompt ?? fallback.systemPrompt,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+let current: LocalAISettings | null = null;
+const listeners = new Set<() => void>();
+
+export function getLocalAISettings(): LocalAISettings {
+  return (current ??= load());
+}
+
+export function updateLocalAISettings(
+  updater: (prev: LocalAISettings) => LocalAISettings
+) {
+  current = updater(getLocalAISettings());
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+  } catch {
+    // storage may be unavailable (private mode); keep the in-memory copy
+  }
+  listeners.forEach(l => l());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function useLocalAISettings(): LocalAISettings {
+  return useSyncExternalStore(
+    subscribe,
+    getLocalAISettings,
+    getLocalAISettings
+  );
+}
+
+export function newProviderId() {
+  return `p_${Math.random().toString(36).slice(2, 9)}`;
+}
