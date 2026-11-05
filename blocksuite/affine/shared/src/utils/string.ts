@@ -1,3 +1,17 @@
+/**
+ * Lower-cases and removes diacritics so that e.g. "Việt Nam" matches "viet nam".
+ * Handles the Vietnamese letter "đ" (not decomposable by Unicode NFD).
+ * Text without Latin letters (CJK, kana, ...) is only lower-cased.
+ */
+export function foldDiacritics(text: string): string {
+  const lower = text.toLowerCase();
+  if (!/[\u00c0-\u024f\u1e00-\u1eff]/.test(lower)) return lower;
+  return lower
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\u0111/g, 'd');
+}
+
 function escapeRegExp(input: string) {
   // escape regex characters in the input string to prevent regex format errors
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -15,15 +29,13 @@ function escapeRegExp(input: string) {
  * ```
  */
 export function isFuzzyMatch(name: string, query: string) {
-  const pureName = name
-    .trim()
-    .toLowerCase()
+  const pureName = foldDiacritics(name.trim())
     .split('')
     .filter(char => char !== ' ')
     .join('');
 
   const regex = new RegExp(
-    query
+    foldDiacritics(query)
       .split('')
       .filter(char => char !== ' ')
       .map(item => `${escapeRegExp(item)}.*`)
@@ -46,8 +58,8 @@ export function substringMatchScore(name: string, query: string) {
   if (name.length === 0) return 0;
   if (query.length > name.length) return 0;
 
-  query = query.toLowerCase();
-  name = name.toLocaleLowerCase();
+  query = foldDiacritics(query);
+  name = foldDiacritics(name);
 
   let score;
   if (name.includes(query)) {

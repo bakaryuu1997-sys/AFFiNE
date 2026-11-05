@@ -126,3 +126,14 @@ test('tokenizer', () => {
     expect(tokens).toEqual([{ term: '1️', start: 0, end: 2 }]);
   }
 });
+
+test('diacritic-insensitive terms keep original offsets', () => {
+  const tokens = new GeneralTokenizer().tokenize('Tiếng Việt, Đà Nẵng');
+
+  expect(tokens).toEqual([
+    { term: 'tieng', start: 0, end: 5 },
+    { term: 'viet', start: 6, end: 10 },
+    { term: 'da', start: 12, end: 14 },
+    { term: 'nang', start: 15, end: 19 },
+  ]);
+});

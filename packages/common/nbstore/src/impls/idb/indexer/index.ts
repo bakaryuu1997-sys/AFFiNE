@@ -222,6 +222,7 @@ export class IndexedDBIndexerStorage extends IndexerStorageBase {
   // Get the current indexer version
   // increase this number to re-index all docs
   async indexVersion(): Promise<number> {
-    return 1;
+    // 2: terms are diacritic-folded (accent-insensitive search)
+    return 2;
   }
 }

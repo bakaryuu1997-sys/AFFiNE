@@ -1,4 +1,4 @@
-import { t } from '@blocksuite/affine-shared/utils';
+import { foldDiacritics, t } from '@blocksuite/affine-shared/utils';
 import { IS_MOBILE } from '@blocksuite/global/env';
 import { computed, signal } from '@preact/signals-core';
 import type { TemplateResult } from 'lit';
@@ -162,10 +162,10 @@ export class Menu {
   }
 
   search(name: string) {
-    const query = this.searchName$.value.toLowerCase();
+    const query = foldDiacritics(this.searchName$.value);
     return (
-      name.toLowerCase().includes(query) ||
-      t(name).toLowerCase().includes(query)
+      foldDiacritics(name).includes(query) ||
+      foldDiacritics(t(name)).includes(query)
     );
   }
 

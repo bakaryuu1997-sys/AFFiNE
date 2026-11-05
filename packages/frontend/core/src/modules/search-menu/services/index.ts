@@ -1,4 +1,5 @@
 import type { TagMeta } from '@affine/core/components/page-list';
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import { UserFriendlyError } from '@affine/error';
 import { I18n } from '@affine/i18n';
 import { createSignalFromObservable } from '@blocksuite/affine/shared/utils';
@@ -12,7 +13,7 @@ import { CollectionsIcon, WarningIcon } from '@blocksuite/icons/lit';
 import { computed, signal } from '@preact/signals-core';
 import { Service } from '@toeverything/infra';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import Fuse, { type FuseResultMatch } from 'fuse.js';
+import type { FuseResultMatch } from 'fuse.js';
 import { html } from 'lit';
 import { catchError, map, of } from 'rxjs';
 
@@ -270,7 +271,7 @@ export class SearchMenuService extends Service {
       };
     }
 
-    const fuse = new Fuse(tags, {
+    const fuse = createFoldedFuse(tags, {
       keys: ['title'],
       includeMatches: true,
       includeScore: true,
@@ -338,7 +339,7 @@ export class SearchMenuService extends Service {
       };
     }
 
-    const fuse = new Fuse(collections, {
+    const fuse = createFoldedFuse(collections, {
       keys: ['name'],
       includeMatches: true,
       includeScore: true,

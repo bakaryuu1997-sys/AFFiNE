@@ -1,5 +1,6 @@
 import { MemberSearchService } from '@affine/core/modules/permissions';
 import { highlighter } from '@affine/core/modules/quicksearch/utils/highlighter';
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import { I18n } from '@affine/i18n';
 import track from '@affine/track';
 import type { AffineInlineEditor } from '@blocksuite/affine/shared/types';
@@ -13,7 +14,7 @@ import { BLOCK_ID_ATTR, type BlockComponent } from '@blocksuite/std';
 import { computed } from '@preact/signals-core';
 import type { FrameworkProvider } from '@toeverything/infra';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import Fuse, { type FuseResultMatch } from 'fuse.js';
+import type { FuseResultMatch } from 'fuse.js';
 import { html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -112,7 +113,7 @@ export const createCommentLinkedWidgetConfig = (
       }
 
       // Create a single Fuse instance for all members
-      const fuse = new Fuse(members, {
+      const fuse = createFoldedFuse(members, {
         keys: ['name'],
         includeMatches: true,
         includeScore: true,

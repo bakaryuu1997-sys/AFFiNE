@@ -4,9 +4,9 @@ import {
   type CommandCategory,
   PreconditionStrategy,
 } from '@affine/core/commands';
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import type { DocMode } from '@blocksuite/affine/model';
 import { Entity, LiveData } from '@toeverything/infra';
-import Fuse from 'fuse.js';
 
 import type { GlobalContextService } from '../../global-context';
 import type { QuickSearchSession } from '../providers/quick-search-provider';
@@ -148,7 +148,7 @@ export class CommandsQuickSearchSession
       get(this.contextService.globalContext.docMode.$) ?? undefined;
     const commands = getAllCommand({ docMode });
 
-    const fuse = new Fuse(commands, {
+    const fuse = createFoldedFuse(commands, {
       keys: [{ name: 'label.title', weight: 2 }, 'label.subTitle'],
       includeMatches: true,
       includeScore: true,

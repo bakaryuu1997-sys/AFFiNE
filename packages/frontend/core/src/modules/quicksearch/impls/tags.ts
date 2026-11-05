@@ -1,5 +1,5 @@
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import { Entity, LiveData } from '@toeverything/infra';
-import Fuse from 'fuse.js';
 
 import type { TagService } from '../../tag';
 import type { QuickSearchSession } from '../providers/quick-search-provider';
@@ -37,7 +37,7 @@ export class TagsQuickSearchSession
         color: get(tag.color$),
       }));
 
-      const fuse = new Fuse(tags, {
+      const fuse = createFoldedFuse(tags, {
         keys: ['title'],
         includeMatches: true,
         includeScore: true,

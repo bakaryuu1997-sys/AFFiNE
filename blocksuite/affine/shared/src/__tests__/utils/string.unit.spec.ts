@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { isFuzzyMatch, substringMatchScore } from '../../utils/string.js';
+import {
+  foldDiacritics,
+  isFuzzyMatch,
+  substringMatchScore,
+} from '../../utils/string.js';
 
 describe('fuzzyMatch', () => {
   it('basic case', () => {
@@ -65,5 +69,24 @@ describe('substringMatchScore', () => {
   it('should handle cases where both strings are identical', () => {
     const result = substringMatchScore('identical', 'identical');
     expect(result).toBe(1);
+  });
+});
+
+describe('foldDiacritics', () => {
+  it('removes Vietnamese diacritics and maps đ to d', () => {
+    expect(foldDiacritics('Việt Nam')).toBe('viet nam');
+    expect(foldDiacritics('Đường đi')).toBe('duong di');
+    expect(foldDiacritics('Tiếng Việt')).toBe('tieng viet');
+  });
+
+  it('keeps CJK and kana untouched (only lower-cased)', () => {
+    expect(foldDiacritics('中文')).toBe('中文');
+    expect(foldDiacritics('がっこう')).toBe('がっこう');
+  });
+
+  it('makes fuzzy matching accent-insensitive in both directions', () => {
+    expect(isFuzzyMatch('Việt Nam', 'viet')).toBe(true);
+    expect(isFuzzyMatch('Viet Nam', 'việt')).toBe(true);
+    expect(isFuzzyMatch('Đà Nẵng', 'da nang')).toBe(true);
   });
 });

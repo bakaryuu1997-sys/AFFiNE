@@ -1,4 +1,5 @@
 import { notify } from '@affine/component';
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import { UserFriendlyError } from '@affine/error';
 import {
   type DocMode as GraphqlDocMode,
@@ -33,7 +34,6 @@ import { computed, Signal } from '@preact/signals-core';
 import { Service } from '@toeverything/infra';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import type { FuseResultMatch } from 'fuse.js';
-import Fuse from 'fuse.js';
 import { html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
@@ -579,7 +579,7 @@ export class AtMenuConfigService extends Service {
       }
 
       // Create a single Fuse instance for all members
-      const fuse = new Fuse(members, {
+      const fuse = createFoldedFuse(members, {
         keys: ['name'],
         includeMatches: true,
         includeScore: true,

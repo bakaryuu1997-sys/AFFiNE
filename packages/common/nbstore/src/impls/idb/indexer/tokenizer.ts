@@ -1,5 +1,19 @@
 import Graphemer from 'graphemer';
 
+/**
+ * Lower-case a term and strip Latin diacritics ("Việt" -> "viet", "đ" -> "d") so
+ * full-text search is accent-insensitive. CJK/kana text is only lower-cased.
+ * Positions stay in the original text; only the stored/queried term is folded.
+ */
+function foldTerm(term: string): string {
+  const lower = term.toLowerCase();
+  if (!/[\u00c0-\u024f\u1e00-\u1eff]/.test(lower)) return lower;
+  return lower
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\u0111/g, 'd');
+}
+
 export interface Tokenizer {
   tokenize(text: string): Token[];
 }
@@ -22,7 +36,7 @@ export class SimpleTokenizer implements Tokenizer {
         if (inWord) {
           end = i;
           tokens.push({
-            term: text.substring(start, end).toLowerCase(),
+            term: foldTerm(text.substring(start, end)),
             start,
             end,
           });
@@ -38,7 +52,7 @@ export class SimpleTokenizer implements Tokenizer {
     }
     if (inWord) {
       tokens.push({
-        term: text.substring(start).toLowerCase(),
+        term: foldTerm(text.substring(start)),
         start,
         end: text.length,
       });
@@ -86,7 +100,7 @@ export class GeneralTokenizer implements Tokenizer {
 
   tokenizeWord(word: string, lang: string): Token[] {
     if (lang === 'en') {
-      return [{ term: word.toLowerCase(), start: 0, end: word.length }];
+      return [{ term: foldTerm(word), start: 0, end: word.length }];
     } else if (lang === 'cjk') {
       if (word.length < 3) {
         return [{ term: word, start: 0, end: word.length }];

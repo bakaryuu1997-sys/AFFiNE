@@ -1,6 +1,6 @@
+import { createFoldedFuse } from '@affine/core/utils/fuse-folded';
 import { ViewLayersIcon } from '@blocksuite/icons/rc';
 import { Entity, LiveData } from '@toeverything/infra';
-import Fuse from 'fuse.js';
 
 import type { CollectionService } from '../../collection';
 import type { QuickSearchSession } from '../providers/quick-search-provider';
@@ -32,7 +32,7 @@ export class CollectionsQuickSearchSession
 
       const collections = get(this.collectionService.collectionMetas$);
 
-      const fuse = new Fuse(collections, {
+      const fuse = createFoldedFuse(collections, {
         keys: ['name'],
         includeMatches: true,
         includeScore: true,
