@@ -36,6 +36,7 @@ import {
 } from '../../desktop/components/navigation-panel';
 import { WorkbenchService } from '../../modules/workbench';
 import { WorkspaceNavigator } from '../workspace-selector';
+import { BuiltinTemplatesInstaller } from './builtin-templates-installer';
 import {
   bottomContainer,
   quickSearch,
@@ -211,6 +212,7 @@ export const RootAppSidebar = memo((): ReactElement => {
         <AllDocsButton />
         <AppSidebarJournalButton />
         <AppSidebarTodoButton />
+        <BuiltinTemplatesInstaller />
         {sessionStatus === 'authenticated' && <NotificationButton />}
         <AIChatButton />
         <MenuItem

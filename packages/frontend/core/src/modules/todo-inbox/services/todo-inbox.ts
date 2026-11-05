@@ -2,6 +2,7 @@ import { LiveData, Service } from '@toeverything/infra';
 import { map } from 'rxjs';
 
 import type { DocsService } from '../../doc/services/docs';
+import type { TemplateDocService } from '../../template-doc';
 import type { WorkspaceService } from '../../workspace';
 import {
   bucketOf,
@@ -49,7 +50,8 @@ function parseAdditional(value: unknown): {
 export class TodoInboxService extends Service {
   constructor(
     private readonly workspaceService: WorkspaceService,
-    private readonly docsService: DocsService
+    private readonly docsService: DocsService,
+    private readonly templateDocService: TemplateDocService
   ) {
     super();
   }
@@ -79,6 +81,9 @@ export class TodoInboxService extends Service {
             if (!docId || !blockId || additional?.listType !== 'todo') continue;
             const record = this.docsService.list.doc$(docId).value;
             if (!record || record.trash$.value) continue;
+            // checkboxes inside template docs are placeholders, not tasks
+            if (this.templateDocService.list.listStore.isTemplateDoc(docId))
+              continue;
             const todo = parseTodoText(
               stringField(node.fields.content) ?? '',
               !!additional.checked,
