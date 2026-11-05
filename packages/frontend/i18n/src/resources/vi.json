@@ -2649,5 +2649,12 @@
   "com.affine.todoInbox.bucket.today": "Hôm nay",
   "com.affine.todoInbox.bucket.week": "7 ngày tới",
   "com.affine.todoInbox.bucket.later": "Sau này",
-  "com.affine.todoInbox.bucket.none": "Không có hạn"
+  "com.affine.todoInbox.bucket.none": "Không có hạn",
+  "com.affine.markdownExport.title": "Xuất ra Markdown",
+  "com.affine.markdownExport.description": "Lưu mọi tài liệu thành tệp Markdown (tệp đính kèm nằm trong thư mục assets). Tiện để sao lưu bằng git và mở bằng Obsidian. Bỏ qua mẫu và tài liệu trong thùng rác.",
+  "com.affine.markdownExport.toFolder": "Chọn thư mục",
+  "com.affine.markdownExport.toZip": "Tải về dạng zip",
+  "com.affine.markdownExport.success": "Đã xuất {{count}} tài liệu",
+  "com.affine.markdownExport.skipped": "{{count}} tài liệu không xuất được",
+  "com.affine.markdownExport.failed": "Xuất Markdown thất bại"
 }

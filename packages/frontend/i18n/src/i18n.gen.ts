@@ -10009,6 +10009,38 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.todoInbox.bucket.none"](): string;
     /**
+      * `Export to Markdown`
+      */
+    ["com.affine.markdownExport.title"](): string;
+    /**
+      * `Save every doc as a Markdown file (attachments in an assets folder). Handy for git backups and Obsidian. Templates and trashed docs are skipped.`
+      */
+    ["com.affine.markdownExport.description"](): string;
+    /**
+      * `Choose folder`
+      */
+    ["com.affine.markdownExport.toFolder"](): string;
+    /**
+      * `Download zip`
+      */
+    ["com.affine.markdownExport.toZip"](): string;
+    /**
+      * `Exported {{count}} docs`
+      */
+    ["com.affine.markdownExport.success"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `{{count}} docs could not be exported`
+      */
+    ["com.affine.markdownExport.skipped"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Markdown export failed`
+      */
+    ["com.affine.markdownExport.failed"](): string;
+    /**
       * `An internal error occurred.`
       */
     ["error.INTERNAL_SERVER_ERROR"](): string;

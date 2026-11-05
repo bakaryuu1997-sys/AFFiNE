@@ -11,6 +11,7 @@ import { EnableCloudPanel } from '../preference/enable-cloud';
 import { BlobManagementPanel } from './blob-management';
 import { DiskSyncPanel } from './disk-sync';
 import { DesktopExportPanel } from './export';
+import { MarkdownExportPanel } from './markdown-export';
 import { WorkspaceQuotaPanel } from './workspace-quota';
 
 export const WorkspaceSettingStorage = ({
@@ -33,6 +34,9 @@ export const WorkspaceSettingStorage = ({
         title={t['Storage']()}
         subtitle={t['com.affine.settings.workspace.storage.subtitle']()}
       />
+      <SettingWrapper>
+        <MarkdownExportPanel />
+      </SettingWrapper>
       {workspace.flavour === 'local' ? (
         <>
           <EnableCloudPanel onCloseSetting={onCloseSetting} />{' '}

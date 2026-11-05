@@ -22,7 +22,7 @@ import type {
   Store,
   Workspace,
 } from '@blocksuite/store';
-import { extMimeMap, Transformer } from '@blocksuite/store';
+import { extMimeMap, getAssetName, Transformer } from '@blocksuite/store';
 
 import {
   blobsFromAssets,
@@ -613,6 +613,44 @@ async function exportDoc(doc: Store) {
   download(downloadBlob, name);
 }
 
+export type DocMarkdownFiles = {
+  markdown: string;
+  assets: { name: string; blob: Blob }[];
+};
+
+/**
+ * Converts a doc to Markdown without downloading anything, so callers can lay
+ * several docs out in their own folder structure (workspace export).
+ * Asset links in the Markdown point to `assets/<name>`.
+ */
+async function docToMarkdownFiles(
+  doc: Store
+): Promise<DocMarkdownFiles | undefined> {
+  const job = doc.getTransformer([
+    docLinkBaseURLMiddleware(doc.workspace.id),
+    titleMiddleware(doc.workspace.meta.docMetas),
+  ]);
+  const snapshot = job.docToSnapshot(doc);
+  if (!snapshot) {
+    return undefined;
+  }
+
+  const adapter = new MarkdownAdapter(job, doc.provider);
+  const result = await adapter.fromDocSnapshot({
+    snapshot,
+    assets: job.assetsManager,
+  });
+
+  const assets: DocMarkdownFiles['assets'] = [];
+  if (result.assetsIds.length > 0 && job.assets) {
+    for (const [id, blob] of job.assets) {
+      if (!result.assetsIds.includes(id)) continue;
+      assets.push({ name: getAssetName(job.assets, id), blob });
+    }
+  }
+  return { markdown: result.file, assets };
+}
+
 /**
  * Imports Markdown content into a specific block within a doc.
  * @param options Object containing import options
@@ -978,6 +1016,7 @@ function flattenFolderHierarchy(root: FolderHierarchy): ImportFolder[] {
 }
 
 export const MarkdownTransformer = {
+  docToMarkdownFiles,
   exportDoc,
   importMarkdownToBlock,
   importMarkdownToDoc,

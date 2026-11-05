@@ -18,5 +18,5 @@ export { MarkdownTransformer } from './markdown.js';
 export { NotionHtmlTransformer } from './notion-html.js';
 export { ObsidianTransformer } from './obsidian.js';
 export { PdfTransformer } from './pdf.js';
-export { createAssetsArchive, download, Unzip } from './utils.js';
+export { createAssetsArchive, download, Unzip, Zip } from './utils.js';
 export { ZipTransformer } from './zip.js';
