@@ -2635,5 +2635,19 @@
   "com.affine.localAI.settings.test": "Kiểm tra kết nối",
   "com.affine.localAI.settings.testOk": "Đã kết nối — {{count}} mô hình",
   "com.affine.localAI.settings.remove": "Xóa",
-  "com.affine.localAI.settings.done": "Xong"
+  "com.affine.localAI.settings.done": "Xong",
+  "com.affine.todoInbox.title": "Việc cần làm",
+  "com.affine.todoInbox.hint": "Gom checkbox từ mọi tài liệu. Thêm hạn bằng @2026-11-10, @hôm nay hoặc @ngày mai; lặp lại bằng 🔁 hàng tuần.",
+  "com.affine.todoInbox.showDone": "Hiện việc đã xong",
+  "com.affine.todoInbox.empty": "Chưa có việc nào. Thêm checkbox trong bất kỳ tài liệu nào.",
+  "com.affine.todoInbox.untitled": "Việc chưa đặt tên",
+  "com.affine.todoInbox.repeat.daily": "hàng ngày",
+  "com.affine.todoInbox.repeat.weekly": "hàng tuần",
+  "com.affine.todoInbox.repeat.monthly": "hàng tháng",
+  "com.affine.todoInbox.repeat.yearly": "hàng năm",
+  "com.affine.todoInbox.bucket.overdue": "Quá hạn",
+  "com.affine.todoInbox.bucket.today": "Hôm nay",
+  "com.affine.todoInbox.bucket.week": "7 ngày tới",
+  "com.affine.todoInbox.bucket.later": "Sau này",
+  "com.affine.todoInbox.bucket.none": "Không có hạn"
 }

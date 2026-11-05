@@ -63,6 +63,7 @@ import { configureTelemetryModule } from './telemetry';
 import { configureTemplateDocModule } from './template-doc';
 import { configureAppThemeModule } from './theme';
 import { configureThemeEditorModule } from './theme-editor';
+import { configureTodoInboxModule } from './todo-inbox';
 import { configureUrlModule } from './url';
 import { configureUserspaceModule } from './userspace';
 import { configureWorkspaceModule } from './workspace';
@@ -94,6 +95,7 @@ export function configureCommonModules(framework: Framework) {
   configureDocDisplayMetaModule(framework);
   configureQuickSearchModule(framework);
   configureDocsSearchModule(framework);
+  configureTodoInboxModule(framework);
   configureDocLinksModule(framework);
   configureOrganizeModule(framework);
   configureFavoriteModule(framework);

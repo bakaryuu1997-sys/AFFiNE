@@ -6,6 +6,10 @@ export const workbenchRoutes = [
     lazy: () => import('./pages/workspace/chat/index'),
   },
   {
+    path: '/todo',
+    lazy: () => import('./pages/workspace/todo/index'),
+  },
+  {
     path: '/all',
     lazy: () => import('./pages/workspace/all-page/all-page'),
   },

@@ -9953,6 +9953,62 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.localAI.settings.done"](): string;
     /**
+      * `Tasks`
+      */
+    ["com.affine.todoInbox.title"](): string;
+    /**
+      * `Checkboxes from every doc. Add a due date with @2026-11-10, @today or @tomorrow, and repeat with 🔁 weekly.`
+      */
+    ["com.affine.todoInbox.hint"](): string;
+    /**
+      * `Show completed`
+      */
+    ["com.affine.todoInbox.showDone"](): string;
+    /**
+      * `No tasks. Add a checkbox in any doc.`
+      */
+    ["com.affine.todoInbox.empty"](): string;
+    /**
+      * `Untitled task`
+      */
+    ["com.affine.todoInbox.untitled"](): string;
+    /**
+      * `daily`
+      */
+    ["com.affine.todoInbox.repeat.daily"](): string;
+    /**
+      * `weekly`
+      */
+    ["com.affine.todoInbox.repeat.weekly"](): string;
+    /**
+      * `monthly`
+      */
+    ["com.affine.todoInbox.repeat.monthly"](): string;
+    /**
+      * `yearly`
+      */
+    ["com.affine.todoInbox.repeat.yearly"](): string;
+    /**
+      * `Overdue`
+      */
+    ["com.affine.todoInbox.bucket.overdue"](): string;
+    /**
+      * `Today`
+      */
+    ["com.affine.todoInbox.bucket.today"](): string;
+    /**
+      * `Next 7 days`
+      */
+    ["com.affine.todoInbox.bucket.week"](): string;
+    /**
+      * `Later`
+      */
+    ["com.affine.todoInbox.bucket.later"](): string;
+    /**
+      * `No due date`
+      */
+    ["com.affine.todoInbox.bucket.none"](): string;
+    /**
       * `An internal error occurred.`
       */
     ["error.INTERNAL_SERVER_ERROR"](): string;

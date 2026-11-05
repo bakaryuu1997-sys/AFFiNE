@@ -223,6 +223,7 @@ export class IndexedDBIndexerStorage extends IndexerStorageBase {
   // increase this number to re-index all docs
   async indexVersion(): Promise<number> {
     // 2: terms are diacritic-folded (accent-insensitive search)
-    return 2;
+    // 3: list blocks carry listType/checked (task inbox)
+    return 3;
   }
 }

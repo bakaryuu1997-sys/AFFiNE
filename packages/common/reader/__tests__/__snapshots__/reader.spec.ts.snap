@@ -1246,8 +1246,10 @@ exports[`should read doc blocks work 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "xFrrdiP3-V",
@@ -1272,8 +1274,10 @@ exports[`should read doc blocks work 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "Tp9xyN4Okl",
@@ -1298,8 +1302,10 @@ exports[`should read doc blocks work 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "K_4hUzKZFQ",
@@ -1324,8 +1330,10 @@ exports[`should read doc blocks work 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "QwMzON2s7x",
@@ -1350,8 +1358,10 @@ exports[`should read doc blocks work 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "FFVmit6u1T",
@@ -2937,8 +2947,10 @@ exports[`should read doc blocks work without root doc 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "xFrrdiP3-V",
@@ -2963,8 +2975,10 @@ exports[`should read doc blocks work without root doc 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "Tp9xyN4Okl",
@@ -2989,8 +3003,10 @@ exports[`should read doc blocks work without root doc 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "K_4hUzKZFQ",
@@ -3015,8 +3031,10 @@ exports[`should read doc blocks work without root doc 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "QwMzON2s7x",
@@ -3041,8 +3059,10 @@ exports[`should read doc blocks work without root doc 1`] = `
     },
     {
       "additional": {
+        "checked": false,
         "databaseName": undefined,
         "displayMode": "page",
+        "listType": "bulleted",
         "noteBlockId": "6lDiuDqZGL",
       },
       "blockId": "FFVmit6u1T",

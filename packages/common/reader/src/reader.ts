@@ -45,6 +45,8 @@ export interface BlockDocumentInfo {
     databaseName?: string;
     displayMode?: string;
     noteBlockId?: string;
+    listType?: string;
+    checked?: boolean;
   };
   yblock: YMap<any>;
   markdownPreview?: string;
@@ -682,7 +684,16 @@ export async function readAllBlocksFromDoc({
         ),
         parentFlavour,
         parentBlockId,
-        additional: { ...commonBlockProps.additional, databaseName },
+        additional: {
+          ...commonBlockProps.additional,
+          databaseName,
+          ...(flavour === 'affine:list'
+            ? {
+                listType: block.get('prop:type'),
+                checked: !!block.get('prop:checked'),
+              }
+            : {}),
+        },
       });
 
       if (maxSummaryLength > 0) {
