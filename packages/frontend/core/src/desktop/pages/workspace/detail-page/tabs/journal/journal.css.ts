@@ -214,6 +214,11 @@ export const journalDateCell = style([
     color: cssVar('textPrimaryColor'),
     fontWeight: 400,
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1.15,
 
     selectors: {
       '&[data-is-today="true"]': {
@@ -265,4 +270,39 @@ export const journalDateCellDotType = styleVariants({
   activity: {
     backgroundColor: cssVarV2.calendar.red,
   },
+});
+
+export const journalLunarText = style({
+  fontSize: 9,
+  lineHeight: '10px',
+  opacity: 0.65,
+  selectors: {
+    '&[data-major="true"]': { color: '#e5484d', opacity: 1 },
+    '&[data-holiday="other"]': { color: '#e5484d', opacity: 1 },
+    '&[data-holiday="official"]': {
+      color: '#e5484d',
+      opacity: 1,
+      fontWeight: 600,
+    },
+    [`${journalDateCell}[data-selected="true"] &`]: {
+      color: 'inherit',
+      opacity: 0.9,
+    },
+    [`${journalDateCell}[data-not-current-month="true"] &`]: { opacity: 0.4 },
+  },
+});
+
+export const lunarSummary = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  padding: '6px 4px 2px',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: cssVar('textSecondaryColor'),
+});
+
+export const lunarSummaryHoliday = style({
+  color: '#e5484d',
+  fontWeight: 600,
 });

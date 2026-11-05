@@ -1,6 +1,8 @@
 import type { DateCell } from '@affine/component';
 import {
+  canChiDay,
   DatePicker,
+  getDayInfo,
   IconButton,
   Menu,
   MenuItem,
@@ -109,6 +111,21 @@ interface JournalBlockProps {
 type DateDotType = 'journal' | 'event' | 'activity';
 
 const mobile = environment.isMobile;
+const LunarSummary = ({ date }: { date: dayjs.Dayjs }) => {
+  const info = getDayInfo(date.date(), date.month() + 1, date.year());
+  return (
+    <div className={styles.lunarSummary} data-testid="journal-lunar-summary">
+      <span>
+        Âm lịch: {info.lunarFull} · Ngày{' '}
+        {canChiDay(date.date(), date.month() + 1, date.year())}
+      </span>
+      {info.holiday ? (
+        <span className={styles.lunarSummaryHoliday}>{info.holiday}</span>
+      ) : null}
+    </div>
+  );
+};
+
 export const EditorJournalPanel = () => {
   const t = useI18n();
   const doc = useServiceOptional(DocService)?.doc;
@@ -257,6 +274,21 @@ export const EditorJournalPanel = () => {
           data-mobile={mobile}
         >
           {cell.label}
+          {cell.lunarLabel ? (
+            <span
+              className={styles.journalLunarText}
+              data-major={cell.isMajorLunarDay}
+              data-holiday={
+                cell.holiday
+                  ? cell.officialHoliday
+                    ? 'official'
+                    : 'other'
+                  : undefined
+              }
+            >
+              {cell.lunarLabel}
+            </span>
+          ) : null}
           {!cell.selected && dotTypes.length ? (
             <div className={styles.journalDateCellDotContainer}>
               {dotTypes.map(dotType => (
@@ -294,6 +326,7 @@ export const EditorJournalPanel = () => {
           cellSize={34}
         />
       </div>
+      <LunarSummary date={selectedDate} />
       <JournalTemplateOnboarding />
       <JournalConflictBlock date={selectedDate} />
       <CalendarEvents date={selectedDate} />

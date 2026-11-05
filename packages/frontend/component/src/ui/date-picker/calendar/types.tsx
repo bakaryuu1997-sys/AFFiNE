@@ -83,6 +83,15 @@ export interface DateCell {
   notCurrentMonth: boolean;
   selected?: boolean;
   focused?: boolean;
+  /** Vietnamese lunar day label ("15", or "1/3" on the 1st of a month) */
+  lunarLabel?: string;
+  /** e.g. "1/1 ÂL — Bính Ngọ" */
+  lunarFull?: string;
+  /** public / traditional holiday name, if any */
+  holiday?: string;
+  officialHoliday?: boolean;
+  /** mùng 1 or rằm */
+  isMajorLunarDay?: boolean;
 }
 
 export type SelectMode = 'day' | 'month' | 'year';

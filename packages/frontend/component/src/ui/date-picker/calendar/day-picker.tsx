@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as styles from './calendar.css';
 import { DATE_MAX, DATE_MIN } from './constants';
 import { CalendarLayout, DefaultDateCell, NavButtons } from './items';
+import { getDayInfo } from './lunar';
 import type { DateCell, DatePickerModePanelProps } from './types';
 
 export const DayPicker = memo(function DayPicker(
@@ -40,6 +41,11 @@ export const DayPicker = memo(function DayPicker(
     while (currentDay.isBefore(lastDayOfLastWeek)) {
       const week: DateCell[] = [];
       for (let i = 0; i < 7; i++) {
+        const info = getDayInfo(
+          currentDay.date(),
+          currentDay.month() + 1,
+          currentDay.year()
+        );
         week.push({
           date: currentDay,
           label: currentDay.date().toString(),
@@ -47,6 +53,11 @@ export const DayPicker = memo(function DayPicker(
           notCurrentMonth: !currentDay.isSame(cursor, 'month'),
           selected: value ? currentDay.isSame(value, 'day') : false,
           focused: currentDay.isSame(cursor, 'day'),
+          lunarLabel: info.lunarLabel,
+          lunarFull: info.lunarFull,
+          holiday: info.holiday,
+          officialHoliday: info.officialHoliday,
+          isMajorLunarDay: info.isMajorLunarDay,
         });
         currentDay = currentDay.add(1, 'day');
       }

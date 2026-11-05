@@ -107,6 +107,11 @@ export const DefaultDateCell = ({
   notCurrentMonth,
   selected,
   focused,
+  lunarLabel,
+  lunarFull,
+  holiday,
+  officialHoliday,
+  isMajorLunarDay,
 }: DateCell) => {
   return (
     <button
@@ -117,8 +122,20 @@ export const DefaultDateCell = ({
       data-selected={selected}
       tabIndex={focused ? 0 : -1}
       className={styles.monthViewBodyCellInner}
+      title={[lunarFull, holiday].filter(Boolean).join(' · ') || undefined}
     >
       {label}
+      {lunarLabel ? (
+        <span
+          className={styles.lunarText}
+          data-major={isMajorLunarDay}
+          data-holiday={
+            holiday ? (officialHoliday ? 'official' : 'other') : undefined
+          }
+        >
+          {lunarLabel}
+        </span>
+      ) : null}
     </button>
   );
 };

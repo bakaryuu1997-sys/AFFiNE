@@ -205,6 +205,11 @@ export const monthViewBodyCellInner = style([
     fontSize: vars.cellFontSize,
     color: cssVar('textPrimaryColor'),
     fontWeight: 400,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1.15,
 
     selectors: {
       '&[data-is-today="true"]': {
@@ -222,6 +227,30 @@ export const monthViewBodyCellInner = style([
     },
   },
 ]);
+
+/** Small lunar-day label shown under the solar day number. */
+export const lunarText = style({
+  fontSize: 9,
+  fontWeight: 400,
+  lineHeight: '10px',
+  opacity: 0.65,
+  selectors: {
+    '&[data-major="true"]': { color: '#e5484d', opacity: 1 },
+    '&[data-holiday="other"]': { color: '#e5484d', opacity: 1 },
+    '&[data-holiday="official"]': {
+      color: '#e5484d',
+      opacity: 1,
+      fontWeight: 600,
+    },
+    [`${monthViewBodyCellInner}[data-selected="true"] &`]: {
+      color: 'inherit',
+      opacity: 0.9,
+    },
+    [`${monthViewBodyCellInner}[data-not-current-month="true"] &`]: {
+      opacity: 0.4,
+    },
+  },
+});
 
 // year view body
 export const yearViewBody = style([monthViewBody, { gap: 18, paddingTop: 18 }]);
