@@ -2,6 +2,7 @@ import {
   SettingHeader,
   SettingWrapper,
 } from '@affine/component/setting-components';
+import { McpBridgePanel } from '@affine/core/modules/mcp-bridge';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
@@ -36,6 +37,9 @@ export const WorkspaceSettingStorage = ({
       />
       <SettingWrapper>
         <MarkdownExportPanel />
+      </SettingWrapper>
+      <SettingWrapper>
+        <McpBridgePanel />
       </SettingWrapper>
       {workspace.flavour === 'local' ? (
         <>

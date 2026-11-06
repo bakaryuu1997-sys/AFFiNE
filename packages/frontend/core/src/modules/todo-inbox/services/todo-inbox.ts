@@ -1,5 +1,5 @@
 import { LiveData, Service } from '@toeverything/infra';
-import { map } from 'rxjs';
+import { firstValueFrom, map, timeout } from 'rxjs';
 
 import type { DocsService } from '../../doc/services/docs';
 import type { TemplateDocService } from '../../template-doc';
@@ -60,47 +60,54 @@ export class TodoInboxService extends Service {
     return this.workspaceService.workspace.engine.indexer;
   }
 
-  readonly todos$ = LiveData.from<TodoItem[]>(
-    this.indexer
-      .search$(
-        'block',
-        { type: 'match', field: 'flavour', match: 'affine:list' },
-        {
-          pagination: { skip: 0, limit: Infinity },
-          fields: ['docId', 'blockId', 'content', 'additional'],
+  private readonly source$ = this.indexer
+    .search$(
+      'block',
+      { type: 'match', field: 'flavour', match: 'affine:list' },
+      {
+        pagination: { skip: 0, limit: Infinity },
+        fields: ['docId', 'blockId', 'content', 'additional'],
+      }
+    )
+    .pipe(
+      map(({ nodes }) => {
+        const now = new Date();
+        const items: TodoItem[] = [];
+        for (const node of nodes) {
+          const docId = stringField(node.fields.docId);
+          const blockId = stringField(node.fields.blockId);
+          const additional = parseAdditional(node.fields.additional);
+          if (!docId || !blockId || additional?.listType !== 'todo') continue;
+          const record = this.docsService.list.doc$(docId).value;
+          if (!record || record.trash$.value) continue;
+          // checkboxes inside template docs are placeholders, not tasks
+          if (this.templateDocService.list.listStore.isTemplateDoc(docId))
+            continue;
+          const todo = parseTodoText(
+            stringField(node.fields.content) ?? '',
+            !!additional.checked,
+            now
+          );
+          items.push({
+            docId,
+            blockId,
+            ...todo,
+            bucket: bucketOf(todo.due, now),
+          });
         }
-      )
-      .pipe(
-        map(({ nodes }) => {
-          const now = new Date();
-          const items: TodoItem[] = [];
-          for (const node of nodes) {
-            const docId = stringField(node.fields.docId);
-            const blockId = stringField(node.fields.blockId);
-            const additional = parseAdditional(node.fields.additional);
-            if (!docId || !blockId || additional?.listType !== 'todo') continue;
-            const record = this.docsService.list.doc$(docId).value;
-            if (!record || record.trash$.value) continue;
-            // checkboxes inside template docs are placeholders, not tasks
-            if (this.templateDocService.list.listStore.isTemplateDoc(docId))
-              continue;
-            const todo = parseTodoText(
-              stringField(node.fields.content) ?? '',
-              !!additional.checked,
-              now
-            );
-            items.push({
-              docId,
-              blockId,
-              ...todo,
-              bucket: bucketOf(todo.due, now),
-            });
-          }
-          return items;
-        })
-      ),
-    []
-  );
+        return items;
+      })
+    );
+
+  readonly todos$ = LiveData.from<TodoItem[]>(this.source$, []);
+
+  /**
+   * The current tasks, waiting for the index to answer. Unlike `todos$` this
+   * works without a subscriber, which is what the MCP tools need.
+   */
+  getTodos(): Promise<TodoItem[]> {
+    return firstValueFrom(this.source$.pipe(timeout(10_000)));
+  }
 
   /**
    * Completes or reopens a task in its document. A repeating task with a due

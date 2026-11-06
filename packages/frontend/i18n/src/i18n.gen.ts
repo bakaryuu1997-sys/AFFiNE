@@ -10041,6 +10041,90 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.markdownExport.failed"](): string;
     /**
+      * `MCP bridge`
+      */
+    ["com.affine.mcpBridge.title"](): string;
+    /**
+      * `Let AI agents (Claude, Antigravity...) read and edit this workspace through a local MCP server. Start it with: node scripts/mcp/affine-mcp.mjs`
+      */
+    ["com.affine.mcpBridge.description"](): string;
+    /**
+      * `Status`
+      */
+    ["com.affine.mcpBridge.status"](): string;
+    /**
+      * `The app connects to the local bridge while this is on.`
+      */
+    ["com.affine.mcpBridge.statusHint"](): string;
+    /**
+      * `Off`
+      */
+    ["com.affine.mcpBridge.status.off"](): string;
+    /**
+      * `Paste the token`
+      */
+    ["com.affine.mcpBridge.status.needs-token"](): string;
+    /**
+      * `Waiting for the bridge`
+      */
+    ["com.affine.mcpBridge.status.connecting"](): string;
+    /**
+      * `Connected`
+      */
+    ["com.affine.mcpBridge.status.connected"](): string;
+    /**
+      * `Invalid address or token`
+      */
+    ["com.affine.mcpBridge.status.error"](): string;
+    /**
+      * `Bridge address`
+      */
+    ["com.affine.mcpBridge.url"](): string;
+    /**
+      * `Default: ws://127.0.0.1:20130/bridge`
+      */
+    ["com.affine.mcpBridge.urlHint"](): string;
+    /**
+      * `Token`
+      */
+    ["com.affine.mcpBridge.token"](): string;
+    /**
+      * `Printed by the bridge (file ~/.affine-mcp/token). Stored only in this browser.`
+      */
+    ["com.affine.mcpBridge.tokenHint"](): string;
+    /**
+      * `Allow agents to edit`
+      */
+    ["com.affine.mcpBridge.write"](): string;
+    /**
+      * `When off, agents can only read; create, append and tick actions are refused.`
+      */
+    ["com.affine.mcpBridge.writeHint"](): string;
+    /**
+      * `Agent activity`
+      */
+    ["com.affine.mcpBridge.audit"](): string;
+    /**
+      * `The latest tool calls from agents (kept in memory only).`
+      */
+    ["com.affine.mcpBridge.auditHint"](): string;
+    /**
+      * `Clear`
+      */
+    ["com.affine.mcpBridge.auditClear"](): string;
+    /**
+      * `done`
+      */
+    ["com.affine.mcpBridge.outcome.ok"](): string;
+    /**
+      * `error`
+      */
+    ["com.affine.mcpBridge.outcome.error"](): string;
+    /**
+      * `blocked`
+      */
+    ["com.affine.mcpBridge.outcome.blocked"](): string;
+    /**
       * `An internal error occurred.`
       */
     ["error.INTERNAL_SERVER_ERROR"](): string;

@@ -45,6 +45,7 @@ import {
   workspaceWrapper,
 } from './index.css';
 import { AppSidebarJournalButton } from './journal-button';
+import { McpBridgeStarter } from './mcp-bridge-starter';
 import { NotificationButton } from './notification-button';
 import { SidebarAudioPlayer } from './sidebar-audio-player';
 import { TemplateDocEntrance } from './template-doc-entrance';
@@ -213,6 +214,7 @@ export const RootAppSidebar = memo((): ReactElement => {
         <AppSidebarJournalButton />
         <AppSidebarTodoButton />
         <BuiltinTemplatesInstaller />
+        <McpBridgeStarter />
         {sessionStatus === 'authenticated' && <NotificationButton />}
         <AIChatButton />
         <MenuItem

@@ -41,6 +41,7 @@ import { configureIntegrationModule } from './integration';
 import { configureJournalModule } from './journal';
 import { configureLifecycleModule } from './lifecycle';
 import { configureMarkdownExportModule } from './markdown-export';
+import { configureMcpBridgeModule } from './mcp-bridge';
 import { configureMediaModule } from './media';
 import { configureNavigationModule } from './navigation';
 import { configureNavigationPanelModule } from './navigation-panel';
@@ -98,6 +99,7 @@ export function configureCommonModules(framework: Framework) {
   configureDocsSearchModule(framework);
   configureTodoInboxModule(framework);
   configureMarkdownExportModule(framework);
+  configureMcpBridgeModule(framework);
   configureDocLinksModule(framework);
   configureOrganizeModule(framework);
   configureFavoriteModule(framework);
