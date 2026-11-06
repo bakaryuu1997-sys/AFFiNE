@@ -9,7 +9,6 @@ import { GlobalPageHistoryModal } from '@affine/core/components/affine/page-hist
 import { CommentSidebar } from '@affine/core/components/comment/sidebar';
 import { useGuard } from '@affine/core/components/guard';
 import { useAppSettingHelper } from '@affine/core/components/hooks/affine/use-app-setting-helper';
-import { useEnableAI } from '@affine/core/components/hooks/affine/use-enable-ai';
 import { useRegisterBlocksuiteEditorCommands } from '@affine/core/components/hooks/affine/use-register-blocksuite-editor-commands';
 import { useActiveBlocksuiteEditor } from '@affine/core/components/hooks/use-block-suite-editor';
 import { PageDetailEditor } from '@affine/core/components/page-detail-editor';
@@ -41,7 +40,6 @@ import { RefNodeSlotsProvider } from '@blocksuite/affine/inlines/reference';
 import { focusBlockEnd } from '@blocksuite/affine/shared/commands';
 import { getLastNoteBlock } from '@blocksuite/affine/shared/utils';
 import {
-  AiIcon,
   CommentIcon,
   ExportIcon,
   FrameIcon,
@@ -66,7 +64,6 @@ import * as styles from './detail-page.css';
 import { DetailPageHeader } from './detail-page-header';
 import { DetailPageWrapper } from './detail-page-wrapper';
 import { EditorAdapterPanel } from './tabs/adapter';
-import { EditorChatPanel } from './tabs/chat';
 import { EditorFramePanel } from './tabs/frame';
 import { EditorJournalPanel } from './tabs/journal';
 import { EditorOutlinePanel } from './tabs/outline';
@@ -108,8 +105,6 @@ const DetailPageImpl = memo(function DetailPageImpl() {
   const isActiveView = useIsActiveView();
   // TODO(@eyhn): remove jotai here
   const [_, setActiveBlockSuiteEditor] = useActiveBlocksuiteEditor();
-
-  const enableAI = useEnableAI();
 
   const featureFlagService = useService(FeatureFlagService);
   const enableAdapterPanel = useLiveData(
@@ -361,16 +356,6 @@ const DetailPageImpl = memo(function DetailPageImpl() {
           {isInTrash ? <TrashPageFooter /> : null}
         </div>
       </ViewBody>
-
-      {enableAI && (
-        <ViewSidebarTab
-          tabId="chat"
-          icon={<AiIcon />}
-          unmountOnInactive={false}
-        >
-          <EditorChatPanel editor={editorContainer} doc={doc.blockSuiteDoc} />
-        </ViewSidebarTab>
-      )}
 
       <ViewSidebarTab tabId="properties" icon={<PropertyIcon />}>
         <Scrollable.Root className={styles.sidebarScrollArea}>
