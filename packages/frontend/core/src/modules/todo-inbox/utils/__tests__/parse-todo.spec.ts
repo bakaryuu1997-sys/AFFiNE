@@ -53,8 +53,30 @@ describe('parseTodoText', () => {
       checked: true,
       title: 'Tập gym',
       due: '2026-11-05',
+      time: null,
       repeat: 'weekly',
     });
+  });
+
+  test('reads a time of day after the date', () => {
+    expect(parseTodoText('Họp @2026-11-10 9:30 gấp', false, now)).toMatchObject(
+      {
+        title: 'Họp gấp',
+        due: '2026-11-10',
+        time: '09:30',
+      }
+    );
+    expect(parseTodoText('Gọi @today 14:05', false, now)).toMatchObject({
+      title: 'Gọi',
+      due: '2026-11-05',
+      time: '14:05',
+    });
+  });
+
+  test('ignores an impossible time but keeps the date', () => {
+    const todo = parseTodoText('x @2026-11-10 25:99', false, now);
+    expect(todo.due).toBe('2026-11-10');
+    expect(todo.time).toBeNull();
   });
 });
 

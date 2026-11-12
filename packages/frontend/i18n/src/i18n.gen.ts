@@ -9957,7 +9957,7 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.todoInbox.title"](): string;
     /**
-      * `Checkboxes from every doc. Add a due date with @2026-11-10, @today or @tomorrow, and repeat with 🔁 weekly.`
+      * `Checkboxes from every doc. Add a due date with @2026-11-10 (optionally with a time: @2026-11-10 09:30), @today or @tomorrow, and repeat with 🔁 weekly.`
       */
     ["com.affine.todoInbox.hint"](): string;
     /**
@@ -10124,6 +10124,63 @@ export function useAFFiNEI18N(): {
       * `blocked`
       */
     ["com.affine.mcpBridge.outcome.blocked"](): string;
+    /**
+      * `Due date`
+      */
+    ["com.affine.todoInbox.dueDate"](): string;
+    /**
+      * `Add a task… e.g. Send the report @2026-11-20 09:00`
+      */
+    ["com.affine.todoInbox.quickAdd.placeholder"](): string;
+    /**
+      * `Add`
+      */
+    ["com.affine.todoInbox.quickAdd.button"](): string;
+    /**
+      * `Task inbox`
+      */
+    ["com.affine.todoInbox.quickAdd.docTitle"](): string;
+    /**
+      * `Task added`
+      */
+    ["com.affine.todoInbox.quickAdd.added"](): string;
+    /**
+      * `Could not add the task`
+      */
+    ["com.affine.todoInbox.quickAdd.failed"](): string;
+    /**
+      * `Reminders`
+      */
+    ["com.affine.todoInbox.reminder.title"](): string;
+    /**
+      * `Show a notification when a task is due: at its time, or at the start of the day. Works while the app is open.`
+      */
+    ["com.affine.todoInbox.reminder.description"](): string;
+    /**
+      * `Notifications are blocked. Allow them in the browser or app settings, then try again.`
+      */
+    ["com.affine.todoInbox.reminder.denied"](): string;
+    /**
+      * `This browser cannot show notifications.`
+      */
+    ["com.affine.todoInbox.reminder.unsupported"](): string;
+    /**
+      * `Due {{when}}`
+      */
+    ["com.affine.todoInbox.reminder.due"](options: {
+        readonly when: string;
+    }): string;
+    /**
+      * `Tasks need attention`
+      */
+    ["com.affine.todoInbox.reminder.digest.title"](): string;
+    /**
+      * `{{overdue}} overdue, {{today}} due today`
+      */
+    ["com.affine.todoInbox.reminder.digest.body"](options: Readonly<{
+        overdue: string;
+        today: string;
+    }>): string;
     /**
       * `An internal error occurred.`
       */

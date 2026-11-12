@@ -8,12 +8,21 @@ export interface ParsedTodo {
   title: string;
   /** Local date `YYYY-MM-DD`, or null. */
   due: string | null;
+  /** Time of day `HH:mm` that goes with `due`, or null. */
+  time: string | null;
   repeat: TodoRepeat | null;
 }
 
 const TODO_LINE = /^\s*(?:[-*+]|\d+\.)\s+\[( |x|X)\]\s?(.*)$/;
-const ISO_DUE = /(?:^|\s)@(\d{4})-(\d{2})-(\d{2})(?=\s|$)/;
-const WORD_DUE = /(?:^|\s)@(h[oô]m nay|today|ng[aà]y mai|tomorrow)(?=\s|$)/iu;
+
+/**
+ * A due token: `@2026-11-10`, `@hôm nay`, `@ngày mai`, `@today` or
+ * `@tomorrow`, optionally followed by a time such as ` 09:30`.
+ * Groups: 1 leading whitespace, 2 the date or word, 3 hour, 4 minute.
+ */
+export const DUE_TOKEN =
+  /(^|\s)@(\d{4}-\d{2}-\d{2}|h[oô]m nay|today|ng[aà]y mai|tomorrow)(?:[ T](\d{1,2}):(\d{2}))?(?=\s|$)/iu;
+
 const REPEAT =
   /(?:^|\s)(?:🔁|repeat:)\s*(h[aà]ng ng[aà]y|h[aà]ng tu[aầ]n|h[aà]ng th[aá]ng|h[aà]ng n[aă]m|daily|weekly|monthly|yearly)(?=\s|$)/iu;
 
@@ -53,6 +62,19 @@ function isValidDate(y: number, m: number, d: number) {
   );
 }
 
+/** The date a due word or ISO date stands for, or null if it is not a date. */
+function resolveDue(word: string, now: Date): string | null {
+  if (/^\d{4}-/.test(word)) {
+    const [y, m, d] = word.split('-').map(Number);
+    return isValidDate(y, m, d) ? word : null;
+  }
+  const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (/^(ng[aà]y mai|tomorrow)$/iu.test(word)) {
+    date.setDate(date.getDate() + 1);
+  }
+  return formatDate(date);
+}
+
 /**
  * Parses one markdown line of a task list item. Returns null if the line is
  * not a checkbox. `now` resolves relative words such as `@today`.
@@ -75,24 +97,21 @@ export function parseTodoText(
 ): ParsedTodo {
   let text = source;
   let due: string | null = null;
+  let time: string | null = null;
   let repeat: TodoRepeat | null = null;
 
-  const iso = ISO_DUE.exec(text);
-  if (iso) {
-    const [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
-    if (isValidDate(y, m, d)) {
-      due = `${iso[1]}-${iso[2]}-${iso[3]}`;
-      text = text.replace(ISO_DUE, '');
-    }
-  } else {
-    const word = WORD_DUE.exec(text);
-    if (word) {
-      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (/^(ng[aà]y mai|tomorrow)$/iu.test(word[1])) {
-        date.setDate(date.getDate() + 1);
+  const token = DUE_TOKEN.exec(text);
+  if (token) {
+    due = resolveDue(token[2], now);
+    if (due) {
+      if (token[3] !== undefined) {
+        const hour = Number(token[3]);
+        const minute = Number(token[4]);
+        if (hour < 24 && minute < 60) {
+          time = `${String(hour).padStart(2, '0')}:${token[4]}`;
+        }
       }
-      due = formatDate(date);
-      text = text.replace(WORD_DUE, '');
+      text = text.replace(DUE_TOKEN, '');
     }
   }
 
@@ -106,6 +125,7 @@ export function parseTodoText(
     checked,
     title: text.replace(/\s+/g, ' ').trim(),
     due,
+    time,
     repeat,
   };
 }

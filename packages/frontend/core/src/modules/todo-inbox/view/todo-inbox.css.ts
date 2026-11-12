@@ -94,3 +94,73 @@ export const doneToggle = style({
   alignItems: 'center',
   gap: 6,
 });
+
+export const quickAdd = style({
+  display: 'flex',
+  gap: 8,
+});
+
+export const quickAddInput = style({
+  flex: 1,
+  minWidth: 0,
+  padding: '8px 12px',
+  fontSize: 14,
+  color: cssVarV2('text/primary'),
+  background: cssVarV2('layer/background/primary'),
+  border: `1px solid ${cssVarV2('layer/insideBorder/border')}`,
+  borderRadius: 8,
+  outline: 'none',
+  selectors: {
+    '&:focus': {
+      borderColor: cssVarV2('button/primary'),
+    },
+  },
+});
+
+export const quickAddButton = style({
+  padding: '0 16px',
+  fontSize: 14,
+  color: cssVarV2('button/pureWhiteText'),
+  background: cssVarV2('button/primary'),
+  border: 'none',
+  borderRadius: 8,
+  cursor: 'pointer',
+  selectors: {
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: 'default',
+    },
+  },
+});
+
+export const reminder = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 16,
+  padding: '10px 12px',
+  borderRadius: 8,
+  border: `1px solid ${cssVarV2('layer/insideBorder/border')}`,
+});
+
+export const reminderText = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  fontSize: 14,
+});
+
+export const dateInput = style({
+  padding: '2px 6px',
+  fontSize: 12,
+  color: cssVarV2('text/secondary'),
+  background: 'transparent',
+  border: `1px solid transparent`,
+  borderRadius: 6,
+  cursor: 'pointer',
+  selectors: {
+    '&:hover, &:focus': {
+      borderColor: cssVarV2('layer/insideBorder/border'),
+    },
+  },
+});

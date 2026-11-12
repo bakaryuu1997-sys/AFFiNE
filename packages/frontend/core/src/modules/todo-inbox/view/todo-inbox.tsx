@@ -1,15 +1,23 @@
-import { Checkbox } from '@affine/component';
+import { Checkbox, notify, Switch } from '@affine/component';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
-import { useCallback, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useMemo, useState } from 'react';
 
 import { DocsService } from '../../doc';
 import { WorkbenchService } from '../../workbench';
+import {
+  updateReminderSettings,
+  useReminderSettings,
+} from '../reminder-settings';
 import { TodoInboxService, type TodoItem } from '../services/todo-inbox';
+import { TodoReminderService } from '../services/todo-reminder';
 import type { TodoBucket } from '../utils/parse-todo';
 import * as styles from './todo-inbox.css';
 
 const BUCKETS: TodoBucket[] = ['overdue', 'today', 'week', 'later', 'none'];
+
+const sortKey = (item: TodoItem) =>
+  `${item.due ?? '9999-99-99'} ${item.time ?? '00:00'}`;
 
 const TodoRow = ({ item }: { item: TodoItem }) => {
   const t = useI18n();
@@ -50,7 +58,108 @@ const TodoRow = ({ item }: { item: TodoItem }) => {
           🔁 {t[`com.affine.todoInbox.repeat.${item.repeat}`]()}
         </span>
       ) : null}
-      {item.due ? <span className={styles.rowMeta}>{item.due}</span> : null}
+      {item.time ? <span className={styles.rowMeta}>{item.time}</span> : null}
+      <input
+        type="date"
+        className={styles.dateInput}
+        aria-label={t['com.affine.todoInbox.dueDate']()}
+        value={item.due ?? ''}
+        onClick={e => e.stopPropagation()}
+        onChange={e => {
+          inbox.setDue(item, e.target.value || null).catch(console.error);
+        }}
+        data-testid="todo-inbox-due"
+      />
+    </div>
+  );
+};
+
+const QuickAdd = () => {
+  const t = useI18n();
+  const inbox = useService(TodoInboxService);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = useCallback(
+    async (event: FormEvent) => {
+      event.preventDefault();
+      if (busy || !text.trim()) return;
+      setBusy(true);
+      try {
+        await inbox.addTask(
+          text,
+          t['com.affine.todoInbox.quickAdd.docTitle']()
+        );
+        setText('');
+        notify.success({ title: t['com.affine.todoInbox.quickAdd.added']() });
+      } catch (error) {
+        notify.error({
+          title: t['com.affine.todoInbox.quickAdd.failed'](),
+          message: error instanceof Error ? error.message : undefined,
+        });
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, inbox, t, text]
+  );
+
+  return (
+    <form className={styles.quickAdd} onSubmit={event => void submit(event)}>
+      <input
+        className={styles.quickAddInput}
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder={t['com.affine.todoInbox.quickAdd.placeholder']()}
+        disabled={busy}
+        data-testid="todo-inbox-quick-add"
+      />
+      <button
+        type="submit"
+        className={styles.quickAddButton}
+        disabled={busy || !text.trim()}
+      >
+        {t['com.affine.todoInbox.quickAdd.button']()}
+      </button>
+    </form>
+  );
+};
+
+const ReminderToggle = () => {
+  const t = useI18n();
+  const settings = useReminderSettings();
+  const [denied, setDenied] = useState(false);
+  const supported = TodoReminderService.supported;
+
+  const onChange = useCallback(async (enabled: boolean) => {
+    if (enabled) {
+      const granted = await TodoReminderService.requestPermission();
+      setDenied(!granted);
+      if (!granted) return;
+    } else {
+      setDenied(false);
+    }
+    updateReminderSettings({ enabled });
+  }, []);
+
+  return (
+    <div className={styles.reminder}>
+      <div className={styles.reminderText}>
+        <strong>{t['com.affine.todoInbox.reminder.title']()}</strong>
+        <span className={styles.hint}>
+          {!supported
+            ? t['com.affine.todoInbox.reminder.unsupported']()
+            : denied
+              ? t['com.affine.todoInbox.reminder.denied']()
+              : t['com.affine.todoInbox.reminder.description']()}
+        </span>
+      </div>
+      <Switch
+        checked={settings.enabled && supported}
+        disabled={!supported}
+        onChange={enabled => void onChange(enabled)}
+        data-testid="todo-inbox-reminders"
+      />
     </div>
   );
 };
@@ -71,7 +180,7 @@ export const TodoInboxView = () => {
       map.set(key, list);
     }
     for (const list of map.values()) {
-      list.sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'));
+      list.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
     }
     return map;
   }, [todos, showDone]);
@@ -81,7 +190,9 @@ export const TodoInboxView = () => {
   return (
     <div className={styles.root}>
       <div className={styles.inner}>
+        <QuickAdd />
         <div className={styles.hint}>{t['com.affine.todoInbox.hint']()}</div>
+        <ReminderToggle />
         <label className={styles.doneToggle}>
           <Checkbox
             checked={showDone}

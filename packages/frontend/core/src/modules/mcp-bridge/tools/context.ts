@@ -1,12 +1,14 @@
-import { getStoreManager } from '@affine/core/blocksuite/manager/store';
-import { MarkdownTransformer } from '@blocksuite/affine/widgets/linked-doc';
-
 import type { DocRecord, DocsService } from '../../doc';
+import {
+  appendMarkdown as appendMarkdownTo,
+  createDocFromMarkdown as createDocFromMarkdownIn,
+  type OpenedDoc,
+  withDoc as withDocIn,
+} from '../../doc-writer/markdown-write';
 import type { DocsSearchService } from '../../docs-search';
 import type { TemplateDocService } from '../../template-doc';
 import type { TodoInboxService } from '../../todo-inbox';
 import type { WorkspaceService } from '../../workspace';
-import { getAFFiNEWorkspaceSchema } from '../../workspace';
 import type { ToolArgs } from './args';
 
 export interface McpToolDefinition {
@@ -27,12 +29,6 @@ export interface ToolContext {
   todoInbox: TodoInboxService;
 }
 
-type OpenedDoc = ReturnType<DocsService['open']>['doc'];
-
-export function storeExtensions() {
-  return getStoreManager().config.init().value.get('store');
-}
-
 /** Docs an agent should see: not trashed and not a template. */
 export function isVisibleDoc(ctx: ToolContext, record: DocRecord) {
   return (
@@ -42,61 +38,27 @@ export function isVisibleDoc(ctx: ToolContext, record: DocRecord) {
 }
 
 /** Opens a doc, waits until it is loaded, runs `fn`, then releases it. */
-export async function withDoc<T>(
+export function withDoc<T>(
   ctx: ToolContext,
   docId: string,
   fn: (doc: OpenedDoc) => Promise<T> | T
 ): Promise<T> {
-  const record = ctx.docsService.list.doc$(docId).value;
-  if (!record || record.trash$.value) {
-    throw new Error(`Không tìm thấy tài liệu "${docId}"`);
-  }
-  const { doc, release } = ctx.docsService.open(docId);
-  try {
-    const dispose = doc.addPriorityLoad(10);
-    await doc.waitForSyncReady();
-    dispose();
-    return await fn(doc);
-  } finally {
-    release();
-  }
+  return withDocIn(ctx.docsService, docId, fn);
 }
 
 /** Appends Markdown to the end of a doc's first note block. */
-export async function appendMarkdown(
+export function appendMarkdown(
   ctx: ToolContext,
   docId: string,
   markdown: string
 ) {
-  await withDoc(ctx, docId, async doc => {
-    const store = doc.blockSuiteDoc;
-    let noteId = store.getBlocksByFlavour('affine:note')[0]?.id;
-    if (!noteId) {
-      const pageId = store.getBlocksByFlavour('affine:page')[0]?.id;
-      if (!pageId) throw new Error('Tài liệu không có khối trang');
-      noteId = store.addBlock('affine:note', {}, pageId);
-    }
-    await MarkdownTransformer.importMarkdownToBlock({
-      doc: store,
-      blockId: noteId,
-      markdown,
-      extensions: storeExtensions(),
-    });
-  });
+  return appendMarkdownTo(ctx.docsService, docId, markdown);
 }
 
-export async function createDocFromMarkdown(
+export function createDocFromMarkdown(
   ctx: ToolContext,
   title: string,
   markdown: string
 ): Promise<string> {
-  const docId = await MarkdownTransformer.importMarkdownToDoc({
-    collection: ctx.workspaceService.workspace.docCollection,
-    schema: getAFFiNEWorkspaceSchema(),
-    markdown,
-    fileName: title,
-    extensions: storeExtensions(),
-  });
-  if (!docId) throw new Error('Không tạo được tài liệu');
-  return docId;
+  return createDocFromMarkdownIn(ctx.workspaceService, title, markdown);
 }

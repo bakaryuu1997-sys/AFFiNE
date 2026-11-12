@@ -2637,7 +2637,7 @@
   "com.affine.localAI.settings.remove": "Xóa",
   "com.affine.localAI.settings.done": "Xong",
   "com.affine.todoInbox.title": "Việc cần làm",
-  "com.affine.todoInbox.hint": "Gom checkbox từ mọi tài liệu. Thêm hạn bằng @2026-11-10, @hôm nay hoặc @ngày mai; lặp lại bằng 🔁 hàng tuần.",
+  "com.affine.todoInbox.hint": "Gom checkbox từ mọi tài liệu. Thêm hạn bằng @2026-11-10 (có thể kèm giờ: @2026-11-10 09:30), @hôm nay hoặc @ngày mai; lặp lại bằng 🔁 hàng tuần.",
   "com.affine.todoInbox.showDone": "Hiện việc đã xong",
   "com.affine.todoInbox.empty": "Chưa có việc nào. Thêm checkbox trong bất kỳ tài liệu nào.",
   "com.affine.todoInbox.untitled": "Việc chưa đặt tên",
@@ -2677,5 +2677,18 @@
   "com.affine.mcpBridge.auditClear": "Xóa",
   "com.affine.mcpBridge.outcome.ok": "xong",
   "com.affine.mcpBridge.outcome.error": "lỗi",
-  "com.affine.mcpBridge.outcome.blocked": "bị chặn"
+  "com.affine.mcpBridge.outcome.blocked": "bị chặn",
+  "com.affine.todoInbox.dueDate": "Hạn",
+  "com.affine.todoInbox.quickAdd.placeholder": "Thêm việc… vd: Nộp báo cáo @2026-11-20 09:00",
+  "com.affine.todoInbox.quickAdd.button": "Thêm",
+  "com.affine.todoInbox.quickAdd.docTitle": "Hộp việc",
+  "com.affine.todoInbox.quickAdd.added": "Đã thêm việc",
+  "com.affine.todoInbox.quickAdd.failed": "Không thêm được việc",
+  "com.affine.todoInbox.reminder.title": "Nhắc việc",
+  "com.affine.todoInbox.reminder.description": "Hiện thông báo khi việc đến hạn: đúng giờ ghi trong việc, hoặc đầu ngày. Hoạt động khi ứng dụng đang mở.",
+  "com.affine.todoInbox.reminder.denied": "Thông báo đang bị chặn. Hãy cho phép trong cài đặt trình duyệt hoặc ứng dụng rồi thử lại.",
+  "com.affine.todoInbox.reminder.unsupported": "Trình duyệt này không hiển thị được thông báo.",
+  "com.affine.todoInbox.reminder.due": "Đến hạn {{when}}",
+  "com.affine.todoInbox.reminder.digest.title": "Có việc cần chú ý",
+  "com.affine.todoInbox.reminder.digest.body": "{{overdue}} việc quá hạn, {{today}} việc hôm nay"
 }
