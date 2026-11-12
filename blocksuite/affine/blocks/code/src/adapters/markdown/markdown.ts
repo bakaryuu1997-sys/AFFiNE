@@ -16,9 +16,20 @@ const isHtmlNode = (node: MarkdownAST): node is Html => node.type === 'html';
 const isCodeOrHtmlNode = (node: MarkdownAST): node is Code | Html =>
   isCodeNode(node) || isHtmlNode(node);
 
+/**
+ * Fenced code with these languages is owned by another block's adapter (the
+ * system-diagram block), so it must not also become a code block.
+ */
+const FENCE_LANGUAGES_OF_OTHER_BLOCKS = new Set(['system-diagram']);
+
+const isOwnedByAnotherBlock = (node: MarkdownAST) =>
+  isCodeNode(node) &&
+  !!node.lang &&
+  FENCE_LANGUAGES_OF_OTHER_BLOCKS.has(node.lang);
+
 export const codeBlockMarkdownAdapterMatcher: BlockMarkdownAdapterMatcher = {
   flavour: CodeBlockSchema.model.flavour,
-  toMatch: o => isCodeOrHtmlNode(o.node),
+  toMatch: o => isCodeOrHtmlNode(o.node) && !isOwnedByAnotherBlock(o.node),
   fromMatch: o => o.node.flavour === 'affine:code',
   toBlockSnapshot: {
     enter: (o, context) => {

@@ -13,6 +13,7 @@ import { ConnectorCIcon } from '@blocksuite/icons/lit';
 import { literal } from 'lit/static-html.js';
 
 import { SystemDiagramBlockComponent } from './block';
+import { SystemDiagramMarkdownAdapterExtension } from './markdown-adapter';
 import {
   SystemDiagramBlockSchemaExtension,
   SystemDiagramFlavour,
@@ -62,6 +63,7 @@ export class SystemDiagramStoreExtension extends StoreExtensionProvider {
   override setup(context: StoreExtensionContext) {
     super.setup(context);
     context.register(SystemDiagramBlockSchemaExtension);
+    context.register(SystemDiagramMarkdownAdapterExtension);
   }
 }
 
