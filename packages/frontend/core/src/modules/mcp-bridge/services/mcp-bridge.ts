@@ -10,7 +10,9 @@ import {
   getMcpBridgeSettings,
   type McpBridgeSettings,
   subscribeMcpBridgeSettings,
+  updateMcpBridgeSettings,
 } from '../settings';
+import { fetchTauriMcpInfo } from '../tauri';
 import { summarizeArgs, type ToolArgs } from '../tools/args';
 import type { McpToolDefinition, ToolContext } from '../tools/context';
 import { createDocTools } from '../tools/doc-tools';
@@ -91,6 +93,22 @@ export class McpBridgeService extends Service {
       () => this.stop()
     );
     this.connect();
+    this.configureFromTauri().catch(console.error);
+  }
+
+  /**
+   * Inside the Tauri app the shell hosts the bridge. On first run (no token
+   * saved yet) take its address and token and switch the bridge on.
+   */
+  private async configureFromTauri() {
+    if (getMcpBridgeSettings().token) return;
+    const info = await fetchTauriMcpInfo();
+    if (!info || !this.started || getMcpBridgeSettings().token) return;
+    updateMcpBridgeSettings({
+      enabled: true,
+      url: info.url,
+      token: info.token,
+    });
   }
 
   private stop() {

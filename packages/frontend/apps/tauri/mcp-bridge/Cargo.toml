@@ -1,0 +1,43 @@
+[package]
+description = "MCP bridge between AI agents and the AFFiNE app (same protocol as scripts/mcp)"
+edition     = "2021"
+license     = "MIT"
+name        = "affine-mcp-bridge"
+version     = "0.1.0"
+
+[lib]
+name = "affine_mcp_bridge"
+path = "src/lib.rs"
+
+[[bin]]
+name = "affine-mcp"
+path = "src/main.rs"
+
+[dependencies]
+axum = { version = "0.8", default-features = false, features = [
+  "http1",
+  "tokio",
+  "ws",
+] }
+futures-util = { version = "0.3", default-features = false, features = [
+  "sink",
+  "std",
+] }
+hex = "0.4"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+subtle = "2"
+tokio = { version = "1", features = [
+  "io-std",
+  "io-util",
+  "macros",
+  "net",
+  "rt-multi-thread",
+  "signal",
+  "sync",
+  "time",
+] }
+
+[dev-dependencies]
+tokio-tungstenite = "0.26"
