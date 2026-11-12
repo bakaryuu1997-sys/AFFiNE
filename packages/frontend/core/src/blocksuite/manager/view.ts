@@ -1,4 +1,5 @@
 import type { ReactToLit } from '@affine/component';
+import { SystemDiagramViewExtension } from '@affine/core/blocksuite/system-diagram/extensions';
 import { AIViewExtension } from '@affine/core/blocksuite/view-extensions/ai';
 import { CloudViewExtension } from '@affine/core/blocksuite/view-extensions/cloud';
 import { CodeBlockPreviewViewExtension } from '@affine/core/blocksuite/view-extensions/code-block-preview';
@@ -98,6 +99,7 @@ class ViewProvider {
       PdfViewExtension,
       MobileViewExtension,
       AIViewExtension,
+      SystemDiagramViewExtension,
       ElectronViewExtension,
       AffineLinkPreviewExtension,
       AffineDatabaseViewExtension,

@@ -1,4 +1,5 @@
 import { AIStoreExtension } from '@affine/core/blocksuite/store-extensions/ai';
+import { SystemDiagramStoreExtension } from '@affine/core/blocksuite/system-diagram/extensions';
 import type { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import { StoreExtensionManager } from '@blocksuite/affine/ext-loader';
 import { getInternalStoreExtensions } from '@blocksuite/affine/extensions/store';
@@ -28,6 +29,7 @@ class StoreProvider {
     this._manager = new StoreExtensionManager([
       ...getInternalStoreExtensions(),
       AIStoreExtension,
+      SystemDiagramStoreExtension,
       FeatureFlagStoreExtension,
     ]);
   }

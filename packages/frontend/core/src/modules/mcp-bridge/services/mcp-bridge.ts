@@ -1,5 +1,6 @@
 import { LiveData, Service } from '@toeverything/infra';
 
+import { createSystemDiagramTools } from '../../../blocksuite/system-diagram/mcp-tools';
 import type { DocsService } from '../../doc';
 import type { DocsSearchService } from '../../docs-search';
 import type { TemplateDocService } from '../../template-doc';
@@ -67,7 +68,11 @@ export class McpBridgeService extends Service {
       docsSearchService,
       todoInbox,
     };
-    for (const tool of [...createDocTools(ctx), ...createTaskTools(ctx)]) {
+    for (const tool of [
+      ...createDocTools(ctx),
+      ...createTaskTools(ctx),
+      ...createSystemDiagramTools(ctx),
+    ]) {
       this.tools.set(tool.name, tool);
     }
   }
