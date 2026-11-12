@@ -6,6 +6,7 @@ import * as styles from './calendar.css';
 import { DATE_MAX, DATE_MIN } from './constants';
 import { CalendarLayout, DefaultDateCell, NavButtons } from './items';
 import { getDayInfo } from './lunar';
+import { lunarLocale } from './lunar-locale';
 import type { DateCell, DatePickerModePanelProps } from './types';
 
 export const DayPicker = memo(function DayPicker(
@@ -44,7 +45,8 @@ export const DayPicker = memo(function DayPicker(
         const info = getDayInfo(
           currentDay.date(),
           currentDay.month() + 1,
-          currentDay.year()
+          currentDay.year(),
+          lunarLocale()
         );
         week.push({
           date: currentDay,

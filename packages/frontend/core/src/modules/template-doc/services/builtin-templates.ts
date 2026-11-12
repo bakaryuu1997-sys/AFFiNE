@@ -1,4 +1,5 @@
 import { getStoreManager } from '@affine/core/blocksuite/manager/store';
+import { I18n } from '@affine/i18n';
 import { MarkdownTransformer } from '@blocksuite/affine/widgets/linked-doc';
 import { Service } from '@toeverything/infra';
 
@@ -9,13 +10,15 @@ import {
 } from '../../workspace';
 import {
   BUILTIN_TEMPLATES_VERSION,
-  VI_TEMPLATES,
-} from '../builtin/vi-templates';
+  templatesForLanguage,
+} from '../builtin/templates';
 
 /**
- * Installs the bundled Vietnamese templates into a workspace as template docs.
- * It runs once per workspace and template version; deleting a template does
- * not bring it back, bumping BUILTIN_TEMPLATES_VERSION does.
+ * Installs the bundled templates (in the language the app is showing) into a
+ * workspace as template docs. It runs once per workspace, language and
+ * template version; deleting a template does not bring it back, bumping
+ * BUILTIN_TEMPLATES_VERSION does. Switching language later installs that
+ * language's set as well.
  */
 export class BuiltinTemplatesService extends Service {
   private installing: Promise<void> | null = null;
@@ -64,7 +67,9 @@ export class BuiltinTemplatesService extends Service {
 
   private async install() {
     const installed = new Set(this.readInstalled());
-    const pending = VI_TEMPLATES.filter(t => !installed.has(t.id));
+    const pending = templatesForLanguage(String(I18n.language ?? 'en')).filter(
+      t => !installed.has(t.id)
+    );
     if (!pending.length) return;
 
     const workspace = this.workspaceService.workspace;

@@ -19,11 +19,12 @@ import {
   SystemDiagramFlavour,
 } from './model';
 import { createSampleSpec } from './spec';
-import { S } from './strings';
+import { S, sampleNames } from './strings';
 
 const TAG = 'system-diagram-block';
 
-const slashMenuConfig: SlashMenuConfig = {
+/** Built when an editor starts, so it uses the language that is showing. */
+const createSlashMenuConfig = (): SlashMenuConfig => ({
   items: [
     {
       name: S.slashName,
@@ -36,6 +37,8 @@ const slashMenuConfig: SlashMenuConfig = {
         'so do',
         'kien truc',
         'ha tang',
+        'システム構成図',
+        '構成図',
       ],
       group: '0_Basic@10',
       when: ({ model }) =>
@@ -48,14 +51,14 @@ const slashMenuConfig: SlashMenuConfig = {
         if (index === -1) return;
         store.addBlock(
           SystemDiagramFlavour as never,
-          { title: S.untitled, spec: createSampleSpec() },
+          { title: S.untitled, spec: createSampleSpec(sampleNames()) },
           parent,
           index + 1
         );
       },
     },
   ],
-};
+});
 
 export class SystemDiagramStoreExtension extends StoreExtensionProvider {
   override name = 'affine-system-diagram-block';
@@ -82,7 +85,7 @@ export class SystemDiagramViewExtension extends ViewExtensionProvider {
     context.register([
       FlavourExtension(SystemDiagramFlavour),
       BlockViewExtension(SystemDiagramFlavour, literal`system-diagram-block`),
-      SlashMenuConfigExtension(SystemDiagramFlavour, slashMenuConfig),
+      SlashMenuConfigExtension(SystemDiagramFlavour, createSlashMenuConfig()),
     ]);
   }
 }

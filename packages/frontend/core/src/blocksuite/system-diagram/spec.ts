@@ -119,15 +119,29 @@ export function createEmptySpec(): DiagramSpec {
   };
 }
 
+/** Words the sample diagram is labelled with, in the language being shown. */
+export interface SampleNames {
+  label(type: NodeType): string;
+  read: string;
+  write: string;
+}
+
 /** A small but realistic starting point: web tier, cache and database. */
-export function createSampleSpec(): DiagramSpec {
+export function createSampleSpec(names?: SampleNames): DiagramSpec {
   const n = (
     id: string,
     type: NodeType,
     x: number,
     y: number,
     extra: Partial<DiagramNode> = {}
-  ) => defaultNode(type, { id, x, y, ...extra });
+  ) =>
+    defaultNode(type, {
+      id,
+      x,
+      y,
+      ...(names ? { label: names.label(type) } : {}),
+      ...extra,
+    });
   return {
     version: 1,
     traffic: { rps: 1500, profile: 'ramp', durationSec: 60 },
@@ -141,8 +155,20 @@ export function createSampleSpec(): DiagramSpec {
     edges: [
       { id: 'e1', from: 'users', to: 'lb', weight: 1 },
       { id: 'e2', from: 'lb', to: 'api', weight: 1 },
-      { id: 'e3', from: 'api', to: 'cache', weight: 0.7, label: 'đọc' },
-      { id: 'e4', from: 'api', to: 'db', weight: 0.3, label: 'ghi' },
+      {
+        id: 'e3',
+        from: 'api',
+        to: 'cache',
+        weight: 0.7,
+        label: names?.read ?? 'đọc',
+      },
+      {
+        id: 'e4',
+        from: 'api',
+        to: 'db',
+        weight: 0.3,
+        label: names?.write ?? 'ghi',
+      },
       { id: 'e5', from: 'cache', to: 'db', weight: 1 },
     ],
   };

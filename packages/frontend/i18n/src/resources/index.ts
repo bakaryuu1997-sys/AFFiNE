@@ -210,4 +210,5 @@ export const EDITOR_UI_TRANSLATIONS: Partial<
   Record<Language, () => Promise<{ default: Record<string, string> }>>
 > = {
   vi: () => import('./editor-vi.json'),
+  ja: () => import('./editor-ja.json'),
 };

@@ -6,6 +6,18 @@
  * via the "no major solar term" rule. Valid for roughly 1900–2200.
  */
 
+import {
+  CAN,
+  CHI,
+  LUNAR_HOLIDAY_NAMES,
+  LUNAR_WORDS,
+  type LunarLocale,
+  NEW_YEARS_EVE,
+  SOLAR_HOLIDAY_NAMES,
+} from './lunar-names';
+
+export { LUNAR_WORDS, type LunarLocale } from './lunar-names';
+
 const PI = Math.PI;
 const TIME_ZONE = 7;
 
@@ -153,72 +165,36 @@ export function solarToLunar(dd: number, mm: number, yy: number): LunarDate {
   return { day: lunarDay, month: lunarMonthNum, year: lunarYear, leap };
 }
 
-const CAN = [
-  'Giáp',
-  'Ất',
-  'Bính',
-  'Đinh',
-  'Mậu',
-  'Kỷ',
-  'Canh',
-  'Tân',
-  'Nhâm',
-  'Quý',
-];
-const CHI = [
-  'Tý',
-  'Sửu',
-  'Dần',
-  'Mão',
-  'Thìn',
-  'Tỵ',
-  'Ngọ',
-  'Mùi',
-  'Thân',
-  'Dậu',
-  'Tuất',
-  'Hợi',
-];
+const joinCanChi = (can: string, chi: string, locale: LunarLocale) =>
+  locale === 'ja' ? `${can}${chi}` : `${can} ${chi}`;
 
-/** Can Chi of a lunar year, e.g. 2026 -> "Bính Ngọ". */
-export function canChiYear(lunarYear: number) {
-  return `${CAN[(lunarYear + 6) % 10]} ${CHI[(lunarYear + 8) % 12]}`;
+/** Can Chi of a lunar year, e.g. 2026 -> "Bính Ngọ" (vi), "丙午" (ja). */
+export function canChiYear(lunarYear: number, locale: LunarLocale = 'vi') {
+  return joinCanChi(
+    CAN[locale][(lunarYear + 6) % 10],
+    CHI[locale][(lunarYear + 8) % 12],
+    locale
+  );
 }
 
 /** Can Chi of the day at the given Gregorian date. */
-export function canChiDay(dd: number, mm: number, yy: number) {
+export function canChiDay(
+  dd: number,
+  mm: number,
+  yy: number,
+  locale: LunarLocale = 'vi'
+) {
   const jd = jdFromDate(dd, mm, yy);
-  return `${CAN[(jd + 9) % 10]} ${CHI[(jd + 1) % 12]}`;
+  return joinCanChi(
+    CAN[locale][(jd + 9) % 10],
+    CHI[locale][(jd + 1) % 12],
+    locale
+  );
 }
 
-type Holiday = { name: string; official: boolean };
-
-const SOLAR_HOLIDAYS: Record<string, Holiday> = {
-  '1/1': { name: 'Tết Dương lịch', official: true },
-  '14/2': { name: 'Valentine', official: false },
-  '8/3': { name: 'Quốc tế Phụ nữ', official: false },
-  '30/4': { name: 'Giải phóng miền Nam', official: true },
-  '1/5': { name: 'Quốc tế Lao động', official: true },
-  '1/6': { name: 'Quốc tế Thiếu nhi', official: false },
-  '2/9': { name: 'Quốc khánh', official: true },
-  '20/10': { name: 'Phụ nữ Việt Nam', official: false },
-  '20/11': { name: 'Nhà giáo Việt Nam', official: false },
-  '24/12': { name: 'Giáng sinh', official: false },
-};
-
-const LUNAR_HOLIDAYS: Record<string, Holiday> = {
-  '1/1': { name: 'Tết Nguyên đán', official: true },
-  '2/1': { name: 'Tết Nguyên đán (mùng 2)', official: true },
-  '3/1': { name: 'Tết Nguyên đán (mùng 3)', official: true },
-  '15/1': { name: 'Rằm tháng Giêng', official: false },
-  '3/3': { name: 'Tết Hàn thực', official: false },
-  '10/3': { name: 'Giỗ Tổ Hùng Vương', official: true },
-  '15/4': { name: 'Lễ Phật Đản', official: false },
-  '5/5': { name: 'Tết Đoan Ngọ', official: false },
-  '15/7': { name: 'Lễ Vu Lan', official: false },
-  '15/8': { name: 'Tết Trung Thu', official: false },
-  '23/12': { name: 'Ông Táo chầu trời', official: false },
-};
+/** Public holidays (nghỉ lễ); the other days in the name tables are observances. */
+const SOLAR_OFFICIAL = new Set(['1/1', '30/4', '1/5', '2/9']);
+const LUNAR_OFFICIAL = new Set(['1/1', '2/1', '3/1', '10/3']);
 
 function daysInLunarMonthEndsYear(dd: number, mm: number, yy: number) {
   // The last day of lunar month 12 is "Giao thừa" (Tết Eve): tomorrow is 1/1.
@@ -235,7 +211,7 @@ export type DayInfo = {
   lunar: LunarDate;
   /** short label under the solar day: "15" or "1/3" on the 1st of a month */
   lunarLabel: string;
-  /** e.g. "15/8 ÂL — Tết Tân Sửu" */
+  /** e.g. "15/8 ÂL — Bính Ngọ" */
   lunarFull: string;
   holiday?: string;
   /** true for public holidays (nghỉ lễ) */
@@ -247,34 +223,49 @@ export type DayInfo = {
 const cache = new Map<string, DayInfo>();
 
 /** Everything the calendar needs to know about one Gregorian day. */
-export function getDayInfo(dd: number, mm: number, yy: number): DayInfo {
-  const key = `${yy}-${mm}-${dd}`;
+export function getDayInfo(
+  dd: number,
+  mm: number,
+  yy: number,
+  locale: LunarLocale = 'vi'
+): DayInfo {
+  const key = `${locale}:${yy}-${mm}-${dd}`;
   const hit = cache.get(key);
   if (hit) return hit;
 
+  const words = LUNAR_WORDS[locale];
   const lunar = solarToLunar(dd, mm, yy);
   const lunarLabel =
     lunar.day === 1
-      ? `${lunar.day}/${lunar.month}${lunar.leap ? 'n' : ''}`
+      ? `${lunar.day}/${lunar.month}${lunar.leap ? words.leapMark : ''}`
       : String(lunar.day);
-  const lunarFull = `${lunar.day}/${lunar.month}${lunar.leap ? ' nhuận' : ''} ÂL — ${canChiYear(lunar.year)}`;
+  const dateText = `${lunar.day}/${lunar.month}${lunar.leap ? words.leapWord : ''}`;
+  const lunarFull = words.full(dateText, canChiYear(lunar.year, locale));
 
-  const solar = SOLAR_HOLIDAYS[`${dd}/${mm}`];
-  const lunarHoliday = lunar.leap
-    ? undefined
-    : LUNAR_HOLIDAYS[`${lunar.day}/${lunar.month}`];
+  const solarKey = `${dd}/${mm}`;
+  const lunarKey = `${lunar.day}/${lunar.month}`;
   const eve =
     !lunar.leap && lunar.month === 12 && daysInLunarMonthEndsYear(dd, mm, yy);
-  const holiday = eve
-    ? { name: 'Giao thừa', official: true }
-    : (lunarHoliday ?? solar);
+
+  let holiday: string | undefined;
+  let official = false;
+  if (eve) {
+    holiday = NEW_YEARS_EVE[locale];
+    official = true;
+  } else if (!lunar.leap && LUNAR_HOLIDAY_NAMES[locale][lunarKey]) {
+    holiday = LUNAR_HOLIDAY_NAMES[locale][lunarKey];
+    official = LUNAR_OFFICIAL.has(lunarKey);
+  } else if (SOLAR_HOLIDAY_NAMES[locale][solarKey]) {
+    holiday = SOLAR_HOLIDAY_NAMES[locale][solarKey];
+    official = SOLAR_OFFICIAL.has(solarKey);
+  }
 
   const info: DayInfo = {
     lunar,
     lunarLabel,
     lunarFull,
-    holiday: holiday?.name,
-    officialHoliday: holiday?.official ?? false,
+    holiday,
+    officialHoliday: official,
     isMajorLunarDay: lunar.day === 1 || lunar.day === 15,
   };
   if (cache.size > 2000) cache.clear();

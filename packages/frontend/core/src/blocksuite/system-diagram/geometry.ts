@@ -66,24 +66,22 @@ export function freePosition(nodes: DiagramNode[]): Point {
   return { x: 80, y: 100 };
 }
 
+export type ConnectError = 'self' | 'duplicate' | 'limit' | 'cycle';
+
 /** Why `from -> to` cannot be added, or null when it can. */
 export function connectError(
   spec: DiagramSpec,
   from: string,
   to: string
-): string | null {
-  if (from === to) return 'Không thể nối một thành phần với chính nó';
-  if (spec.edges.some(e => e.from === from && e.to === to)) {
-    return 'Hai thành phần này đã được nối';
-  }
-  if (spec.edges.length >= LIMITS.maxEdges) {
-    return `Tối đa ${LIMITS.maxEdges} đường nối`;
-  }
+): ConnectError | null {
+  if (from === to) return 'self';
+  if (spec.edges.some(e => e.from === from && e.to === to)) return 'duplicate';
+  if (spec.edges.length >= LIMITS.maxEdges) return 'limit';
   const next: DiagramSpec = {
     ...spec,
     edges: [...spec.edges, { id: 'tmp', from, to, weight: 1 }],
   };
-  return findCycle(next) ? 'Nối như vậy sẽ tạo vòng lặp' : null;
+  return findCycle(next) ? 'cycle' : null;
 }
 
 /** An id that is not used yet, based on `base` (a component type, say). */

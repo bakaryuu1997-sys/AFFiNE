@@ -22,6 +22,8 @@ export type LanguageInfo = {
 
 const logger = new DebugLogger('i18n');
 
+const OFFERED_LANGUAGES: Language[] = ['vi', 'en', 'ja'];
+
 function mapLanguageInfo(language: Language = 'en'): LanguageInfo {
   const languageInfo = SUPPORTED_LANGUAGES[language];
 
@@ -49,9 +51,13 @@ export class I18n extends Entity {
     .distinctUntilChanged()
     .map(mapLanguageInfo);
 
-  readonly languageList: Array<LanguageInfo> =
-    // @ts-expect-error same key indexing
-    Object.keys(SUPPORTED_LANGUAGES).map(mapLanguageInfo);
+  /**
+   * This fork keeps Vietnamese, English and Japanese complete, so only those
+   * are offered. The other language files stay in the repo, untouched.
+   */
+  readonly languageList: Array<LanguageInfo> = OFFERED_LANGUAGES.map(language =>
+    mapLanguageInfo(language)
+  );
 
   constructor(private readonly cache: GlobalCache) {
     super();

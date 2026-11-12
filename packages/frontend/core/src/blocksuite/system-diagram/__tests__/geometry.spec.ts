@@ -55,8 +55,8 @@ describe('connectError', () => {
     expect(connectError(spec, 'users', 'db')).toBeNull();
   });
   test('rejects self links, duplicates and cycles', () => {
-    expect(connectError(spec, 'api', 'api')).toMatch(/chính nó/);
-    expect(connectError(spec, 'api', 'cache')).toMatch(/đã được nối/);
-    expect(connectError(spec, 'db', 'users')).toMatch(/vòng lặp/);
+    expect(connectError(spec, 'api', 'api')).toBe('self');
+    expect(connectError(spec, 'api', 'cache')).toBe('duplicate');
+    expect(connectError(spec, 'db', 'users')).toBe('cycle');
   });
 });

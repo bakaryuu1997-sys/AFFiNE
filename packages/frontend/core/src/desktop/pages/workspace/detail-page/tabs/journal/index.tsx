@@ -4,6 +4,8 @@ import {
   DatePicker,
   getDayInfo,
   IconButton,
+  LUNAR_WORDS,
+  lunarLocale,
   Menu,
   MenuItem,
   MenuSeparator,
@@ -112,12 +114,16 @@ type DateDotType = 'journal' | 'event' | 'activity';
 
 const mobile = environment.isMobile;
 const LunarSummary = ({ date }: { date: dayjs.Dayjs }) => {
-  const info = getDayInfo(date.date(), date.month() + 1, date.year());
+  const locale = lunarLocale();
+  const words = LUNAR_WORDS[locale];
+  const info = getDayInfo(date.date(), date.month() + 1, date.year(), locale);
   return (
     <div className={styles.lunarSummary} data-testid="journal-lunar-summary">
       <span>
-        Âm lịch: {info.lunarFull} · Ngày{' '}
-        {canChiDay(date.date(), date.month() + 1, date.year())}
+        {words.heading}: {info.lunarFull} ·{' '}
+        {words.day(
+          canChiDay(date.date(), date.month() + 1, date.year(), locale)
+        )}
       </span>
       {info.holiday ? (
         <span className={styles.lunarSummaryHoliday}>{info.holiday}</span>

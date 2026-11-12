@@ -40,7 +40,7 @@ import {
   TRAFFIC_PROFILES,
   type TrafficProfile,
 } from './spec';
-import { S } from './strings';
+import { S, sampleNames } from './strings';
 import { systemDiagramStyles } from './styles';
 
 /** Wall-clock seconds one pass over the traffic profile takes at 1x speed. */
@@ -231,7 +231,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   }
 
   private loadSample() {
-    this.commit(createSampleSpec());
+    this.commit(createSampleSpec(sampleNames()));
     if (!this.model.props.title) {
       this.model.store.updateBlock(this.model, { title: S.untitled });
     }
@@ -249,7 +249,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     const error = connectError(spec, from, id);
     this.connectFrom = null;
     if (error) {
-      this.notice = error;
+      this.notice = S.connectErrors[error];
       return;
     }
     this.edit(next => {
