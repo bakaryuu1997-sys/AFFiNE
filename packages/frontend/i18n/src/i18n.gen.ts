@@ -10045,7 +10045,7 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.mcpBridge.title"](): string;
     /**
-      * `Let AI agents (Claude, Antigravity...) read and edit this workspace through a local MCP server. Start it with: node scripts/mcp/affine-mcp.mjs`
+      * `Let AI agents (Claude, Antigravity...) read and edit this workspace through a local MCP server.`
       */
     ["com.affine.mcpBridge.description"](): string;
     /**
@@ -10081,7 +10081,7 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.mcpBridge.url"](): string;
     /**
-      * `Default: ws://127.0.0.1:20130/bridge`
+      * `Default: ws://127.0.0.1:20130/bridge. Start the bridge with: node scripts/mcp/affine-mcp.mjs`
       */
     ["com.affine.mcpBridge.urlHint"](): string;
     /**
@@ -10092,6 +10092,22 @@ export function useAFFiNEI18N(): {
       * `Printed by the bridge (file ~/.affine-mcp/token). Stored only in this browser.`
       */
     ["com.affine.mcpBridge.tokenHint"](): string;
+    /**
+      * `How agents connect`
+      */
+    ["com.affine.mcpBridge.desktop.title"](): string;
+    /**
+      * `The app runs the bridge itself and fills in the token, so there is nothing to paste. Agents can work only while the app is open.`
+      */
+    ["com.affine.mcpBridge.desktop.hint"](): string;
+    /**
+      * `Command-line clients (Claude Desktop, Antigravity...): command affine-mcp.exe, argument --stdio`
+      */
+    ["com.affine.mcpBridge.desktop.stdio"](): string;
+    /**
+      * `Token file: %USERPROFILE%\.affine-mcp\token`
+      */
+    ["com.affine.mcpBridge.desktop.tokenFile"](): string;
     /**
       * `Allow agents to edit`
       */
@@ -11581,5 +11597,11 @@ export const TypedTrans: {
         readonly user: string;
     }, {
         ["1"]: JSX.Element;
+    }>>;
+    /**
+      * `HTTP clients (Claude Code...): http://127.0.0.1:20130/mcp with the header Authorization: Bearer <token>`
+      */
+    ["com.affine.mcpBridge.desktop.http"]: ComponentType<TypedTransProps<Readonly<{}>, {
+        token: JSX.Element;
     }>>;
 } = /*#__PURE__*/ createProxy(createComponent);
