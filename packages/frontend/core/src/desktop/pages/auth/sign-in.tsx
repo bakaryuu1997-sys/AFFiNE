@@ -42,6 +42,12 @@ export const SignIn = ({
     });
   }, [jumpToIndex, searchParams]);
 
+  useEffect(() => {
+    if (!server) {
+      handleClose();
+    }
+  }, [handleClose, server]);
+
   const handleAuthenticated = useCallback(
     (status: AuthSessionStatus) => {
       if (status === 'authenticated') {
