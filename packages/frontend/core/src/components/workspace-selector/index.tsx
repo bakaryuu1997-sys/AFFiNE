@@ -26,9 +26,7 @@ interface WorkspaceSelectorProps {
     metadata: WorkspaceMetadata;
     defaultDocId?: string;
   }) => void;
-  showEnableCloudButton?: boolean;
   showArrowDownIcon?: boolean;
-  showSyncStatus?: boolean;
   disable?: boolean;
   menuContentOptions?: MenuProps['contentOptions'];
   className?: string;
@@ -44,8 +42,6 @@ export const WorkspaceSelector = ({
   disable,
   open: outerOpen,
   onOpenChange: outerOnOpenChange,
-  showEnableCloudButton,
-  showSyncStatus,
   className,
   menuContentOptions,
   dense,
@@ -108,7 +104,6 @@ export const WorkspaceSelector = ({
           onEventEnd={closeUserWorkspaceList}
           onClickWorkspace={onSelectWorkspace}
           onCreatedWorkspace={onCreatedWorkspace}
-          showEnableCloudButton={showEnableCloudButton}
         />
       }
       contentOptions={{
@@ -129,7 +124,6 @@ export const WorkspaceSelector = ({
         <WorkspaceCard
           workspaceMetadata={workspaceMetadata}
           onClick={openUserWorkspaceList}
-          showSyncStatus={showSyncStatus}
           className={className}
           showArrowDownIcon={showArrowDownIcon}
           disable={disable}

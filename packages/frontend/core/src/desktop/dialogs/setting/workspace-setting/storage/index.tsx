@@ -8,18 +8,13 @@ import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 
-import { EnableCloudPanel } from '../preference/enable-cloud';
 import { BlobManagementPanel } from './blob-management';
 import { DiskSyncPanel } from './disk-sync';
 import { DesktopExportPanel } from './export';
 import { MarkdownExportPanel } from './markdown-export';
 import { WorkspaceQuotaPanel } from './workspace-quota';
 
-export const WorkspaceSettingStorage = ({
-  onCloseSetting,
-}: {
-  onCloseSetting: () => void;
-}) => {
+export const WorkspaceSettingStorage = () => {
   const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const workspacePermissionService = useService(
@@ -43,7 +38,6 @@ export const WorkspaceSettingStorage = ({
       </SettingWrapper>
       {workspace.flavour === 'local' ? (
         <>
-          <EnableCloudPanel onCloseSetting={onCloseSetting} />{' '}
           {BUILD_CONFIG.isElectron &&
             BUILD_CONFIG.appBuildType === 'canary' && (
               <SettingWrapper>

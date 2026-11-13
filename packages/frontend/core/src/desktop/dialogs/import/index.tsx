@@ -16,7 +16,6 @@ import {
   type ImportRunContext,
   ImportService,
 } from '@affine/core/modules/import';
-import { UrlService } from '@affine/core/modules/url';
 import {
   getAFFiNEWorkspaceSchema,
   type WorkspaceMetadata,
@@ -518,18 +517,6 @@ const ImportOptions = ({
           }
         )}
       </div>
-      <div className={style.importModalTip}>
-        {t['com.affine.import.modal.tip']()}{' '}
-        <a
-          className={style.link}
-          href={BUILD_CONFIG.discordUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Discord
-        </a>
-        .
-      </div>
     </>
   );
 };
@@ -580,16 +567,7 @@ const SuccessStatus = ({
         {t['com.affine.import.status.success.title']()}
       </div>
       <p className={style.importStatusContent}>
-        {t['com.affine.import.status.success.message']()}{' '}
-        <a
-          className={style.link}
-          href={BUILD_CONFIG.discordUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Discord
-        </a>
-        .
+        {t['com.affine.import.status.success.message']()}
       </p>
       {warnings.length ? (
         <div className={style.importWarnings}>
@@ -615,7 +593,6 @@ const ErrorStatus = ({
   onRetry: () => void;
 }) => {
   const t = useI18n();
-  const urlService = useService(UrlService);
   return (
     <>
       <div className={style.importModalTitle}>
@@ -628,14 +605,6 @@ const ErrorStatus = ({
         <div className={style.importErrorDetail}>{error.sourcePath}</div>
       ) : null}
       <div className={style.importModalButtonContainer}>
-        <Button
-          onClick={() => {
-            urlService.openPopupWindow(BUILD_CONFIG.discordUrl);
-          }}
-          variant="secondary"
-        >
-          {t['Feedback']()}
-        </Button>
         <Button onClick={onRetry} variant="primary">
           {t['Retry']()}
         </Button>

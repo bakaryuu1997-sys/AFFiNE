@@ -8,9 +8,8 @@ import {
   SidebarContainer,
   SidebarScrollableContainer,
 } from '@affine/core/modules/app-sidebar/views';
-import { AuthService, ServerService } from '@affine/core/modules/cloud';
+import { AuthService } from '@affine/core/modules/cloud';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
-import { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import type { Workspace } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
@@ -52,7 +51,6 @@ import { TemplateDocEntrance } from './template-doc-entrance';
 import { AppSidebarTodoButton } from './todo-button';
 import { TrashButton } from './trash-button';
 import { UpdaterButton } from './updater-button';
-import UserInfo from './user-info';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -89,11 +87,6 @@ const AllDocsButton = () => {
 
 const AIChatButton = () => {
   const t = useI18n();
-  const featureFlagService = useService(FeatureFlagService);
-  const serverService = useService(ServerService);
-  const serverFeatures = useLiveData(serverService.server.features$);
-  const enableAI = useLiveData(featureFlagService.flags.enable_ai.$);
-
   const { workbenchService } = useServices({
     WorkbenchService,
   });
@@ -101,10 +94,6 @@ const AIChatButton = () => {
   const aiChatActive = useLiveData(
     workbench.location$.selector(location => location.pathname === '/chat')
   );
-
-  if (!enableAI || !serverFeatures?.copilot) {
-    return null;
-  }
 
   return (
     <MenuLinkItem icon={<AiOutlineIcon />} active={aiChatActive} to={'/chat'}>
@@ -192,14 +181,11 @@ export const RootAppSidebar = memo((): ReactElement => {
         <div className={workspaceAndUserWrapper}>
           <div className={workspaceWrapper}>
             <WorkspaceNavigator
-              showEnableCloudButton
-              showSyncStatus
               open={workspaceSelectorOpen}
               onOpenChange={onWorkspaceSelectorOpenChange}
               dense
             />
           </div>
-          <UserInfo />
         </div>
         <div className={quickSearchAndNewPage}>
           <QuickSearchInput
