@@ -198,6 +198,13 @@ export const AllPage = () => {
                   value: 'false',
                 },
                 {
+                  // built-in templates live in the template list, not here
+                  type: 'system',
+                  key: 'template',
+                  method: 'is',
+                  value: 'false',
+                },
+                {
                   type: 'system',
                   key: 'trash',
                   method: 'is',
@@ -224,6 +231,13 @@ export const AllPage = () => {
                 {
                   type: 'system',
                   key: 'empty-journal',
+                  method: 'is',
+                  value: 'false',
+                },
+                {
+                  // built-in templates live in the template list, not here
+                  type: 'system',
+                  key: 'template',
                   method: 'is',
                   value: 'false',
                 },

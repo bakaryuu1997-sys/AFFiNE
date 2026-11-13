@@ -36,6 +36,7 @@ import {
 import { WorkbenchService } from '../../modules/workbench';
 import { WorkspaceNavigator } from '../workspace-selector';
 import { BuiltinTemplatesInstaller } from './builtin-templates-installer';
+import { AppSidebarDiagramButton } from './diagram-button';
 import {
   bottomContainer,
   quickSearch,
@@ -199,6 +200,7 @@ export const RootAppSidebar = memo((): ReactElement => {
         <AllDocsButton />
         <AppSidebarJournalButton />
         <AppSidebarTodoButton />
+        <AppSidebarDiagramButton />
         <BuiltinTemplatesInstaller />
         <McpBridgeStarter />
         {sessionStatus === 'authenticated' && <NotificationButton />}
