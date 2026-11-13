@@ -12,4 +12,4 @@ tauri-build = { version = "2", features = [] }
 affine-mcp-bridge = { path = "../mcp-bridge" }
 serde             = { version = "1", features = ["derive"] }
 serde_json        = "1"
-tauri             = { version = "2", features = [] }
+tauri             = { version = "2", features = ["devtools"] }

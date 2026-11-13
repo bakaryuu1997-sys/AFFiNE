@@ -37,6 +37,19 @@ $Dist = Join-Path $Work 'web-dist'
 robocopy $WebDist $Dist /MIR /NFL /NDL /NJH /NJS /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy of the web app failed ($LASTEXITCODE)" }
 
+# Sanitize index.html: make sure assets point to local paths instead of upstream CDN
+$IndexHtmlPath = Join-Path $Dist 'index.html'
+if (Test-Path $IndexHtmlPath) {
+  $HtmlContent = [System.IO.File]::ReadAllText($IndexHtmlPath)
+  if ($HtmlContent -match '(dev|prod|beta)\.affineassets\.com') {
+    Write-Host "==> Sanitizing index.html to use local bundled assets"
+    $HtmlContent = $HtmlContent -replace 'https://(dev|prod|beta)\.affineassets\.com/', '/'
+    $HtmlContent = $HtmlContent -replace '<link rel="preconnect" href="https://(dev|prod|beta)\.affineassets\.com">', ''
+    $HtmlContent = $HtmlContent -replace 'crossorigin ', ''
+    [System.IO.File]::WriteAllText($IndexHtmlPath, $HtmlContent)
+  }
+}
+
 Push-Location $Work
 try {
   Write-Host '==> Building the MCP command line tool (affine-mcp.exe)'
