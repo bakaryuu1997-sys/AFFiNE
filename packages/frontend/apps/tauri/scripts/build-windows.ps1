@@ -41,13 +41,12 @@ if ($LASTEXITCODE -ge 8) { throw "robocopy of the web app failed ($LASTEXITCODE)
 $IndexHtmlPath = Join-Path $Dist 'index.html'
 if (Test-Path $IndexHtmlPath) {
   $HtmlContent = [System.IO.File]::ReadAllText($IndexHtmlPath)
-  if ($HtmlContent -match '(dev|prod|beta)\.affineassets\.com') {
-    Write-Host "==> Sanitizing index.html to use local bundled assets"
-    $HtmlContent = $HtmlContent -replace 'https://(dev|prod|beta)\.affineassets\.com/', '/'
-    $HtmlContent = $HtmlContent -replace '<link rel="preconnect" href="https://(dev|prod|beta)\.affineassets\.com">', ''
-    $HtmlContent = $HtmlContent -replace 'crossorigin ', ''
-    [System.IO.File]::WriteAllText($IndexHtmlPath, $HtmlContent)
-  }
+  Write-Host "==> Sanitizing index.html for desktop local workspace"
+  $HtmlContent = $HtmlContent -replace 'https://(dev|prod|beta)\.affineassets\.com/', '/'
+  $HtmlContent = $HtmlContent -replace '<link rel="preconnect" href="https://(dev|prod|beta)\.affineassets\.com">', ''
+  $HtmlContent = $HtmlContent -replace 'crossorigin ', ''
+  $HtmlContent = $HtmlContent -replace '<meta content="true" name="env:isSelfHosted">', ''
+  [System.IO.File]::WriteAllText($IndexHtmlPath, $HtmlContent)
 }
 
 Push-Location $Work
