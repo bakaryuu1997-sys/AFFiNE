@@ -197,6 +197,10 @@ pub fn install_mcp_config(client_id: String) -> Result<String, String> {
       if let Some(parent) = config_path.parent() {
         let _ = fs::create_dir_all(parent);
       }
+      if config_path.exists() {
+        let backup_path = config_path.with_extension("bak");
+        let _ = fs::copy(config_path, backup_path);
+      }
       let mut config: serde_json::Value = if config_path.exists() {
         let content = fs::read_to_string(config_path).map_err(|e| e.to_string())?;
         serde_json::from_str(&content).unwrap_or(json!({}))
@@ -251,6 +255,11 @@ pub fn install_mcp_config(client_id: String) -> Result<String, String> {
 
   if let Some(parent) = config_path.parent() {
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+  }
+
+  if config_path.exists() {
+    let backup_path = config_path.with_extension("bak");
+    let _ = fs::copy(config_path, backup_path);
   }
 
   let mut config: serde_json::Value = if config_path.exists() {

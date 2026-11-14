@@ -21,7 +21,7 @@ import https from 'node:https';
 import net from 'node:net';
 
 const PORT = Number(process.env.AI_PROXY_PORT ?? 20129);
-const HOST = process.env.AI_PROXY_HOST ?? '0.0.0.0';
+const HOST = process.env.AI_PROXY_HOST ?? '127.0.0.1';
 const EXTRA_ALLOWED = new Set(
   (process.env.AI_PROXY_ALLOW ?? '')
     .split(',')
