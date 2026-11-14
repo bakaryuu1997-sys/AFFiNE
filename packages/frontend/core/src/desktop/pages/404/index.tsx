@@ -1,15 +1,6 @@
-import {
-  NoPermissionOrNotFound,
-  NotFoundPage,
-} from '@affine/component/not-found-page';
-import { useSignOut } from '@affine/core/components/hooks/affine/use-sign-out';
+import { NotFoundPage } from '@affine/component/not-found-page';
 import { DesktopApiService } from '@affine/core/modules/desktop-api';
-import {
-  FrameworkScope,
-  useLiveData,
-  useService,
-  useServiceOptional,
-} from '@toeverything/infra';
+import { useServiceOptional } from '@toeverything/infra';
 import type { ReactElement } from 'react';
 import { useCallback, useEffect } from 'react';
 
@@ -17,28 +8,21 @@ import {
   RouteLogic,
   useNavigateHelper,
 } from '../../../components/hooks/use-navigate-helper';
-import { ServersService } from '../../../modules/cloud';
-import { SignIn } from '../auth/sign-in';
+
+const noop = () => {};
 
 /**
- * only for web, should not be used in electron
+ * Personal build: there are no accounts, so "no permission" and "not found"
+ * look the same. The page only offers a back button. It must never navigate on
+ * its own: a redirect here would hide the real reason a document did not open
+ * (it used to bounce every doc back to "All docs" through the sign-in page).
  */
-export const PageNotFound = ({
-  noPermission,
-}: {
+export const PageNotFound = (_props?: {
+  /** kept for the callers that still pass it; has no effect */
   noPermission?: boolean;
 }): ReactElement => {
-  const serversService = useService(ServersService);
-  const serversWithAccount = useLiveData(serversService.serversWithAccount$);
-
   const desktopApi = useServiceOptional(DesktopApiService);
-
-  // Check all servers for any logged in accounts to avoid showing sign-in page if user has an active session on any server
-  const firstLogged = serversWithAccount.find(
-    ({ account }) => account !== null
-  );
   const { jumpToIndex } = useNavigateHelper();
-  const openSignOutModal = useSignOut();
 
   const handleBackButtonClick = useCallback(
     () => jumpToIndex(RouteLogic.REPLACE),
@@ -49,28 +33,7 @@ export const PageNotFound = ({
     desktopApi?.handler.ui.pingAppLayoutReady().catch(console.error);
   }, [desktopApi]);
 
-  // not using workbench location or router location deliberately
-  // strip the origin
-  const currentUrl = window.location.href.replace(window.location.origin, '');
-
-  return (
-    <FrameworkScope scope={firstLogged?.server.scope}>
-      {noPermission ? (
-        <NoPermissionOrNotFound
-          user={firstLogged?.account}
-          onBack={handleBackButtonClick}
-          onSignOut={openSignOutModal}
-          signInComponent={<SignIn redirectUrl={currentUrl} />}
-        />
-      ) : (
-        <NotFoundPage
-          user={firstLogged?.account}
-          onBack={handleBackButtonClick}
-          onSignOut={openSignOutModal}
-        />
-      )}
-    </FrameworkScope>
-  );
+  return <NotFoundPage onBack={handleBackButtonClick} onSignOut={noop} />;
 };
 
 export const Component = () => {

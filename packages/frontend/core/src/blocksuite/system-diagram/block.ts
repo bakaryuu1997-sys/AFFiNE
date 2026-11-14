@@ -18,6 +18,7 @@ import {
   viewBoxOf,
 } from './geometry';
 import { NODE_BOX, nodeGlyph, TYPE_ACCENT } from './icons';
+import { diagramToMermaid } from './mermaid';
 import type { SystemDiagramBlockModel } from './model';
 import {
   formatRate,
@@ -99,7 +100,13 @@ export const TECH_SUGGESTIONS: Record<NodeType, string[]> = {
     'ETL Worker',
     'Data Sync Worker',
   ],
-  storage: ['AWS S3', 'MinIO', 'Google Cloud Storage', 'Azure Blob', 'NAS / NFS'],
+  storage: [
+    'AWS S3',
+    'MinIO',
+    'Google Cloud Storage',
+    'Azure Blob',
+    'NAS / NFS',
+  ],
   search: [
     'Elasticsearch',
     'OpenSearch',
@@ -382,14 +389,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.selected = null;
   }
 
-  private loadFullSample() {
-    this.commit(createFullSampleSpec(sampleNames()));
-    if (!this.model.props.title || this.model.props.title === S.untitled) {
-      this.model.store.updateBlock(this.model, { title: S.untitled });
-    }
-    this.selected = null;
-  }
-
   private handleConnectClick(id: string) {
     const { spec } = this.getSpec();
     if (!this.connectFrom) {
@@ -426,7 +425,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   private zoomOut() {
     this.zoom = Math.max(0.5, Number((this.zoom - 0.25).toFixed(2)));
   }
-
 
   private toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
@@ -473,33 +471,18 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   }
 
   private copyMermaid() {
-    const spec = this.model?.spec;
-    if (!spec) return;
-
-    const lines: string[] = ['flowchart LR'];
-    const nodeMap = new Map<string, string>();
-
-    for (const c of spec.components) {
-      const safeId = c.id.replace(/[^a-zA-Z0-9_]/g, '_');
-      nodeMap.set(c.id, safeId);
-      lines.push(`  ${safeId}["${c.label || c.type}"]`);
+    let spec: DiagramSpec;
+    try {
+      spec = normalizeSpec(
+        JSON.parse(JSON.stringify(this.model.props.spec ?? {}))
+      );
+    } catch {
+      return;
     }
+    if (spec.nodes.length === 0) return;
 
-    for (const l of spec.links) {
-      const from = nodeMap.get(l.from);
-      const to = nodeMap.get(l.to);
-      if (from && to) {
-        if (l.label) {
-          lines.push(`  ${from} -->|"${l.label}"| ${to}`);
-        } else {
-          lines.push(`  ${from} --> ${to}`);
-        }
-      }
-    }
-
-    const mermaidCode = lines.join('\n');
     navigator.clipboard
-      .writeText(mermaidCode)
+      .writeText(diagramToMermaid(spec))
       .then(() => {
         alert(S.copiedMermaid);
       })
@@ -648,7 +631,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                     <option value="database:MySQL">MySQL</option>
                     <option value="database:MongoDB">MongoDB</option>
                     <option value="database:Redis DB">Redis Database</option>
-                    <option value="database:ClickHouse">ClickHouse (OLAP / Data Warehouse)</option>
+                    <option value="database:ClickHouse">
+                      ClickHouse (OLAP / Data Warehouse)
+                    </option>
                     <option value="database:SQLite">SQLite</option>
                     <option value="database:Oracle DB">Oracle DB</option>
                   </optgroup>
@@ -658,41 +643,69 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                     <option value="cache:Varnish">Varnish Cache</option>
                   </optgroup>
                   <optgroup label="⚖️ Cân bằng tải &amp; Mạng">
-                    <option value="load-balancer:AWS ALB">AWS Application Load Balancer</option>
-                    <option value="load-balancer:Nginx">Nginx Reverse Proxy</option>
+                    <option value="load-balancer:AWS ALB">
+                      AWS Application Load Balancer
+                    </option>
+                    <option value="load-balancer:Nginx">
+                      Nginx Reverse Proxy
+                    </option>
                     <option value="load-balancer:HAProxy">HAProxy</option>
-                    <option value="load-balancer:Kong Gateway">Kong API Gateway</option>
+                    <option value="load-balancer:Kong Gateway">
+                      Kong API Gateway
+                    </option>
                     <option value="dns:AWS Route 53">AWS Route 53 (DNS)</option>
-                    <option value="cdn:Cloudflare CDN &amp; WAF">Cloudflare CDN & WAF</option>
+                    <option value="cdn:Cloudflare CDN &amp; WAF">
+                      Cloudflare CDN & WAF
+                    </option>
                   </optgroup>
                   <optgroup label="🖥️ Máy chủ &amp; Ứng dụng">
                     <option value="api:Node.js API">Node.js API Server</option>
-                    <option value="api:FastAPI Backend">FastAPI (Python) Backend</option>
-                    <option value="api:Spring Boot API">Java Spring Boot API</option>
+                    <option value="api:FastAPI Backend">
+                      FastAPI (Python) Backend
+                    </option>
+                    <option value="api:Spring Boot API">
+                      Java Spring Boot API
+                    </option>
                     <option value="api:Go Gin API">Golang API Server</option>
                     <option value="api:Microservice">Microservice</option>
                   </optgroup>
                   <optgroup label="📬 Hàng đợi &amp; Xử lý bất đồng bộ">
                     <option value="queue:RabbitMQ">RabbitMQ Task Queue</option>
-                    <option value="queue:Apache Kafka">Apache Kafka Event Stream</option>
+                    <option value="queue:Apache Kafka">
+                      Apache Kafka Event Stream
+                    </option>
                     <option value="queue:AWS SQS">AWS SQS</option>
-                    <option value="worker:Background Worker">Background Worker</option>
-                    <option value="worker:Cron Job">Cron Job / Batch Worker</option>
-                    <option value="worker:ETL Worker">ETL / Data Sync Worker</option>
+                    <option value="worker:Background Worker">
+                      Background Worker
+                    </option>
+                    <option value="worker:Cron Job">
+                      Cron Job / Batch Worker
+                    </option>
+                    <option value="worker:ETL Worker">
+                      ETL / Data Sync Worker
+                    </option>
                   </optgroup>
                   <optgroup label="📦 Lưu trữ tệp (Storage)">
                     <option value="storage:AWS S3">AWS S3 Bucket</option>
                     <option value="storage:MinIO">MinIO Object Storage</option>
-                    <option value="storage:Google Cloud Storage">Google Cloud Storage</option>
+                    <option value="storage:Google Cloud Storage">
+                      Google Cloud Storage
+                    </option>
                   </optgroup>
                   <optgroup label="🔍 Tìm kiếm &amp; AI Vector">
                     <option value="search:Elasticsearch">Elasticsearch</option>
-                    <option value="search:Vector DB (Qdrant)">Vector Database (Qdrant / Milvus)</option>
+                    <option value="search:Vector DB (Qdrant)">
+                      Vector Database (Qdrant / Milvus)
+                    </option>
                     <option value="search:OpenSearch">OpenSearch</option>
                   </optgroup>
                   <optgroup label="👥 Người dùng &amp; Giao diện">
-                    <option value="client:Web Browser">Trình duyệt Web (Desktop/Mobile)</option>
-                    <option value="client:Mobile App">Ứng dụng Di động (iOS / Android)</option>
+                    <option value="client:Web Browser">
+                      Trình duyệt Web (Desktop/Mobile)
+                    </option>
+                    <option value="client:Mobile App">
+                      Ứng dụng Di động (iOS / Android)
+                    </option>
                   </optgroup>
                 </select>
                 <select
@@ -702,7 +715,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                 >
                   <option value="">📁 ${S.presets}</option>
                   <option value="3tier">${S.template3Tier}</option>
-                  <option value="microservices">${S.templateMicroservices}</option>
+                  <option value="microservices">
+                    ${S.templateMicroservices}
+                  </option>
                   <option value="batch">${S.templateBatchEtl}</option>
                   <option value="rag">${S.templateRagAi}</option>
                   <option value="hadr">${S.templateHaDr}</option>
@@ -784,7 +799,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       </div>
     `;
   }
-
 
   private renderFloatingNodeToolbar(spec: DiagramSpec) {
     if (this.selected?.kind !== 'node') return nothing;

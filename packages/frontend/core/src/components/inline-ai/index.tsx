@@ -22,9 +22,25 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
     try {
       const docRecord = docsService.list.doc$(docId).value;
       if (!docRecord) return '';
-      const doc = docRecord.blockSuiteDoc;
-      const title = doc?.meta?.title ?? '';
-      return `Tiêu đề: ${title}`;
+      const title = docRecord.title$.value ?? '';
+      let body = '';
+      const { doc, release } = docsService.open(docId);
+      try {
+        body = doc.blockSuiteDoc
+          .getBlocksByFlavour('affine:paragraph')
+          .map(block => {
+            const text = (
+              block.model.props as { text?: { toString(): string } }
+            ).text;
+            return text ? text.toString() : '';
+          })
+          .filter(Boolean)
+          .join('\n')
+          .slice(0, 6000);
+      } finally {
+        release();
+      }
+      return `Tiêu đề: ${title}${body ? `\n${body}` : ''}`;
     } catch {
       return '';
     }
@@ -43,7 +59,9 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
         aiSettings.providers[0];
 
       if (!provider) {
-        setResponse('❌ Chưa cấu hình AI. Vui lòng mở Cài đặt > Cài đặt AI để chọn nhà cung cấp.');
+        setResponse(
+          '❌ Chưa cấu hình AI. Vui lòng mở Cài đặt > Cài đặt AI để chọn nhà cung cấp.'
+        );
         setLoading(false);
         return;
       }
@@ -58,9 +76,13 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
         },
         {
           role: 'user',
-          content: `${docContext ? `Ngữ cảnh tài liệu hiện tại: ${docContext}
+          content: `${
+            docContext
+              ? `Ngữ cảnh tài liệu hiện tại: ${docContext}
 
-` : ''}Yêu cầu: ${userPrompt}`,
+`
+              : ''
+          }Yêu cầu: ${userPrompt}`,
         },
       ];
 

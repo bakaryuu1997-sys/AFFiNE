@@ -56,6 +56,7 @@ const useLoadDoc = (pageId: string) => {
     doc,
     editor,
     docListReady,
+    docExists: !!docRecord,
   };
 };
 
@@ -75,9 +76,12 @@ export const DetailPageWrapper = ({
   notFound: ReactNode;
   canAccess?: boolean;
 }>) => {
-  const { doc, editor, docListReady } = useLoadDoc(pageId);
-  // if sync engine has been synced and the page is null, show 404 page.
-  if (docListReady && !doc) {
+  const { doc, editor, docListReady, docExists } = useLoadDoc(pageId);
+  // Not found only when the doc is really missing from the list. A doc that
+  // exists but is not opened yet (first render, or re-opening after the record
+  // changed) is still loading: showing "not found" there flashed the 404 page
+  // for a frame on every open.
+  if (docListReady && !docExists) {
     return notFound;
   }
 

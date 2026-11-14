@@ -13,7 +13,9 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
   const docs = useLiveData(docsService.list.docs$);
 
   const graphData = useMemo(() => {
-    if (!docs || docs.length === 0) return { nodes: [], edges: [] };
+    if (!docs || docs.length === 0) {
+      return { nodes: [], edges: [], centerX: 360, centerY: 240 };
+    }
 
     const centerX = 360;
     const centerY = 240;
@@ -23,7 +25,7 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
       const angle = (idx / docs.length) * 2 * Math.PI;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
-      const title = doc.title || 'Chưa đặt tên';
+      const title = doc.title$.value || 'Chưa đặt tên';
       return {
         id: doc.id,
         title,
@@ -87,19 +89,11 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
               nút để mở nhanh.
             </span>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <Button
-                size="small"
-                onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}
-              >
+              <Button onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}>
                 -
               </Button>
-              <Button size="small" onClick={() => setZoom(1)}>
-                100%
-              </Button>
-              <Button
-                size="small"
-                onClick={() => setZoom(z => Math.min(2.0, z + 0.2))}
-              >
+              <Button onClick={() => setZoom(1)}>100%</Button>
+              <Button onClick={() => setZoom(z => Math.min(2.0, z + 0.2))}>
                 +
               </Button>
             </div>
