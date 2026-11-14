@@ -241,7 +241,7 @@ export const RootAppSidebar = memo((): ReactElement => {
             }}
             title="Phiên bản AFFiNE Cá nhân"
           >
-            v0.2.0
+            v0.2.1
           </span>
         </div>
         <div className={quickSearchAndNewPage}>

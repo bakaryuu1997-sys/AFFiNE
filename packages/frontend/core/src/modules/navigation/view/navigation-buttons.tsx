@@ -9,8 +9,16 @@ import * as styles from './navigation-buttons.css';
 
 const tooltipSideBottom = { side: 'bottom' as const };
 
+const isDesktopApp =
+  BUILD_CONFIG.isElectron ||
+  (typeof window !== 'undefined' &&
+    (Boolean((window as any).__TAURI_INTERNALS__) ||
+      Boolean((window as any).__TAURI__) ||
+      window.location.protocol === 'tauri:' ||
+      window.location.hostname === 'tauri.localhost'));
+
 export const NavigationButtons = () => {
-  if (!BUILD_CONFIG.isElectron) {
+  if (!isDesktopApp) {
     return null;
   }
 

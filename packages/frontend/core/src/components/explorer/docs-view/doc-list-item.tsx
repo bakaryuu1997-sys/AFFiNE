@@ -17,6 +17,7 @@ import {
   ResizeTidyUpIcon,
 } from '@blocksuite/icons/rc';
 import { useLiveData, useService, useServices } from '@toeverything/infra';
+import { nanoid } from 'nanoid';
 import {
   type HTMLProps,
   memo,
@@ -156,10 +157,17 @@ export const DocListItem = ({ ...props }: DocListItemProps) => {
           e.preventDefault();
           e.stopPropagation();
           track.allDocs.list.doc.openDoc();
+          const refreshKey = nanoid();
           if (e.button === 1 || e.ctrlKey || e.metaKey) {
-            workbenchService.workbench.openDoc(docId, { at: 'new-tab' });
+            workbenchService.workbench.openDoc(
+              { docId, refreshKey },
+              { at: 'new-tab' }
+            );
           } else {
-            workbenchService.workbench.openDoc(docId);
+            workbenchService.workbench.openDoc(
+              { docId, refreshKey },
+              { at: 'active' }
+            );
           }
           return;
         }

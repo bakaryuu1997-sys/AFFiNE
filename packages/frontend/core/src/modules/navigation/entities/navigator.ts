@@ -4,6 +4,14 @@ import { Observable, switchMap } from 'rxjs';
 
 import type { WorkbenchService } from '../../workbench';
 
+const isDesktopApp =
+  BUILD_CONFIG.isElectron ||
+  (typeof window !== 'undefined' &&
+    (Boolean((window as any).__TAURI_INTERNALS__) ||
+      Boolean((window as any).__TAURI__) ||
+      window.location.protocol === 'tauri:' ||
+      window.location.hostname === 'tauri.localhost'));
+
 export class Navigator extends Entity {
   constructor(private readonly workbenchService: WorkbenchService) {
     super();
@@ -40,7 +48,7 @@ export class Navigator extends Entity {
   );
 
   back() {
-    if (!BUILD_CONFIG.isElectron) {
+    if (!isDesktopApp) {
       window.history.back();
     } else {
       this.history$.value.back();
@@ -48,7 +56,7 @@ export class Navigator extends Entity {
   }
 
   forward() {
-    if (!BUILD_CONFIG.isElectron) {
+    if (!isDesktopApp) {
       window.history.forward();
     } else {
       this.history$.value.forward();
