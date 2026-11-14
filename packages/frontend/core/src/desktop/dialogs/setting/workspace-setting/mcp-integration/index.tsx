@@ -261,13 +261,25 @@ export const McpIntegrationPanel = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'minmax(280px, 340px) 1fr',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: 16,
               width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              minWidth: 0,
             }}
           >
             {/* Left Column: AI Client List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                minWidth: 0,
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            >
               <div
                 style={{
                   fontSize: 11,
@@ -403,6 +415,9 @@ export const McpIntegrationPanel = () => {
                   borderRadius: 10,
                   border: '1px solid var(--affine-border-color)',
                   background: 'var(--affine-background-primary-color)',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
                 }}
               >
                 <div
@@ -410,20 +425,32 @@ export const McpIntegrationPanel = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 10,
                     borderBottom: '1px solid var(--affine-border-color)',
                     paddingBottom: 12,
+                    minWidth: 0,
                   }}
                 >
                   <div
-                    style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      minWidth: 0,
+                      flex: '1 1 180px',
+                    }}
                   >
                     <ClientIcon clientId={selectedClient.client_id} size={24} />
-                    <div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
                       <div
                         style={{
                           fontSize: 14,
                           fontWeight: 600,
                           color: 'var(--affine-text-primary-color)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {selectedClient.client_name}
@@ -432,7 +459,11 @@ export const McpIntegrationPanel = () => {
                         style={{
                           fontSize: 12,
                           color: 'var(--affine-text-secondary-color)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
                         }}
+                        title={selectedClient.config_path ?? ''}
                       >
                         {selectedClient.config_path ??
                           'Cài đặt tự động qua CLI'}
@@ -440,7 +471,14 @@ export const McpIntegrationPanel = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 8,
+                      flexWrap: 'wrap',
+                      flexShrink: 0,
+                    }}
+                  >
                     <Button
                       variant="secondary"
                       onClick={() => {
@@ -475,6 +513,7 @@ export const McpIntegrationPanel = () => {
                       color: '#10B981',
                       fontSize: 12,
                       fontWeight: 500,
+                      wordBreak: 'break-word',
                     }}
                   >
                     ✓ Đã phát hiện cấu hình máy chủ AFFiNE MCP trong{' '}
@@ -489,6 +528,7 @@ export const McpIntegrationPanel = () => {
                       border: '1px solid rgba(59, 130, 246, 0.2)',
                       color: '#3B82F6',
                       fontSize: 12,
+                      wordBreak: 'break-word',
                     }}
                   >
                     Bấm &quot;Cài cấu hình ngay&quot; để tự động cấu hình
@@ -496,12 +536,20 @@ export const McpIntegrationPanel = () => {
                   </div>
                 )}
 
-                <div>
+                <div
+                  style={{
+                    minWidth: 0,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                >
                   <div
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 8,
                       marginBottom: 6,
                     }}
                   >
@@ -535,8 +583,11 @@ export const McpIntegrationPanel = () => {
                       color: 'var(--affine-text-primary-color)',
                       overflowX: 'auto',
                       whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
                       lineHeight: 1.5,
                       userSelect: 'text',
+                      maxWidth: '100%',
+                      boxSizing: 'border-box',
                     }}
                   >
                     {previewSnippet}

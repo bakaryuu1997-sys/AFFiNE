@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { createSampleSpec, normalizeSpec, type SampleNames } from '../spec';
+import {
+  createFullSampleSpec,
+  createSampleSpec,
+  findCycle,
+  NODE_TYPES,
+  normalizeSpec,
+  type SampleNames,
+} from '../spec';
 
 const japanese: SampleNames = {
   label: type => `JA:${type}`,
@@ -27,5 +34,18 @@ describe('createSampleSpec', () => {
     expect(spec.nodes.find(n => n.id === 'users')?.label).toBe('Người dùng');
     expect(normalizeSpec(spec).edges).toHaveLength(5);
     expect(normalizeSpec(createSampleSpec(japanese)).nodes).toHaveLength(5);
+  });
+
+  test('createFullSampleSpec creates a complete diagram with all 11 component types', () => {
+    const spec = createFullSampleSpec();
+    expect(spec.nodes).toHaveLength(11);
+    const presentTypes = new Set(spec.nodes.map(n => n.type));
+    for (const type of NODE_TYPES) {
+      expect(presentTypes.has(type)).toBe(true);
+    }
+    expect(findCycle(spec)).toBeNull();
+    const normalized = normalizeSpec(spec);
+    expect(normalized.nodes).toHaveLength(11);
+    expect(normalized.edges.length).toBeGreaterThanOrEqual(12);
   });
 });

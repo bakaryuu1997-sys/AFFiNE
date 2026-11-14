@@ -126,6 +126,23 @@ export interface SampleNames {
   write: string;
 }
 
+function makeNode(
+  names: SampleNames | undefined,
+  id: string,
+  type: NodeType,
+  x: number,
+  y: number,
+  extra: Partial<DiagramNode> = {}
+): DiagramNode {
+  return defaultNode(type, {
+    id,
+    x,
+    y,
+    ...(names ? { label: names.label(type) } : {}),
+    ...extra,
+  });
+}
+
 /** A small but realistic starting point: web tier, cache and database. */
 export function createSampleSpec(names?: SampleNames): DiagramSpec {
   const n = (
@@ -133,15 +150,8 @@ export function createSampleSpec(names?: SampleNames): DiagramSpec {
     type: NodeType,
     x: number,
     y: number,
-    extra: Partial<DiagramNode> = {}
-  ) =>
-    defaultNode(type, {
-      id,
-      x,
-      y,
-      ...(names ? { label: names.label(type) } : {}),
-      ...extra,
-    });
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
   return {
     version: 1,
     traffic: { rps: 1500, profile: 'ramp', durationSec: 60 },
@@ -170,6 +180,61 @@ export function createSampleSpec(names?: SampleNames): DiagramSpec {
         label: names?.write ?? 'ghi',
       },
       { id: 'e5', from: 'cache', to: 'db', weight: 1 },
+    ],
+  };
+}
+
+/** Complete full-stack system architecture with all 11 component types. */
+export function createFullSampleSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 2000, profile: 'ramp', durationSec: 60 },
+    nodes: [
+      n('users', 'client', 80, 220),
+      n('dns', 'dns', 260, 100),
+      n('cdn', 'cdn', 260, 340),
+      n('lb', 'load-balancer', 440, 220),
+      n('api', 'api', 620, 220, { replicas: 3, label: 'API' }),
+      n('cache', 'cache', 800, 100, { label: 'Cache' }),
+      n('db', 'database', 800, 220, { label: 'PostgreSQL' }),
+      n('search', 'search', 800, 340),
+      n('queue', 'queue', 620, 380),
+      n('worker', 'worker', 800, 460, { replicas: 2 }),
+      n('storage', 'storage', 980, 340),
+    ],
+    edges: [
+      { id: 'e_dns', from: 'users', to: 'dns', weight: 0.1, label: 'DNS' },
+      { id: 'e_cdn', from: 'users', to: 'cdn', weight: 0.3, label: 'tĩnh' },
+      { id: 'e_lb', from: 'users', to: 'lb', weight: 0.6, label: 'API' },
+      { id: 'e_api', from: 'lb', to: 'api', weight: 1 },
+      {
+        id: 'e_cache',
+        from: 'api',
+        to: 'cache',
+        weight: 0.45,
+        label: names?.read ?? 'đọc',
+      },
+      { id: 'e_cache_miss', from: 'cache', to: 'db', weight: 0.2 },
+      {
+        id: 'e_db',
+        from: 'api',
+        to: 'db',
+        weight: 0.25,
+        label: names?.write ?? 'ghi',
+      },
+      { id: 'e_search', from: 'api', to: 'search', weight: 0.15 },
+      { id: 'e_queue', from: 'api', to: 'queue', weight: 0.15 },
+      { id: 'e_worker', from: 'queue', to: 'worker', weight: 1 },
+      { id: 'e_worker_db', from: 'worker', to: 'db', weight: 0.5 },
+      { id: 'e_worker_storage', from: 'worker', to: 'storage', weight: 0.5 },
+      { id: 'e_cdn_storage', from: 'cdn', to: 'storage', weight: 0.15 },
     ],
   };
 }

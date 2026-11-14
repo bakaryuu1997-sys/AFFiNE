@@ -1,6 +1,6 @@
 import { notify } from '@affine/component';
 import { SystemDiagramFlavour } from '@affine/core/blocksuite/system-diagram/model';
-import { createSampleSpec } from '@affine/core/blocksuite/system-diagram/spec';
+import { createFullSampleSpec } from '@affine/core/blocksuite/system-diagram/spec';
 import { S, sampleNames } from '@affine/core/blocksuite/system-diagram/strings';
 import { MenuItem } from '@affine/core/modules/app-sidebar/views';
 import { DocsService } from '@affine/core/modules/doc';
@@ -21,7 +21,7 @@ export const AppSidebarDiagramButton = () => {
   const onCreate = useCallback(() => {
     try {
       const title = S.untitled;
-      const spec = createSampleSpec(sampleNames());
+      const spec = createFullSampleSpec(sampleNames());
       const record = docsService.createDoc({
         title,
         primaryMode: 'page',

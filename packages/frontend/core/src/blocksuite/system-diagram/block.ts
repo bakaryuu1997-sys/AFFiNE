@@ -30,6 +30,7 @@ import {
 } from './simulate';
 import {
   createEmptySpec,
+  createFullSampleSpec,
   createSampleSpec,
   defaultNode,
   type DiagramNode,
@@ -238,6 +239,14 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.selected = null;
   }
 
+  private loadFullSample() {
+    this.commit(createFullSampleSpec(sampleNames()));
+    if (!this.model.props.title || this.model.props.title === S.untitled) {
+      this.model.store.updateBlock(this.model, { title: S.untitled });
+    }
+    this.selected = null;
+  }
+
   private handleConnectClick(id: string) {
     const { spec } = this.getSpec();
     if (!this.connectFrom) {
@@ -415,6 +424,13 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   @click=${() => this.removeSelected()}
                 >
                   ${S.remove}
+                </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.loadFullSample()}
+                  title=${S.loadFullSample}
+                >
+                  ${S.loadFullSample}
                 </button>
               `
         }
