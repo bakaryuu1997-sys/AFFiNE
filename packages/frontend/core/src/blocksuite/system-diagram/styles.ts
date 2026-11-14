@@ -463,4 +463,167 @@ export const systemDiagramStyles = css`
     color: #fff;
     border-color: var(--sd-accent);
   }
+
+  /* Container for Add Component Dropdown */
+  system-diagram-block .sd-add-menu-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  system-diagram-block .sd-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
+  /* Flyout 2-column menu */
+  system-diagram-block .sd-flyout-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    background: var(--sd-surface, #1e1e22);
+    border: 1px solid var(--sd-border, #333338);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 490px;
+    height: 350px;
+    animation: sd-flyout-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes sd-flyout-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Left column: Categories list */
+  system-diagram-block .sd-flyout-categories {
+    width: 200px;
+    background: color-mix(in srgb, var(--sd-surface, #1e1e22) 85%, #000 15%);
+    border-right: 1px solid var(--sd-border, #333338);
+    display: flex;
+    flex-direction: column;
+    padding: 6px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  system-diagram-block .sd-flyout-cat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--sd-text, #e2e2e8);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+
+  system-diagram-block .sd-flyout-cat-item:hover,
+  system-diagram-block .sd-flyout-cat-item.active {
+    background: color-mix(in srgb, var(--sd-accent, #7c8cff) 20%, transparent);
+    color: var(--sd-accent, #7c8cff);
+  }
+
+  system-diagram-block .sd-flyout-cat-item.active {
+    font-weight: 600;
+  }
+
+  system-diagram-block .sd-cat-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  system-diagram-block .sd-cat-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  system-diagram-block .sd-cat-arrow {
+    font-size: 14px;
+    color: var(--sd-muted, #888);
+    opacity: 0.6;
+  }
+  system-diagram-block .sd-flyout-cat-item.active .sd-cat-arrow {
+    opacity: 1;
+    color: var(--sd-accent, #7c8cff);
+  }
+
+  /* Right column: Items of selected category */
+  system-diagram-block .sd-flyout-items {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--sd-surface, #1e1e22);
+    overflow: hidden;
+  }
+
+  system-diagram-block .sd-flyout-items-header {
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sd-muted, #888);
+    border-bottom: 1px solid var(--sd-border, #333338);
+    background: color-mix(in srgb, var(--sd-surface, #1e1e22) 95%, #fff 5%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  system-diagram-block .sd-flyout-items-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  system-diagram-block .sd-flyout-subitem {
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: background 0.12s ease;
+  }
+
+  system-diagram-block .sd-flyout-subitem:hover {
+    background: color-mix(in srgb, var(--sd-accent, #7c8cff) 15%, transparent);
+  }
+
+  system-diagram-block .sd-subitem-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sd-text, #f0f0f5);
+  }
+
+  system-diagram-block .sd-flyout-subitem:hover .sd-subitem-title {
+    color: var(--sd-accent, #7c8cff);
+  }
+
+  system-diagram-block .sd-subitem-desc {
+    font-size: 11px;
+    color: var(--sd-muted, #8c8c96);
+    line-height: 1.3;
+  }
 `;

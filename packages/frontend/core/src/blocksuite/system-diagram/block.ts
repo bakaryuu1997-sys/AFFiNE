@@ -124,6 +124,112 @@ export const TECH_SUGGESTIONS: Record<NodeType, string[]> = {
   cdn: ['Cloudflare CDN', 'AWS CloudFront', 'Fastly', 'Akamai'],
 };
 
+
+export interface ComponentCategory {
+  id: string;
+  name: string;
+  icon: string;
+  items: Array<{
+    name: string;
+    type: NodeType;
+    desc?: string;
+  }>;
+}
+
+export const COMPONENT_CATEGORIES: ComponentCategory[] = [
+  {
+    id: 'database',
+    name: 'Cơ sở dữ liệu',
+    icon: '🗄️',
+    items: [
+      { name: 'PostgreSQL', type: 'database', desc: 'CSDL quan hệ chuẩn ACID & JSON mạnh mẽ' },
+      { name: 'MySQL', type: 'database', desc: 'Hệ quản trị CSDL quan hệ phổ biến nhất' },
+      { name: 'MongoDB', type: 'database', desc: 'CSDL phi quan hệ dạng tài liệu (NoSQL)' },
+      { name: 'Redis Database', type: 'database', desc: 'CSDL In-Memory tốc độ cực cao' },
+      { name: 'ClickHouse', type: 'database', desc: 'CSDL cột phân tích OLAP & Data Warehouse' },
+      { name: 'SQLite', type: 'database', desc: 'CSDL nhúng nhẹ cục bộ không cần server' },
+      { name: 'Oracle DB', type: 'database', desc: 'Hệ CSDL doanh nghiệp quy mô lớn' },
+    ],
+  },
+  {
+    id: 'cache',
+    name: 'Bộ nhớ đệm (Cache)',
+    icon: '⚡',
+    items: [
+      { name: 'Redis Cache', type: 'cache', desc: 'Bộ nhớ đệm In-Memory giảm tải CSDL' },
+      { name: 'Memcached', type: 'cache', desc: 'Bộ nhớ đệm phân tán hiệu năng cao' },
+      { name: 'Varnish Cache', type: 'cache', desc: 'Bộ đệm tăng tốc nội dung web HTTP' },
+    ],
+  },
+  {
+    id: 'network',
+    name: 'Cân bằng tải & Mạng',
+    icon: '⚖️',
+    items: [
+      { name: 'AWS ALB', type: 'load-balancer', desc: 'Application Load Balancer tầng 7' },
+      { name: 'Nginx Reverse Proxy', type: 'load-balancer', desc: 'Proxy ngược & cân bằng tải web' },
+      { name: 'HAProxy', type: 'load-balancer', desc: 'Bộ cân bằng tải TCP/HTTP độ trễ siêu thấp' },
+      { name: 'Kong API Gateway', type: 'load-balancer', desc: 'Cổng API Gateway quản lý routing & auth' },
+      { name: 'AWS Route 53', type: 'dns', desc: 'Hệ thống định tuyến DNS toàn cầu' },
+      { name: 'Cloudflare CDN & WAF', type: 'cdn', desc: 'Mạng phân phối nội dung & tường lửa bảo mật' },
+    ],
+  },
+  {
+    id: 'api',
+    name: 'Máy chủ & Ứng dụng',
+    icon: '🖥️',
+    items: [
+      { name: 'Node.js API', type: 'api', desc: 'Máy chủ backend xử lý I/O bất đồng bộ' },
+      { name: 'FastAPI Backend', type: 'api', desc: 'Framework Python hiệu năng cao cho AI & API' },
+      { name: 'Spring Boot API', type: 'api', desc: 'Nền tảng Java doanh nghiệp mạnh mẽ' },
+      { name: 'Golang API Server', type: 'api', desc: 'Máy chủ Go siêu nhẹ và đồng thời cao' },
+      { name: 'Microservice', type: 'api', desc: 'Dịch vụ nghiệp vụ độc lập theo kiến trúc vi dịch vụ' },
+    ],
+  },
+  {
+    id: 'queue',
+    name: 'Hàng đợi & Xử lý nền',
+    icon: '📬',
+    items: [
+      { name: 'RabbitMQ', type: 'queue', desc: 'Message Broker định tuyến thông điệp tin cậy' },
+      { name: 'Apache Kafka', type: 'queue', desc: 'Hệ thống luồng dữ liệu sự kiện phân tán quy mô lớn' },
+      { name: 'AWS SQS', type: 'queue', desc: 'Hàng đợi thông điệp đám mây không cần quản trị' },
+      { name: 'Background Worker', type: 'worker', desc: 'Tiến trình xử lý công việc tác vụ chạy ngầm' },
+      { name: 'Cron Job / Batch', type: 'worker', desc: 'Tác vụ chạy định kỳ theo lịch biểu' },
+      { name: 'ETL Worker', type: 'worker', desc: 'Tiến trình trích xuất và biến đổi dữ liệu lớn' },
+    ],
+  },
+  {
+    id: 'storage',
+    name: 'Lưu trữ tệp (Storage)',
+    icon: '📦',
+    items: [
+      { name: 'AWS S3', type: 'storage', desc: 'Lưu trữ đối tượng đám mây mở rộng không giới hạn' },
+      { name: 'MinIO', type: 'storage', desc: 'Lưu trữ đối tượng cục bộ tương thích chuẩn S3' },
+      { name: 'Google Cloud Storage', type: 'storage', desc: 'Lưu trữ tệp & media trên Google Cloud' },
+    ],
+  },
+  {
+    id: 'search',
+    name: 'Tìm kiếm & AI Vector',
+    icon: '🔍',
+    items: [
+      { name: 'Elasticsearch', type: 'search', desc: 'Bộ máy tìm kiếm toàn văn & phân tích log' },
+      { name: 'Vector DB (Qdrant)', type: 'search', desc: 'CSDL Vector chuyên dụng cho AI RAG & Embeddings' },
+      { name: 'OpenSearch', type: 'search', desc: 'Tìm kiếm và phân tích phân tán mã nguồn mở' },
+    ],
+  },
+  {
+    id: 'client',
+    name: 'Người dùng & Giao diện',
+    icon: '👥',
+    items: [
+      { name: 'Trình duyệt Web', type: 'client', desc: 'Người dùng truy cập từ Desktop hoặc Web' },
+      { name: 'Ứng dụng Di động', type: 'client', desc: 'Ứng dụng Native iOS / Android' },
+    ],
+  },
+];
+
 export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlockModel> {
   static override styles = systemDiagramStyles;
 
@@ -144,6 +250,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   @state() private accessor panX = 0;
   @state() private accessor panY = 0;
   @state() private accessor isPanning = false;
+  @state() private accessor showAddMenu = false;
+  @state() private accessor activeCategory = 'database';
 
   private panStart = { x: 0, y: 0 };
   private panInitial = { x: 0, y: 0 };
@@ -167,7 +275,17 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   >();
   private dots: SVGCircleElement[] = [];
 
+
+  private readonly handleDocumentClick = (e: MouseEvent) => {
+    if (!this.showAddMenu) return;
+    const target = e.target as HTMLElement | null;
+    if (!target?.closest('.sd-add-menu-container')) {
+      this.showAddMenu = false;
+    }
+  };
+
   override connectedCallback() {
+    window.addEventListener('click', this.handleDocumentClick);
     super.connectedCallback();
     this.contentEditable = 'false';
     this.disposables.add(
@@ -180,6 +298,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   }
 
   override disconnectedCallback() {
+    window.removeEventListener('click', this.handleDocumentClick);
     cancelAnimationFrame(this.raf);
     super.disconnectedCallback();
   }
@@ -612,102 +731,18 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
           readonly
             ? html`<span>${S.readonly}</span>`
             : html`
-                <select
-                  aria-label=${S.addComponent}
-                  @change=${(e: Event) => {
-                    const select = e.target as HTMLSelectElement;
-                    if (select.value) {
-                      const parts = select.value.split(':');
-                      const type = parts[0] as NodeType;
-                      const tech = parts[1];
-                      this.addNodeWithTech(type, tech);
-                    }
-                    select.value = '';
-                  }}
-                >
-                  <option value="">+ ${S.addComponent}...</option>
-                  <optgroup label="🗄️ Cơ sở dữ liệu (Databases)">
-                    <option value="database:PostgreSQL">PostgreSQL</option>
-                    <option value="database:MySQL">MySQL</option>
-                    <option value="database:MongoDB">MongoDB</option>
-                    <option value="database:Redis DB">Redis Database</option>
-                    <option value="database:ClickHouse">
-                      ClickHouse (OLAP / Data Warehouse)
-                    </option>
-                    <option value="database:SQLite">SQLite</option>
-                    <option value="database:Oracle DB">Oracle DB</option>
-                  </optgroup>
-                  <optgroup label="⚡ Bộ nhớ đệm (Cache)">
-                    <option value="cache:Redis Cache">Redis Cache</option>
-                    <option value="cache:Memcached">Memcached</option>
-                    <option value="cache:Varnish">Varnish Cache</option>
-                  </optgroup>
-                  <optgroup label="⚖️ Cân bằng tải &amp; Mạng">
-                    <option value="load-balancer:AWS ALB">
-                      AWS Application Load Balancer
-                    </option>
-                    <option value="load-balancer:Nginx">
-                      Nginx Reverse Proxy
-                    </option>
-                    <option value="load-balancer:HAProxy">HAProxy</option>
-                    <option value="load-balancer:Kong Gateway">
-                      Kong API Gateway
-                    </option>
-                    <option value="dns:AWS Route 53">AWS Route 53 (DNS)</option>
-                    <option value="cdn:Cloudflare CDN &amp; WAF">
-                      Cloudflare CDN & WAF
-                    </option>
-                  </optgroup>
-                  <optgroup label="🖥️ Máy chủ &amp; Ứng dụng">
-                    <option value="api:Node.js API">Node.js API Server</option>
-                    <option value="api:FastAPI Backend">
-                      FastAPI (Python) Backend
-                    </option>
-                    <option value="api:Spring Boot API">
-                      Java Spring Boot API
-                    </option>
-                    <option value="api:Go Gin API">Golang API Server</option>
-                    <option value="api:Microservice">Microservice</option>
-                  </optgroup>
-                  <optgroup label="📬 Hàng đợi &amp; Xử lý bất đồng bộ">
-                    <option value="queue:RabbitMQ">RabbitMQ Task Queue</option>
-                    <option value="queue:Apache Kafka">
-                      Apache Kafka Event Stream
-                    </option>
-                    <option value="queue:AWS SQS">AWS SQS</option>
-                    <option value="worker:Background Worker">
-                      Background Worker
-                    </option>
-                    <option value="worker:Cron Job">
-                      Cron Job / Batch Worker
-                    </option>
-                    <option value="worker:ETL Worker">
-                      ETL / Data Sync Worker
-                    </option>
-                  </optgroup>
-                  <optgroup label="📦 Lưu trữ tệp (Storage)">
-                    <option value="storage:AWS S3">AWS S3 Bucket</option>
-                    <option value="storage:MinIO">MinIO Object Storage</option>
-                    <option value="storage:Google Cloud Storage">
-                      Google Cloud Storage
-                    </option>
-                  </optgroup>
-                  <optgroup label="🔍 Tìm kiếm &amp; AI Vector">
-                    <option value="search:Elasticsearch">Elasticsearch</option>
-                    <option value="search:Vector DB (Qdrant)">
-                      Vector Database (Qdrant / Milvus)
-                    </option>
-                    <option value="search:OpenSearch">OpenSearch</option>
-                  </optgroup>
-                  <optgroup label="👥 Người dùng &amp; Giao diện">
-                    <option value="client:Web Browser">
-                      Trình duyệt Web (Desktop/Mobile)
-                    </option>
-                    <option value="client:Mobile App">
-                      Ứng dụng Di động (iOS / Android)
-                    </option>
-                  </optgroup>
-                </select>
+                <div class="sd-add-menu-container">
+                  <button
+                    class="sd-btn sd-add-btn ${this.showAddMenu ? 'active' : ''}"
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      this.showAddMenu = !this.showAddMenu;
+                    }}
+                  >
+                    + ${S.addComponent}... ▾
+                  </button>
+                  ${this.showAddMenu ? this.renderAddFlyoutMenu() : nothing}
+                </div>
                 <select
                   class="sd-preset-select"
                   aria-label=${S.presets}
@@ -796,6 +831,64 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                 </button>
               `
         }
+      </div>
+    `;
+  }
+
+
+  private renderAddFlyoutMenu() {
+    const activeCat =
+      COMPONENT_CATEGORIES.find(c => c.id === this.activeCategory) ??
+      COMPONENT_CATEGORIES[0];
+
+    return html`
+      <div
+        class="sd-flyout-menu"
+        @click=${(e: Event) => e.stopPropagation()}
+        @pointerdown=${(e: Event) => e.stopPropagation()}
+      >
+        <div class="sd-flyout-categories">
+          ${COMPONENT_CATEGORIES.map(
+            cat => html`
+              <div
+                class="sd-flyout-cat-item ${this.activeCategory === cat.id ? 'active' : ''}"
+                @mouseenter=${() => {
+                  this.activeCategory = cat.id;
+                }}
+                @click=${() => {
+                  this.activeCategory = cat.id;
+                }}
+              >
+                <span class="sd-cat-icon">${cat.icon}</span>
+                <span class="sd-cat-name">${cat.name}</span>
+                <span class="sd-cat-arrow">›</span>
+              </div>
+            `
+          )}
+        </div>
+        <div class="sd-flyout-items">
+          <div class="sd-flyout-items-header">
+            <span>${activeCat?.icon} ${activeCat?.name}</span>
+          </div>
+          <div class="sd-flyout-items-list">
+            ${(activeCat?.items ?? []).map(
+              item => html`
+                <div
+                  class="sd-flyout-subitem"
+                  @click=${() => {
+                    this.addNodeWithTech(item.type, item.name);
+                    this.showAddMenu = false;
+                  }}
+                >
+                  <div class="sd-subitem-title">${item.name}</div>
+                  ${item.desc
+                    ? html`<div class="sd-subitem-desc">${item.desc}</div>`
+                    : nothing}
+                </div>
+              `
+            )}
+          </div>
+        </div>
       </div>
     `;
   }
