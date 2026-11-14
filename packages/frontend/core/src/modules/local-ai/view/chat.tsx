@@ -1,5 +1,7 @@
 import { Button } from '@affine/component';
+import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { useI18n } from '@affine/i18n';
+import { useService } from '@toeverything/infra';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { type ChatMessage, listModels, streamChat } from '../client';
@@ -13,6 +15,7 @@ let messageSeq = 0;
 
 export const LocalAIChat = () => {
   const t = useI18n();
+  const workspaceDialogService = useService(WorkspaceDialogService);
   const settings = useLocalAISettings();
   const provider = settings.providers.find(
     p => p.id === settings.activeProviderId
@@ -229,7 +232,11 @@ export const LocalAIChat = () => {
         </Button>
         <span className={styles.spacer} />
         <Button onClick={clear}>{t['com.affine.localAI.clear']()}</Button>
-        <Button onClick={() => setShowSettings(true)}>
+        <Button
+          onClick={() =>
+            workspaceDialogService.open('setting', { activeTab: 'ai' })
+          }
+        >
           {t['com.affine.localAI.settings']()}
         </Button>
       </div>

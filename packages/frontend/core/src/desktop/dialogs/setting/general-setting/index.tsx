@@ -3,6 +3,7 @@ import { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import { MeetingSettingsService } from '@affine/core/modules/media/services/meeting-settings';
 import { useI18n } from '@affine/i18n';
 import {
+  AiOutlineIcon,
   AppearanceIcon,
   FolderIcon,
   KeyboardIcon,
@@ -13,6 +14,7 @@ import { useLiveData, useServices } from '@toeverything/infra';
 import { useMemo } from 'react';
 
 import type { SettingSidebarItem, SettingState } from '../types';
+import { AiSettingsPanel } from './ai';
 import { AppearanceSettings } from './appearance';
 import { BackupSettingPanel } from './backup';
 import { EditorSettings } from './editor';
@@ -46,6 +48,12 @@ export const useGeneralSettingList = (): GeneralSettingList => {
         title: t['com.affine.keyboardShortcuts.title'](),
         icon: <KeyboardIcon />,
         testId: 'shortcuts-panel-trigger',
+      },
+      {
+        key: 'ai',
+        title: 'Cài đặt AI',
+        icon: <AiOutlineIcon />,
+        testId: 'ai-panel-trigger',
       },
     ];
     if (enableEditorSettings) {
@@ -97,6 +105,8 @@ export const GeneralSetting = ({ activeTab }: GeneralSettingProps) => {
       return <EditorSettings />;
     case 'appearance':
       return <AppearanceSettings />;
+    case 'ai':
+      return <AiSettingsPanel />;
     case 'meetings':
       return <MeetingsSettings />;
     case 'backup':

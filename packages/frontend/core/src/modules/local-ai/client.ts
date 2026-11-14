@@ -58,27 +58,139 @@ async function readError(res: Response) {
   return `HTTP ${res.status}${text ? ` — ${String(text).slice(0, 300)}` : ''}`;
 }
 
+export interface TestModelResult {
+  success: boolean;
+  latencyMs: number;
+  message: string;
+}
+
+export async function testModelConnection(
+  provider: AIProvider,
+  proxyUrl: string,
+  model: string,
+  signal?: AbortSignal
+): Promise<TestModelResult> {
+  const start = performance.now();
+  try {
+    const res = await request(provider, proxyUrl, 'chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...authHeaders(provider),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'Ping' }],
+        max_tokens: 5,
+        stream: false,
+      }),
+      signal,
+    });
+    const latencyMs = Math.round(performance.now() - start);
+    if (!res.ok) {
+      const err = await readError(res);
+      return { success: false, latencyMs, message: err };
+    }
+    return {
+      success: true,
+      latencyMs,
+      message: `Kết nối thành công (${latencyMs}ms)`,
+    };
+  } catch (error) {
+    const latencyMs = Math.round(performance.now() - start);
+    return {
+      success: false,
+      latencyMs,
+      message: (error as Error)?.message || 'Lỗi không xác định',
+    };
+  }
+}
+
 export async function listModels(
   provider: AIProvider,
   proxyUrl: string,
   signal?: AbortSignal
 ): Promise<string[]> {
-  const res = await request(provider, proxyUrl, 'models', {
-    method: 'GET',
-    headers: { Accept: 'application/json', ...authHeaders(provider) },
-    signal,
-  });
-  if (!res.ok) throw new Error(await readError(res));
-  const json = await res.json();
-  const items: Array<{ id?: string; name?: string }> = Array.isArray(json?.data)
-    ? json.data
-    : Array.isArray(json?.models)
-      ? json.models
-      : [];
-  return items
-    .map(m => m.id ?? m.name)
-    .filter((id): id is string => typeof id === 'string')
-    .sort((a, b) => a.localeCompare(b));
+  // First try standard OpenAI /models endpoint
+  try {
+    const res = await request(provider, proxyUrl, 'models', {
+      method: 'GET',
+      headers: { Accept: 'application/json', ...authHeaders(provider) },
+      signal,
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const items: Array<{ id?: string; name?: string; model?: string }> =
+        Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json?.models)
+            ? json.models
+            : [];
+      const list = items
+        .map(m => m.id ?? m.name ?? m.model)
+        .filter((id): id is string => typeof id === 'string')
+        .sort((a, b) => a.localeCompare(b));
+      if (list.length > 0) return list;
+    }
+  } catch {
+    // fallback below
+  }
+
+  // Fallback for Ollama if baseUrl has /v1 or not: try api/tags
+  if (provider.id === 'ollama' || provider.baseUrl.includes('11434')) {
+    try {
+      const ollamaBase = provider.baseUrl.replace(/\/v1\/?$/, '');
+      const res = await request(
+        { ...provider, baseUrl: ollamaBase },
+        proxyUrl,
+        'api/tags',
+        {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal,
+        }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        const models = Array.isArray(json?.models)
+          ? json.models
+              .map((m: { name?: string; model?: string }) => m.name ?? m.model)
+              .filter(Boolean)
+          : [];
+        if (models.length > 0) return models.sort();
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Fallbacks for well-known providers when offline
+  const FALLBACKS: Record<string, string[]> = {
+    openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini', 'gpt-4-turbo'],
+    anthropic: [
+      'claude-3-7-sonnet',
+      'claude-3-5-sonnet',
+      'claude-3-5-haiku',
+      'claude-3-opus',
+    ],
+    minimax: ['MiniMax-Text-01', 'abab6.5s-chat'],
+    openrouter: [
+      'deepseek/deepseek-r1',
+      'deepseek/deepseek-chat',
+      'anthropic/claude-3.5-sonnet',
+      'openai/gpt-4o',
+    ],
+    ollama: ['llama3.2', 'qwen2.5', 'mistral', 'deepseek-r1:8b', 'phi3'],
+    '9router': [
+      'free-logic',
+      'gemini-2.0-flash',
+      'deepseek-v3',
+      'claude-3-5-sonnet',
+    ],
+  };
+
+  return FALLBACKS[provider.id] || ['default'];
 }
 
 /** Streams a chat completion, calling `onDelta` with each text chunk. */

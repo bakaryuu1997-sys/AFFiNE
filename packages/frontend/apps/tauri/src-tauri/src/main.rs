@@ -1,7 +1,9 @@
 // Keeps the console window away in release builds on Windows.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use affine_mcp_bridge::{Config, DEFAULT_PORT, Server, load_token};
+mod mcp_install;
+
+use affine_mcp_bridge::{Config, DEFAULT_PORT, Server, load_token, run_stdio};
 use serde::Serialize;
 
 /// What the web app needs to connect to the MCP bridge that runs in this app.
@@ -22,6 +24,15 @@ fn mcp_info(state: tauri::State<'_, McpState>) -> Option<McpInfo> {
 }
 
 fn main() {
+  let args: Vec<String> = std::env::args().collect();
+  if args.iter().any(|a| a == "--mcp" || a == "--stdio") {
+    let token = load_token().unwrap_or_else(|_| "anonymous".to_string());
+    tauri::async_runtime::block_on(async move {
+      run_stdio(DEFAULT_PORT, token).await;
+    });
+    return;
+  }
+
   let token = load_token().ok();
   let info = token.as_ref().map(|token| McpInfo {
     url: format!("ws://127.0.0.1:{DEFAULT_PORT}/bridge"),
@@ -30,7 +41,11 @@ fn main() {
 
   tauri::Builder::default()
     .manage(McpState { info })
-    .invoke_handler(tauri::generate_handler![mcp_info])
+    .invoke_handler(tauri::generate_handler![
+      mcp_info,
+      mcp_install::get_mcp_status,
+      mcp_install::install_mcp_config,
+    ])
     .setup(move |_app| {
       if let Some(token) = token {
         // The MCP bridge lives and dies with the app. If another copy

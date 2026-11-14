@@ -105,6 +105,44 @@ const AIChatButton = () => {
   );
 };
 
+const AppSidebarMcpButton = () => {
+  const workspaceDialogService = useService(WorkspaceDialogService);
+  const onOpenMcp = useCallback(() => {
+    workspaceDialogService.open('setting', {
+      activeTab: 'workspace:mcp',
+    });
+  }, [workspaceDialogService]);
+
+  return (
+    <MenuItem
+      data-testid="slider-bar-mcp-integration-button"
+      icon={
+        <svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+          <rect
+            x="4"
+            y="4"
+            width="16"
+            height="16"
+            rx="3"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path
+            d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+        </svg>
+      }
+      onClick={onOpenMcp}
+    >
+      <span data-testid="mcp-integration-trigger">Tích hợp MCP</span>
+    </MenuItem>
+  );
+};
+
 /**
  * This is for the whole affine app sidebar.
  * This component wraps the app sidebar in `@affine/component` with logic and data.
@@ -205,6 +243,7 @@ export const RootAppSidebar = memo((): ReactElement => {
         <McpBridgeStarter />
         {sessionStatus === 'authenticated' && <NotificationButton />}
         <AIChatButton />
+        <AppSidebarMcpButton />
         <MenuItem
           data-testid="slider-bar-workspace-setting-button"
           icon={<SettingsIcon />}

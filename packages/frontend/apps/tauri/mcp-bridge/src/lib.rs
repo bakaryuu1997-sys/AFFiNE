@@ -592,3 +592,121 @@ async fn bridge_upgrade(State(server): State<Server>, headers: HeaderMap, ws: We
   ws.protocols(["affine-mcp"])
     .on_upgrade(move |socket| async move { server.run_bridge(socket).await })
 }
+
+use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::net::TcpStream;
+
+/// Minimal HTTP/1.1 request over TCP; returns (status, body).
+pub async fn http_request(
+  port: u16,
+  method: &str,
+  path: &str,
+  token: Option<&str>,
+  body: Option<&str>,
+) -> std::io::Result<(u16, String)> {
+  let mut stream = TcpStream::connect(("127.0.0.1", port)).await?;
+  let body = body.unwrap_or("");
+  let mut request = format!("{method} {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n");
+  if let Some(token) = token {
+    request.push_str(&format!("Authorization: Bearer {token}\r\n"));
+  }
+  request.push_str(&format!(
+    "Content-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+    body.len()
+  ));
+  stream.write_all(request.as_bytes()).await?;
+  let mut raw = Vec::new();
+  stream.read_to_end(&mut raw).await?;
+  let text = String::from_utf8_lossy(&raw).to_string();
+  let (head, payload) = text.split_once("\r\n\r\n").unwrap_or((&text, ""));
+  let status = head.split_whitespace().nth(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+  Ok((status, payload.to_string()))
+}
+
+pub async fn server_is_running(port: u16) -> bool {
+  matches!(
+    tokio::time::timeout(
+      std::time::Duration::from_millis(1500),
+      http_request(port, "GET", "/health", None, None)
+    )
+    .await,
+    Ok(Ok((200, _)))
+  )
+}
+
+pub async fn run_stdio(port: u16, token: String) {
+  let local = if server_is_running(port).await {
+    eprintln!("[affine-mcp] using the running server on port {port}");
+    None
+  } else {
+    let mut config = Config::new(token.clone());
+    config.port = port;
+    let server = Server::new(config);
+    match server.listen().await {
+      Ok(addr) => {
+        eprintln!("[affine-mcp] MCP endpoint : http://{addr}/mcp");
+        eprintln!("[affine-mcp] App bridge   : ws://{addr}/bridge");
+      }
+      Err(error) => {
+        eprintln!("[affine-mcp] cannot listen on port {port}: {error}");
+      }
+    }
+    Some(server)
+  };
+
+  let (out_tx, mut out_rx) = mpsc::unbounded_channel::<String>();
+  let writer = tokio::spawn(async move {
+    let mut stdout = tokio::io::stdout();
+    while let Some(line) = out_rx.recv().await {
+      if stdout.write_all(line.as_bytes()).await.is_err()
+        || stdout.write_all(b"\n").await.is_err()
+        || stdout.flush().await.is_err()
+      {
+        break;
+      }
+    }
+  });
+
+  let mut lines = BufReader::new(tokio::io::stdin()).lines();
+  let mut jobs = Vec::new();
+  while let Ok(Some(line)) = lines.next_line().await {
+    if line.trim().is_empty() {
+      continue;
+    }
+    let out_tx = out_tx.clone();
+    let local = local.clone();
+    let token = token.clone();
+    jobs.push(tokio::spawn(async move {
+      let message: Value = match serde_json::from_str(&line) {
+        Ok(message) => message,
+        Err(_) => {
+          let _ = out_tx.send(
+            json!({ "jsonrpc": "2.0", "id": null,
+                    "error": { "code": -32700, "message": "Parse error" } })
+            .to_string(),
+          );
+          return;
+        }
+      };
+      let response = match local {
+        Some(server) => server.handle_rpc(message).await,
+        None => match http_request(port, "POST", "/mcp", Some(&token), Some(&line)).await {
+          Ok((202, _)) => None,
+          Ok((_, body)) => serde_json::from_str::<Value>(&body).ok(),
+          Err(error) => {
+            eprintln!("[affine-mcp] request failed: {error}");
+            None
+          }
+        },
+      };
+      if let Some(response) = response {
+        let _ = out_tx.send(response.to_string());
+      }
+    }));
+  }
+  for job in jobs {
+    let _ = job.await;
+  }
+  drop(out_tx);
+  let _ = writer.await;
+}
