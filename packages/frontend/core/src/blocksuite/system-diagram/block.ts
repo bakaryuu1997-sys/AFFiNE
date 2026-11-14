@@ -31,11 +31,15 @@ import {
 import {
   createEmptySpec,
   createFullSampleSpec,
+  createOffshore3TierSpec,
+  createOffshoreBatchEtlSpec,
+  createOffshoreHaDrSpec,
+  createOffshoreMicroservicesSpec,
+  createOffshoreRagAiSpec,
   createSampleSpec,
   defaultNode,
   type DiagramNode,
   type DiagramSpec,
-  NODE_TYPES,
   type NodeType,
   normalizeSpec,
   TRAFFIC_PROFILES,
@@ -56,6 +60,63 @@ const stop = (event: Event) => event.stopPropagation();
 
 const pillWidth = (text: string) => Math.max(34, text.length * 6.3 + 14);
 
+export const TECH_SUGGESTIONS: Record<NodeType, string[]> = {
+  database: [
+    'MySQL',
+    'PostgreSQL',
+    'MongoDB',
+    'Redis DB',
+    'Elasticsearch',
+    'ClickHouse',
+    'SQLite',
+    'Oracle DB',
+    'DynamoDB',
+  ],
+  cache: ['Redis Cache', 'Memcached', 'Varnish', 'ElastiCache'],
+  'load-balancer': [
+    'AWS ALB',
+    'Nginx',
+    'HAProxy',
+    'Cloudflare',
+    'Traefik',
+    'Kong Gateway',
+  ],
+  api: [
+    'Node.js API',
+    'FastAPI',
+    'Spring Boot',
+    'Go Gin',
+    'NestJS',
+    'GraphQL',
+    'Next.js API',
+  ],
+  queue: ['RabbitMQ', 'Apache Kafka', 'AWS SQS', 'Redis Pub/Sub', 'Celery'],
+  worker: [
+    'Background Worker',
+    'Celery Worker',
+    'BullMQ Worker',
+    'Cron Job',
+    'ETL Worker',
+    'Data Sync Worker',
+  ],
+  storage: ['AWS S3', 'MinIO', 'Google Cloud Storage', 'Azure Blob', 'NAS / NFS'],
+  search: [
+    'Elasticsearch',
+    'OpenSearch',
+    'Vector DB (Qdrant)',
+    'Meilisearch',
+    'Milvus',
+  ],
+  client: [
+    'Web Browser',
+    'Mobile App (iOS/Android)',
+    'SPA Frontend',
+    'Desktop Client',
+  ],
+  dns: ['Route 53', 'Cloudflare DNS', 'CoreDNS', 'Google Cloud DNS'],
+  cdn: ['Cloudflare CDN', 'AWS CloudFront', 'Fastly', 'Akamai'],
+};
+
 export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlockModel> {
   static override styles = systemDiagramStyles;
 
@@ -73,6 +134,12 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   @state() private accessor notice: string | null = null;
   @state() private accessor zoom = 1;
   @state() private accessor isFullscreen = false;
+  @state() private accessor panX = 0;
+  @state() private accessor panY = 0;
+  @state() private accessor isPanning = false;
+
+  private panStart = { x: 0, y: 0 };
+  private panInitial = { x: 0, y: 0 };
 
   private version = 0;
   private cache: {
@@ -196,7 +263,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.commit(next);
   }
 
-  private addNode(type: NodeType) {
+  private addNode(type: NodeType, customLabel?: string) {
     let createdId = '';
     this.edit(spec => {
       const id = uniqueId(
@@ -204,10 +271,84 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
         spec.nodes.map(n => n.id)
       );
       const { x, y } = freePosition(spec.nodes);
-      spec.nodes.push(defaultNode(type, { id, x, y, label: S.types[type] }));
+      const label = customLabel || S.types[type];
+      spec.nodes.push(defaultNode(type, { id, x, y, label }));
       createdId = id;
     });
     if (createdId) this.selected = { kind: 'node', id: createdId };
+  }
+
+  private addNodeWithTech(type: NodeType, tech?: string) {
+    this.addNode(type, tech);
+  }
+
+  private onSelectPreset(e: Event) {
+    const select = e.target as HTMLSelectElement;
+    const value = select.value;
+    select.value = '';
+    if (!value) return;
+
+    const names = sampleNames();
+    if (value === 'full') {
+      this.commit(createFullSampleSpec(names));
+    } else if (value === '3tier') {
+      this.commit(createOffshore3TierSpec(names));
+    } else if (value === 'microservices') {
+      this.commit(createOffshoreMicroservicesSpec(names));
+    } else if (value === 'batch') {
+      this.commit(createOffshoreBatchEtlSpec(names));
+    } else if (value === 'rag') {
+      this.commit(createOffshoreRagAiSpec(names));
+    } else if (value === 'hadr') {
+      this.commit(createOffshoreHaDrSpec(names));
+    } else if (value === 'sample') {
+      this.commit(createSampleSpec(names));
+    }
+    this.resetZoom();
+    this.selected = null;
+  }
+
+  private onCanvasPointerDown(e: PointerEvent) {
+    const target = e.target as HTMLElement | SVGElement | null;
+    if (
+      target?.closest('.node') ||
+      target?.closest('.link') ||
+      target?.closest('.pill') ||
+      target?.closest('.sd-node-floating-toolbar') ||
+      target?.closest('button') ||
+      target?.closest('input')
+    ) {
+      return;
+    }
+    this.selected = null;
+    if (this.connecting) this.connectFrom = null;
+
+    this.isPanning = true;
+    this.panStart = { x: e.clientX, y: e.clientY };
+    this.panInitial = { x: this.panX, y: this.panY };
+
+    const move = (ev: PointerEvent) => {
+      if (!this.isPanning) return;
+      const dx = (ev.clientX - this.panStart.x) / this.zoom;
+      const dy = (ev.clientY - this.panStart.y) / this.zoom;
+      this.panX = Math.round(this.panInitial.x - dx);
+      this.panY = Math.round(this.panInitial.y - dy);
+    };
+
+    const up = () => {
+      this.isPanning = false;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  }
+
+  private resetZoom() {
+    this.zoom = 1;
+    this.panX = 0;
+    this.panY = 0;
   }
 
   private removeSelected() {
@@ -286,9 +427,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.zoom = Math.max(0.5, Number((this.zoom - 0.25).toFixed(2)));
   }
 
-  private resetZoom() {
-    this.zoom = 1;
-  }
 
   private toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
@@ -495,12 +633,81 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   aria-label=${S.addComponent}
                   @change=${(e: Event) => {
                     const select = e.target as HTMLSelectElement;
-                    if (select.value) this.addNode(select.value as NodeType);
+                    if (select.value) {
+                      const parts = select.value.split(':');
+                      const type = parts[0] as NodeType;
+                      const tech = parts[1];
+                      this.addNodeWithTech(type, tech);
+                    }
                     select.value = '';
                   }}
                 >
-                  <option value="">+ ${S.addComponent}</option>
-                  ${NODE_TYPES.map(t => html`<option value=${t}>${S.types[t]}</option>`)}
+                  <option value="">+ ${S.addComponent}...</option>
+                  <optgroup label="🗄️ Cơ sở dữ liệu (Databases)">
+                    <option value="database:PostgreSQL">PostgreSQL</option>
+                    <option value="database:MySQL">MySQL</option>
+                    <option value="database:MongoDB">MongoDB</option>
+                    <option value="database:Redis DB">Redis Database</option>
+                    <option value="database:ClickHouse">ClickHouse (OLAP / Data Warehouse)</option>
+                    <option value="database:SQLite">SQLite</option>
+                    <option value="database:Oracle DB">Oracle DB</option>
+                  </optgroup>
+                  <optgroup label="⚡ Bộ nhớ đệm (Cache)">
+                    <option value="cache:Redis Cache">Redis Cache</option>
+                    <option value="cache:Memcached">Memcached</option>
+                    <option value="cache:Varnish">Varnish Cache</option>
+                  </optgroup>
+                  <optgroup label="⚖️ Cân bằng tải &amp; Mạng">
+                    <option value="load-balancer:AWS ALB">AWS Application Load Balancer</option>
+                    <option value="load-balancer:Nginx">Nginx Reverse Proxy</option>
+                    <option value="load-balancer:HAProxy">HAProxy</option>
+                    <option value="load-balancer:Kong Gateway">Kong API Gateway</option>
+                    <option value="dns:AWS Route 53">AWS Route 53 (DNS)</option>
+                    <option value="cdn:Cloudflare CDN &amp; WAF">Cloudflare CDN & WAF</option>
+                  </optgroup>
+                  <optgroup label="🖥️ Máy chủ &amp; Ứng dụng">
+                    <option value="api:Node.js API">Node.js API Server</option>
+                    <option value="api:FastAPI Backend">FastAPI (Python) Backend</option>
+                    <option value="api:Spring Boot API">Java Spring Boot API</option>
+                    <option value="api:Go Gin API">Golang API Server</option>
+                    <option value="api:Microservice">Microservice</option>
+                  </optgroup>
+                  <optgroup label="📬 Hàng đợi &amp; Xử lý bất đồng bộ">
+                    <option value="queue:RabbitMQ">RabbitMQ Task Queue</option>
+                    <option value="queue:Apache Kafka">Apache Kafka Event Stream</option>
+                    <option value="queue:AWS SQS">AWS SQS</option>
+                    <option value="worker:Background Worker">Background Worker</option>
+                    <option value="worker:Cron Job">Cron Job / Batch Worker</option>
+                    <option value="worker:ETL Worker">ETL / Data Sync Worker</option>
+                  </optgroup>
+                  <optgroup label="📦 Lưu trữ tệp (Storage)">
+                    <option value="storage:AWS S3">AWS S3 Bucket</option>
+                    <option value="storage:MinIO">MinIO Object Storage</option>
+                    <option value="storage:Google Cloud Storage">Google Cloud Storage</option>
+                  </optgroup>
+                  <optgroup label="🔍 Tìm kiếm &amp; AI Vector">
+                    <option value="search:Elasticsearch">Elasticsearch</option>
+                    <option value="search:Vector DB (Qdrant)">Vector Database (Qdrant / Milvus)</option>
+                    <option value="search:OpenSearch">OpenSearch</option>
+                  </optgroup>
+                  <optgroup label="👥 Người dùng &amp; Giao diện">
+                    <option value="client:Web Browser">Trình duyệt Web (Desktop/Mobile)</option>
+                    <option value="client:Mobile App">Ứng dụng Di động (iOS / Android)</option>
+                  </optgroup>
+                </select>
+                <select
+                  class="sd-preset-select"
+                  aria-label=${S.presets}
+                  @change=${(e: Event) => this.onSelectPreset(e)}
+                >
+                  <option value="">📁 ${S.presets}</option>
+                  <option value="3tier">${S.template3Tier}</option>
+                  <option value="microservices">${S.templateMicroservices}</option>
+                  <option value="batch">${S.templateBatchEtl}</option>
+                  <option value="rag">${S.templateRagAi}</option>
+                  <option value="hadr">${S.templateHaDr}</option>
+                  <option value="full">${S.templateFull}</option>
+                  <option value="sample">${S.templateBasic}</option>
                 </select>
                 <button
                   class="sd-btn ${this.connecting ? 'active' : ''}"
@@ -518,13 +725,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   @click=${() => this.removeSelected()}
                 >
                   ${S.remove}
-                </button>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.loadFullSample()}
-                  title=${S.loadFullSample}
-                >
-                  ${S.loadFullSample}
                 </button>
                 <button
                   class="sd-btn"
@@ -568,7 +768,83 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                 >
                   📋 ${S.copyMermaid}
                 </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => {
+                    this.commit(createEmptySpec());
+                    this.resetZoom();
+                    this.selected = null;
+                  }}
+                  title=${S.newDiagram}
+                >
+                  ${S.newDiagram}
+                </button>
               `
+        }
+      </div>
+    `;
+  }
+
+
+  private renderFloatingNodeToolbar(spec: DiagramSpec) {
+    if (this.selected?.kind !== 'node') return nothing;
+    const node = spec.nodes.find(n => n.id === this.selected?.id);
+    if (!node) return nothing;
+
+    const suggestions = TECH_SUGGESTIONS[node.type] || [];
+
+    return html`
+      <div
+        class="sd-node-floating-toolbar"
+        @pointerdown=${(e: Event) => e.stopPropagation()}
+        @click=${(e: Event) => e.stopPropagation()}
+      >
+        <div class="sd-nft-title">
+          <span>🛠️ ${S.node}: <b>${node.label}</b></span>
+          <span class="sd-nft-type">${S.types[node.type]}</span>
+        </div>
+        <div class="sd-nft-edit-row">
+          <input
+            type="text"
+            .value=${node.label}
+            ?disabled=${this.isReadonly}
+            placeholder=${S.editLabel}
+            @input=${(e: Event) => {
+              const val = (e.target as HTMLInputElement).value;
+              this.patchNode(node.id, { label: val });
+            }}
+          />
+          <button
+            type="button"
+            class="sd-btn"
+            style="color:#f87171;border-color:rgba(248,113,113,0.3)"
+            @click=${() => this.removeSelected()}
+            title=${S.remove}
+          >
+            ✕ ${S.remove}
+          </button>
+        </div>
+        ${
+          suggestions.length > 0
+            ? html`
+                <div class="sd-nft-presets-row">
+                  <span>${S.quickTech}</span>
+                  <div class="sd-nft-badges">
+                    ${suggestions.map(
+                      tech => html`
+                        <button
+                          type="button"
+                          class="sd-badge-btn ${node.label === tech ? 'active' : ''}"
+                          @click=${() => this.patchNode(node.id, { label: tech })}
+                        >
+                          ${tech}
+                        </button>
+                      `
+                    )}
+                  </div>
+                </div>
+              `
+            : nothing
         }
       </div>
     `;
@@ -599,7 +875,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
 
     return html`
       <div
-        class="sd-canvas"
+        class="sd-canvas ${this.isPanning ? 'panning' : ''}"
+        @pointerdown=${(e: PointerEvent) => this.onCanvasPointerDown(e)}
         @wheel=${(e: WheelEvent) => {
           if (e.ctrlKey) {
             e.preventDefault();
@@ -610,13 +887,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       >
         <svg
           class="sd-svg"
-          viewBox="${currentX} ${currentY} ${currentW} ${currentH}"
+          viewBox="${currentX + this.panX} ${currentY + this.panY} ${currentW} ${currentH}"
           style="aspect-ratio: ${baseBox.w} / ${baseBox.h}"
           preserveAspectRatio="xMidYMid meet"
-          @pointerdown=${() => {
-            this.selected = null;
-            if (this.connecting) this.connectFrom = null;
-          }}
         >
           ${spec.edges.map(edge => {
             const a = byId.get(edge.from);
@@ -632,6 +905,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
             return this.renderEdgePill(edge.id, edge.label, a, b, result);
           })}
         </svg>
+        ${this.renderFloatingNodeToolbar(spec)}
         ${hint ? html`<div class="sd-hint">${hint}</div>` : nothing}
         ${
           error

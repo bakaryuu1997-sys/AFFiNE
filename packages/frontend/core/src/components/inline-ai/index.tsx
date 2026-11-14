@@ -1,5 +1,6 @@
 import { Button, IconButton, Modal } from '@affine/component';
 import { DocsService } from '@affine/core/modules/doc';
+import { getLocalAISettings } from '@affine/core/modules/local-ai/settings';
 import { AiOutlineIcon } from '@blocksuite/icons/rc';
 import { useService } from '@toeverything/infra';
 import { useCallback, useRef, useState } from 'react';
@@ -36,16 +37,30 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
       setResponse('');
       setCopied(false);
 
+      const aiSettings = getLocalAISettings();
+      const provider =
+        aiSettings.providers.find(p => p.id === aiSettings.activeProviderId) ||
+        aiSettings.providers[0];
+
+      if (!provider) {
+        setResponse('❌ Chưa cấu hình AI. Vui lòng mở Cài đặt > Cài đặt AI để chọn nhà cung cấp.');
+        setLoading(false);
+        return;
+      }
+
       const docContext = getDocText();
       const messages = [
         {
           role: 'system',
           content:
+            aiSettings.systemPrompt ||
             'Bạn là Trợ lý AI thông minh tích hợp trong ứng dụng AFFiNE Cá nhân. Hãy trả lời súc tích, chuyên nghiệp bằng tiếng Việt và định dạng Markdown dễ đọc.',
         },
         {
           role: 'user',
-          content: `${docContext ? `Ngữ cảnh tài liệu hiện tại: ${docContext}\n\n` : ''}Yêu cầu: ${userPrompt}`,
+          content: `${docContext ? `Ngữ cảnh tài liệu hiện tại: ${docContext}
+
+` : ''}Yêu cầu: ${userPrompt}`,
         },
       ];
 
@@ -53,13 +68,21 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
       abortControllerRef.current = controller;
 
       try {
-        const res = await fetch('http://localhost:20129/v1/chat/completions', {
+        const targetUrl = `${provider.baseUrl.replace(/\/+$/, '')}/chat/completions`;
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (provider.apiKey) {
+          headers['Authorization'] = `Bearer ${provider.apiKey}`;
+        }
+
+        const model = provider.model || 'gpt-4o';
+
+        const res = await fetch(targetUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({
-            model: 'free-logic',
+            model,
             messages,
             stream: false,
           }),
@@ -67,8 +90,15 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
         });
 
         if (!res.ok) {
+          let errText = '';
+          try {
+            const errJson = await res.json();
+            errText = errJson?.error?.message ?? errJson?.error ?? '';
+          } catch {
+            errText = await res.text();
+          }
           throw new Error(
-            `Lỗi kết nối AI (${res.status}): Vui lòng kiểm tra 9Router/AI Proxy`
+            `Lỗi từ ${provider.name} (HTTP ${res.status}): ${errText || 'Kiểm tra lại API Key hoặc Endpoint trong Cài đặt AI'}`
           );
         }
 
@@ -116,7 +146,7 @@ export const InlineAiButton = ({ docId }: InlineAiButtonProps) => {
       <Modal
         open={open}
         onOpenChange={setOpen}
-        title="✨ Trợ lý AI Tài liệu (Local AI)"
+        title="✨ Trợ lý AI Tài liệu (Tự do / Standalone)"
         width={560}
       >
         <div

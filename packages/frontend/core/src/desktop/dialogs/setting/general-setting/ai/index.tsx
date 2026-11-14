@@ -145,7 +145,7 @@ const ProviderIcon = ({
 export const AiSettingsPanel = () => {
   const settings = useLocalAISettings();
   const [selectedProviderId, setSelectedProviderId] = useState<string>(
-    settings.activeProviderId || '9router'
+    settings.activeProviderId || settings.providers[0]?.id || 'ollama'
   );
 
   const activeProvider = useMemo(
@@ -567,7 +567,7 @@ export const AiSettingsPanel = () => {
                 type="text"
                 value={activeProvider.baseUrl}
                 onChange={e => handleUpdateUrl(e.target.value)}
-                placeholder="http://localhost:20128/v1"
+                placeholder="https://api.openai.com/v1 hoặc http://localhost:11434/v1"
                 style={{
                   width: '100%',
                   padding: '8px 12px',
@@ -587,7 +587,7 @@ export const AiSettingsPanel = () => {
                 }}
               >
                 URL gốc của API tương thích OpenAI. Ví dụ:
-                http://localhost:20128/v1, http://localhost:11434/v1
+                https://api.openai.com/v1, http://localhost:11434/v1, https://openrouter.ai/api/v1
               </div>
             </div>
 

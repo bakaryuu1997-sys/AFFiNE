@@ -342,4 +342,125 @@ export const systemDiagramStyles = css`
     user-select: none;
     cursor: pointer;
   }
+
+  system-diagram-block .sd-canvas {
+    cursor: grab;
+    overflow: hidden;
+  }
+  system-diagram-block .sd-canvas.panning {
+    cursor: grabbing;
+  }
+
+  system-diagram-block .sd-preset-select {
+    background: var(--sd-surface);
+    color: var(--sd-accent);
+    border: 1px solid var(--sd-accent);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+  }
+
+  system-diagram-block .sd-node-floating-toolbar {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sd-surface, #242428);
+    border: 1px solid var(--sd-accent, #7c8cff);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    border-radius: 8px;
+    padding: 10px 14px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 90%;
+    backdrop-filter: blur(8px);
+    animation: sd-fade-in 0.15s ease-out;
+  }
+
+  @keyframes sd-fade-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  system-diagram-block .sd-nft-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sd-text);
+  }
+
+  system-diagram-block .sd-nft-type {
+    font-size: 11px;
+    color: var(--sd-muted);
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  system-diagram-block .sd-nft-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  system-diagram-block .sd-nft-edit-row input {
+    flex: 1;
+    background: var(--sd-bg);
+    color: var(--sd-text);
+    border: 1px solid var(--sd-border);
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+  }
+  system-diagram-block .sd-nft-edit-row input:focus {
+    border-color: var(--sd-accent);
+  }
+
+  system-diagram-block .sd-nft-presets-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--sd-muted);
+  }
+
+  system-diagram-block .sd-nft-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  system-diagram-block .sd-badge-btn {
+    background: color-mix(in srgb, var(--sd-surface) 80%, #fff 10%);
+    color: var(--sd-text);
+    border: 1px solid var(--sd-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  system-diagram-block .sd-badge-btn:hover {
+    border-color: var(--sd-accent);
+    color: var(--sd-accent);
+    background: color-mix(in srgb, var(--sd-accent) 15%, transparent);
+  }
+  system-diagram-block .sd-badge-btn.active {
+    background: var(--sd-accent);
+    color: #fff;
+    border-color: var(--sd-accent);
+  }
 `;

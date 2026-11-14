@@ -3,14 +3,14 @@ import { useSyncExternalStore } from 'react';
 /**
  * Settings store for the in-app AI panel.
  *
- * Providers are any OpenAI-compatible endpoints (9router, Ollama, LM Studio,
- * OpenRouter, ...). Everything is kept in this browser's localStorage; API keys
- * never leave the device except in requests to the provider you configured.
+ * Providers are any OpenAI-compatible endpoints (Ollama, LM Studio, OpenRouter,
+ * OpenAI, Anthropic, DeepSeek, ...). Everything is kept in this client's localStorage;
+ * API keys never leave the device except in requests to the provider you configured.
  */
 export type AIProvider = {
   id: string;
   name: string;
-  /** e.g. http://localhost:11434/v1 */
+  /** e.g. https://api.openai.com/v1 or http://localhost:11434/v1 */
   baseUrl: string;
   apiKey: string;
   /** try the local CORS proxy before a direct request */
@@ -49,12 +49,12 @@ export const STANDARD_PROVIDERS: AIProvider[] = [
     model: 'claude-3-5-sonnet',
   },
   {
-    id: 'minimax',
-    name: 'MiniMax',
-    baseUrl: 'https://api.minimax.io/v1',
+    id: 'ollama',
+    name: 'Ollama (Cục bộ)',
+    baseUrl: 'http://localhost:11434/v1',
     apiKey: '',
     viaProxy: false,
-    model: 'MiniMax-Text-01',
+    model: 'llama3.2',
   },
   {
     id: 'openrouter',
@@ -65,27 +65,27 @@ export const STANDARD_PROVIDERS: AIProvider[] = [
     model: 'deepseek/deepseek-chat',
   },
   {
-    id: 'ollama',
-    name: 'Ollama',
-    baseUrl: 'http://localhost:11434/v1',
-    apiKey: '',
-    viaProxy: false,
-    model: 'llama3.2',
-  },
-  {
     id: 'custom-openai',
-    name: 'OpenAI Compatible',
+    name: 'OpenAI Compatible (Tự do)',
     baseUrl: 'http://localhost:8000/v1',
     apiKey: '',
     viaProxy: false,
     model: 'default',
   },
   {
+    id: 'minimax',
+    name: 'MiniMax',
+    baseUrl: 'https://api.minimax.io/v1',
+    apiKey: '',
+    viaProxy: false,
+    model: 'MiniMax-Text-01',
+  },
+  {
     id: '9router',
     name: '9Router',
     baseUrl: 'http://localhost:20128/v1',
     apiKey: '',
-    viaProxy: true,
+    viaProxy: false,
     model: 'free-logic',
   },
 ];
@@ -94,10 +94,10 @@ export function createDefaultSettings(): LocalAISettings {
   return {
     enabled: true,
     providers: [...STANDARD_PROVIDERS],
-    activeProviderId: '9router',
+    activeProviderId: 'ollama',
     proxyUrl: DEFAULT_PROXY_URL,
     systemPrompt:
-      'Bạn là trợ lý viết và ghi chú. Trả lời ngắn gọn, đúng trọng tâm, cùng ngôn ngữ với người dùng.',
+      'Bạn là trợ lý viết và ghi chú thông minh. Trả lời ngắn gọn, chuẩn xác, đúng trọng tâm bằng tiếng Việt định dạng Markdown.',
   };
 }
 
@@ -118,7 +118,7 @@ function load(): LocalAISettings {
         return {
           ...std,
           ...p,
-          apiKey: p.apiKey || std.apiKey,
+          apiKey: p.apiKey ?? std.apiKey,
           viaProxy: p.viaProxy !== undefined ? p.viaProxy : std.viaProxy,
           baseUrl: p.baseUrl || std.baseUrl,
         };
@@ -140,7 +140,7 @@ function load(): LocalAISettings {
       activeProviderId:
         providers.find(p => p.id === parsed.activeProviderId)?.id ??
         providers[0]?.id ??
-        '9router',
+        'ollama',
       proxyUrl: parsed.proxyUrl || fallback.proxyUrl,
       systemPrompt: parsed.systemPrompt ?? fallback.systemPrompt,
     };

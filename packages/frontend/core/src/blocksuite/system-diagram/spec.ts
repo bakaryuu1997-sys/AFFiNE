@@ -239,6 +239,198 @@ export function createFullSampleSpec(names?: SampleNames): DiagramSpec {
   };
 }
 
+/** 1. Mẫu Kiến trúc Web 3-Tier Chuẩn Offshore (AWS/Cloud Production) */
+export function createOffshore3TierSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 3000, profile: 'ramp', durationSec: 60 },
+    nodes: [
+      n('users', 'client', 80, 220, { label: 'Người dùng Web/App' }),
+      n('route53', 'dns', 260, 100, { label: 'AWS Route 53' }),
+      n('cf', 'cdn', 260, 340, { label: 'Cloudflare WAF/CDN' }),
+      n('alb', 'load-balancer', 440, 220, { label: 'AWS ALB' }),
+      n('ec2', 'api', 620, 220, { replicas: 3, label: 'Cụm Web/API (Auto Scaling)' }),
+      n('elasticache', 'cache', 820, 100, { label: 'Redis ElastiCache' }),
+      n('aurora_master', 'database', 820, 220, { label: 'Aurora MySQL Master' }),
+      n('aurora_replica', 'database', 820, 340, { label: 'Aurora Read Replica' }),
+      n('s3', 'storage', 1020, 340, { label: 'AWS S3 Storage' }),
+      n('cloudwatch', 'search', 1020, 220, { label: 'CloudWatch & Grafana' }),
+    ],
+    edges: [
+      { id: 'e_r53', from: 'users', to: 'route53', weight: 0.08, label: 'DNS' },
+      { id: 'e_cf', from: 'users', to: 'cf', weight: 0.35, label: 'Static/WAF' },
+      { id: 'e_alb', from: 'users', to: 'alb', weight: 0.57, label: 'HTTPS API' },
+      { id: 'e_api', from: 'alb', to: 'ec2', weight: 1 },
+      { id: 'e_cache', from: 'ec2', to: 'elasticache', weight: 0.5, label: 'Cache hit' },
+      { id: 'e_master', from: 'ec2', to: 'aurora_master', weight: 0.25, label: 'Write' },
+      { id: 'e_replica', from: 'ec2', to: 'aurora_replica', weight: 0.25, label: 'Read' },
+      { id: 'e_sync', from: 'aurora_master', to: 'aurora_replica', weight: 0.3, label: 'Sync' },
+      { id: 'e_cf_s3', from: 'cf', to: 's3', weight: 0.15 },
+      { id: 'e_api_s3', from: 'ec2', to: 's3', weight: 0.1, label: 'Upload' },
+      { id: 'e_logs', from: 'ec2', to: 'cloudwatch', weight: 0.15, label: 'Logs' },
+    ],
+  };
+}
+
+/** 2. Mẫu Kiến trúc Microservices & Xử lý Sự kiện (Kafka Streaming) */
+export function createOffshoreMicroservicesSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 4500, profile: 'spike', durationSec: 60 },
+    nodes: [
+      n('users', 'client', 60, 240, { label: 'Khách hàng (Web/Mobile)' }),
+      n('kong', 'load-balancer', 240, 240, { label: 'Kong API Gateway' }),
+      n('auth_svc', 'api', 440, 100, { label: 'Auth Service' }),
+      n('order_svc', 'api', 440, 240, { replicas: 2, label: 'Order Service' }),
+      n('payment_svc', 'api', 440, 380, { label: 'Payment Service' }),
+      n('kafka', 'queue', 660, 240, { label: 'Kafka Event Bus' }),
+      n('notify_worker', 'worker', 860, 160, { label: 'Notification Worker' }),
+      n('analytics_worker', 'worker', 860, 320, { label: 'Analytics Worker' }),
+      n('order_db', 'database', 660, 380, { label: 'PostgreSQL (Order)' }),
+      n('user_db', 'database', 660, 100, { label: 'PostgreSQL (User)' }),
+      n('es', 'search', 860, 440, { label: 'Elasticsearch Log/Order' }),
+    ],
+    edges: [
+      { id: 'e_gw', from: 'users', to: 'kong', weight: 1 },
+      { id: 'e_auth', from: 'kong', to: 'auth_svc', weight: 0.2 },
+      { id: 'e_order', from: 'kong', to: 'order_svc', weight: 0.6 },
+      { id: 'e_pay', from: 'kong', to: 'payment_svc', weight: 0.2 },
+      { id: 'e_auth_db', from: 'auth_svc', to: 'user_db', weight: 0.8 },
+      { id: 'e_order_db', from: 'order_svc', to: 'order_db', weight: 0.5 },
+      { id: 'e_order_kafka', from: 'order_svc', to: 'kafka', weight: 0.5, label: 'OrderCreated' },
+      { id: 'e_pay_kafka', from: 'payment_svc', to: 'kafka', weight: 0.7, label: 'PaymentDone' },
+      { id: 'e_k_notify', from: 'kafka', to: 'notify_worker', weight: 0.5 },
+      { id: 'e_k_analytics', from: 'kafka', to: 'analytics_worker', weight: 0.5 },
+      { id: 'e_es', from: 'analytics_worker', to: 'es', weight: 0.6 },
+    ],
+  };
+}
+
+/** 3. Mẫu Hệ thống Xử lý Tác vụ Nền & ETL Báo cáo Lớn (Batch Processing) */
+export function createOffshoreBatchEtlSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 2500, profile: 'constant', durationSec: 60 },
+    nodes: [
+      n('api', 'api', 80, 240, { replicas: 2, label: 'Core Backend API' }),
+      n('celery_redis', 'cache', 260, 120, { label: 'Redis Broker & State' }),
+      n('rabbitmq', 'queue', 260, 280, { label: 'RabbitMQ Task Queue' }),
+      n('etl_worker', 'worker', 460, 160, { replicas: 2, label: 'ETL Data Worker' }),
+      n('report_worker', 'worker', 460, 360, { replicas: 2, label: 'PDF/Excel Report Worker' }),
+      n('oltp_db', 'database', 680, 140, { label: 'PostgreSQL (OLTP DB)' }),
+      n('clickhouse', 'database', 680, 280, { label: 'ClickHouse (OLAP Data Warehouse)' }),
+      n('s3_export', 'storage', 880, 280, { label: 'S3 Export Storage' }),
+      n('ses', 'worker', 880, 400, { label: 'Amazon SES Email' }),
+    ],
+    edges: [
+      { id: 'e_task', from: 'api', to: 'rabbitmq', weight: 0.7, label: 'Async Task' },
+      { id: 'e_state', from: 'api', to: 'celery_redis', weight: 0.3 },
+      { id: 'e_w1', from: 'rabbitmq', to: 'etl_worker', weight: 0.5 },
+      { id: 'e_w2', from: 'rabbitmq', to: 'report_worker', weight: 0.5 },
+      { id: 'e_w1_oltp', from: 'etl_worker', to: 'oltp_db', weight: 0.6, label: 'Extract' },
+      { id: 'e_w1_ch', from: 'etl_worker', to: 'clickhouse', weight: 0.6, label: 'Transform & Load' },
+      { id: 'e_w2_ch', from: 'report_worker', to: 'clickhouse', weight: 0.5, label: 'Aggregate Query' },
+      { id: 'e_w2_s3', from: 'report_worker', to: 's3_export', weight: 0.4, label: 'Upload' },
+      { id: 'e_w2_ses', from: 'report_worker', to: 'ses', weight: 0.3, label: 'Send Mail' },
+    ],
+  };
+}
+
+/** 4. Mẫu Hệ thống Ứng dụng AI Doanh nghiệp (RAG & LLM Pipeline) */
+export function createOffshoreRagAiSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 1800, profile: 'ramp', durationSec: 60 },
+    nodes: [
+      n('users', 'client', 80, 220, { label: 'Nhân sự Doanh nghiệp' }),
+      n('nextjs', 'api', 260, 220, { label: 'Next.js Frontend App' }),
+      n('fastapi', 'api', 440, 220, { label: 'FastAPI AI Gateway' }),
+      n('redis_mem', 'cache', 440, 90, { label: 'Redis Session & Chat History' }),
+      n('qdrant', 'search', 640, 100, { label: 'Qdrant Vector Database' }),
+      n('llm', 'worker', 640, 220, { replicas: 2, label: 'Ollama / OpenAI Inference' }),
+      n('doc_parser', 'worker', 640, 360, { label: 'Doc Parser & Embedding Worker' }),
+      n('pg_meta', 'database', 840, 100, { label: 'PostgreSQL (Metastore)' }),
+      n('s3_docs', 'storage', 840, 360, { label: 'MinIO / S3 Knowledge Vault' }),
+    ],
+    edges: [
+      { id: 'e_ui', from: 'users', to: 'nextjs', weight: 1 },
+      { id: 'e_gw', from: 'nextjs', to: 'fastapi', weight: 1 },
+      { id: 'e_mem', from: 'fastapi', to: 'redis_mem', weight: 0.4, label: 'Session' },
+      { id: 'e_vec', from: 'fastapi', to: 'qdrant', weight: 0.5, label: 'Semantic Search' },
+      { id: 'e_llm', from: 'fastapi', to: 'llm', weight: 0.5, label: 'Prompt + Context' },
+      { id: 'e_doc_s3', from: 'doc_parser', to: 's3_docs', weight: 0.5, label: 'Raw Docs' },
+      { id: 'e_doc_vec', from: 'doc_parser', to: 'qdrant', weight: 0.5, label: 'Embeddings' },
+      { id: 'e_q_meta', from: 'qdrant', to: 'pg_meta', weight: 0.3 },
+    ],
+  };
+}
+
+/** 5. Mẫu Kiến trúc Dự phòng Thảm họa & Sẵn sàng Cao (Multi-AZ HA & Failover) */
+export function createOffshoreHaDrSpec(names?: SampleNames): DiagramSpec {
+  const n = (
+    id: string,
+    type: NodeType,
+    x: number,
+    y: number,
+    extra?: Partial<DiagramNode>
+  ) => makeNode(names, id, type, x, y, extra);
+  return {
+    version: 1,
+    traffic: { rps: 3500, profile: 'constant', durationSec: 60 },
+    nodes: [
+      n('r53', 'dns', 80, 220, { label: 'Route53 Health Check & Failover' }),
+      n('alb_pri', 'load-balancer', 280, 130, { label: 'Primary AZ-A ALB' }),
+      n('api_pri', 'api', 480, 130, { replicas: 2, label: 'Primary AZ-A API Cluster' }),
+      n('rds_master', 'database', 680, 130, { label: 'RDS MySQL Master (AZ-A)' }),
+      n('s3_pri', 'storage', 880, 130, { label: 'S3 Tokyo Primary' }),
+      n('alb_stb', 'load-balancer', 280, 320, { label: 'Standby AZ-B ALB' }),
+      n('api_stb', 'api', 480, 320, { replicas: 2, label: 'Standby AZ-B API Cluster' }),
+      n('rds_replica', 'database', 680, 320, { label: 'RDS MySQL Read Replica (AZ-B)' }),
+      n('s3_stb', 'storage', 880, 320, { label: 'S3 Osaka Replica (DR)' }),
+    ],
+    edges: [
+      { id: 'e_pri', from: 'r53', to: 'alb_pri', weight: 0.85, label: 'Active 85%' },
+      { id: 'e_stb', from: 'r53', to: 'alb_stb', weight: 0.15, label: 'Standby 15%' },
+      { id: 'e_api_pri', from: 'alb_pri', to: 'api_pri', weight: 1 },
+      { id: 'e_api_stb', from: 'alb_stb', to: 'api_stb', weight: 1 },
+      { id: 'e_db_pri', from: 'api_pri', to: 'rds_master', weight: 0.7 },
+      { id: 'e_db_stb', from: 'api_stb', to: 'rds_replica', weight: 0.7 },
+      { id: 'e_sync', from: 'rds_master', to: 'rds_replica', weight: 0.5, label: 'Sync Replication' },
+      { id: 'e_s3_pri', from: 'api_pri', to: 's3_pri', weight: 0.2 },
+      { id: 'e_s3_stb', from: 'api_stb', to: 's3_stb', weight: 0.2 },
+      { id: 'e_s3_sync', from: 's3_pri', to: 's3_stb', weight: 0.2, label: 'Cross-Region Backup' },
+    ],
+  };
+}
+
 const finite = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
