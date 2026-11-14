@@ -14,6 +14,7 @@ import { DetailPageHeaderPresentButton } from '@affine/core/blocksuite/block-sui
 import { BlocksuiteHeaderTitle } from '@affine/core/blocksuite/block-suite-header/title';
 import { EditorModeSwitch } from '@affine/core/blocksuite/block-suite-mode-switch';
 import { useRegisterCopyLinkCommands } from '@affine/core/components/hooks/affine/use-register-copy-link-commands';
+import { InlineAiButton } from '@affine/core/components/inline-ai';
 import { HeaderDivider } from '@affine/core/components/pure/header';
 import { DocService } from '@affine/core/modules/doc';
 import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
@@ -156,6 +157,7 @@ export function NormalPageHeader({ page }: PageHeaderProps) {
       <div className={styles.iconButtonContainer}>
         {hideCollect ? null : (
           <>
+            <InlineAiButton docId={page.id} />
             <FavoriteButton pageId={page?.id} />
             <InfoButton docId={page.id} />
           </>

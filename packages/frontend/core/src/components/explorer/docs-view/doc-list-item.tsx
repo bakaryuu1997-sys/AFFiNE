@@ -7,10 +7,7 @@ import {
 } from '@affine/component';
 import { DocsService } from '@affine/core/modules/doc';
 import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
-import {
-  WorkbenchLink,
-  WorkbenchService,
-} from '@affine/core/modules/workbench';
+import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
 import track from '@affine/track';
@@ -120,6 +117,17 @@ export const DocListItem = ({ ...props }: DocListItemProps) => {
 
   const handleClick = useCallback(
     (e: React.MouseEvent<Element>) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest('button') ||
+        target?.closest('input') ||
+        target?.closest('[data-testid="doc-list-item-select"]') ||
+        target?.closest('[role="menu"]') ||
+        target?.closest('[role="menuitem"]')
+      ) {
+        return;
+      }
+
       const { docId, groupId } = props;
       const currCursor = MixId.create(groupId, docId);
       if (selectMode || e.shiftKey) {
@@ -148,7 +156,11 @@ export const DocListItem = ({ ...props }: DocListItemProps) => {
           e.preventDefault();
           e.stopPropagation();
           track.allDocs.list.doc.openDoc();
-          workbenchService.workbench.openDoc(docId);
+          if (e.button === 1 || e.ctrlKey || e.metaKey) {
+            workbenchService.workbench.openDoc(docId, { at: 'new-tab' });
+          } else {
+            workbenchService.workbench.openDoc(docId);
+          }
           return;
         }
       }
@@ -181,22 +193,30 @@ export const DocListItem = ({ ...props }: DocListItemProps) => {
 
   return (
     <>
-      <WorkbenchLink
+      <div
         ref={dragRef}
-        draggable={false}
-        to={`/${props.docId}`}
         onClick={handleClick}
+        onAuxClick={handleClick}
         data-selected={selectedDocIds.includes(props.docId)}
         className={styles.root}
         data-testid={`doc-list-item`}
         data-doc-id={props.docId}
+        role="button"
+        tabIndex={0}
+        style={{ cursor: 'pointer', outline: 'none' }}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            workbenchService.workbench.openDoc(props.docId);
+          }
+        }}
       >
         {view === 'list' ? (
           <ListViewDoc {...props} />
         ) : (
           <CardViewDoc {...props} />
         )}
-      </WorkbenchLink>
+      </div>
       <CustomDragPreview>
         <div className={styles.dragPreview}>
           <RawDocIcon id={props.docId} className={styles.dragPreviewIcon} />
@@ -343,7 +363,7 @@ export const ListViewDoc = ({ docId }: DocListItemProps) => {
       disabled={!showMoreOperation}
       items={<MoreMenuContent docId={docId} />}
     >
-      <li className={styles.listViewRoot}>
+      <div className={styles.listViewRoot}>
         <DragHandle id={docId} className={styles.listDragHandle} />
         <Select id={docId} className={styles.listSelect} />
         <DocIcon id={docId} className={styles.listIcon} />
@@ -368,7 +388,7 @@ export const ListViewDoc = ({ docId }: DocListItemProps) => {
           docId={docId}
           contentOptions={listMoreMenuContentOptions}
         />
-      </li>
+      </div>
     </ContextMenu>
   );
 };
@@ -398,7 +418,7 @@ export const CardViewDoc = ({ docId }: DocListItemProps) => {
       disabled={!showMoreOperation}
       items={<MoreMenuContent docId={docId} />}
     >
-      <li className={styles.cardViewRoot}>
+      <div className={styles.cardViewRoot}>
         <DragHandle id={docId} className={styles.cardDragHandle} />
         <header className={styles.cardViewHeader}>
           <DocIcon id={docId} className={styles.cardViewIcon} />
@@ -426,7 +446,7 @@ export const CardViewDoc = ({ docId }: DocListItemProps) => {
         </header>
         <DocPreview id={docId} className={styles.cardPreviewContainer} />
         <CardViewProperties docId={docId} />
-      </li>
+      </div>
     </ContextMenu>
   );
 };

@@ -5,6 +5,7 @@ import { ViewToggle } from '@affine/core/components/explorer/display-menu/view-t
 import type { DocListItemView } from '@affine/core/components/explorer/docs-view/doc-list-item';
 import { ExplorerNavigation } from '@affine/core/components/explorer/header/navigation';
 import type { ExplorerDisplayPreference } from '@affine/core/components/explorer/types';
+import { KnowledgeGraphButton } from '@affine/core/components/knowledge-graph';
 import { PageListNewPageButton } from '@affine/core/components/page-list/docs/page-list-new-page-button';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { WorkbenchService } from '@affine/core/modules/workbench';
@@ -86,6 +87,7 @@ export const AllDocsHeader = ({
       <ExplorerNavigation active="docs" />
 
       <div className={styles.actions}>
+        <KnowledgeGraphButton />
         <ViewToggle view={view} onViewChange={onViewChange} />
         <ExplorerDisplayMenuButton
           menuProps={menuProps}

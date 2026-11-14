@@ -299,6 +299,77 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     }
   }
 
+  private exportPng() {
+    const svgEl = this.shadowRoot?.querySelector(
+      'svg.sd-canvas'
+    ) as SVGSVGElement | null;
+    if (!svgEl) return;
+
+    try {
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(svgEl);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scale = 2;
+        canvas.width = (svgEl.clientWidth || 960) * scale;
+        canvas.height = (svgEl.clientHeight || 540) * scale;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#1e1e20';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const a = document.createElement('a');
+          a.download = 'so-do-he-thong-11-thanh-phan.png';
+          a.href = canvas.toDataURL('image/png');
+          a.click();
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    } catch (err) {
+      console.error('Failed to export PNG:', err);
+    }
+  }
+
+  private copyMermaid() {
+    const spec = this.model?.spec;
+    if (!spec) return;
+
+    const lines: string[] = ['flowchart LR'];
+    const nodeMap = new Map<string, string>();
+
+    for (const c of spec.components) {
+      const safeId = c.id.replace(/[^a-zA-Z0-9_]/g, '_');
+      nodeMap.set(c.id, safeId);
+      lines.push(`  ${safeId}["${c.label || c.type}"]`);
+    }
+
+    for (const l of spec.links) {
+      const from = nodeMap.get(l.from);
+      const to = nodeMap.get(l.to);
+      if (from && to) {
+        if (l.label) {
+          lines.push(`  ${from} -->|"${l.label}"| ${to}`);
+        } else {
+          lines.push(`  ${from} --> ${to}`);
+        }
+      }
+    }
+
+    const mermaidCode = lines.join('\n');
+    navigator.clipboard
+      .writeText(mermaidCode)
+      .then(() => {
+        alert(S.copiedMermaid);
+      })
+      .catch(err => {
+        console.error('Failed to copy mermaid code:', err);
+      });
+  }
+
   private toSvgPoint(svgEl: SVGSVGElement, event: PointerEvent) {
     const point = svgEl.createSVGPoint();
     point.x = event.clientX;
@@ -482,6 +553,20 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   title=${this.isFullscreen ? S.exitFullscreen : S.fullscreen}
                 >
                   ${this.isFullscreen ? '✕ ' + S.exitFullscreen : '⛶ ' + S.fullscreen}
+                </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.exportPng()}
+                  title=${S.exportPng}
+                >
+                  📷 ${S.exportPng}
+                </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.copyMermaid()}
+                  title=${S.copyMermaid}
+                >
+                  📋 ${S.copyMermaid}
                 </button>
               `
         }

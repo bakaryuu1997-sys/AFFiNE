@@ -225,6 +225,24 @@ export const RootAppSidebar = memo((): ReactElement => {
               dense
             />
           </div>
+          <span
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--affine-primary-color, #1e96eb)',
+              backgroundColor:
+                'var(--affine-hover-color, rgba(30, 150, 235, 0.1))',
+              padding: '2px 6px',
+              borderRadius: '6px',
+              alignSelf: 'center',
+              marginRight: '8px',
+              letterSpacing: '0.5px',
+              userSelect: 'none',
+            }}
+            title="Phiên bản AFFiNE Cá nhân"
+          >
+            v0.2.0
+          </span>
         </div>
         <div className={quickSearchAndNewPage}>
           <QuickSearchInput
