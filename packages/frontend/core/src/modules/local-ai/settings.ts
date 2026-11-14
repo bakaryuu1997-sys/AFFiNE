@@ -114,8 +114,14 @@ function load(): LocalAISettings {
     // Merge standard providers with saved ones so new providers are always available
     const mergedProviders: AIProvider[] = savedProviders.map(p => {
       const std = STANDARD_PROVIDERS.find(s => s.id === p.id);
-      if (std && !p.apiKey && std.apiKey) {
-        return { ...p, apiKey: std.apiKey };
+      if (std) {
+        return {
+          ...std,
+          ...p,
+          apiKey: p.apiKey || std.apiKey,
+          viaProxy: p.viaProxy !== undefined ? p.viaProxy : std.viaProxy,
+          baseUrl: p.baseUrl || std.baseUrl,
+        };
       }
       return p;
     });

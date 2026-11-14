@@ -10,7 +10,16 @@ function joinUrl(base: string, path: string) {
 }
 
 function viaProxy(proxyUrl: string, url: string) {
-  return `${proxyUrl.replace(/\/+$/, '')}/forward?u=${encodeURIComponent(url)}`;
+  let effective = proxyUrl;
+  if (typeof window !== 'undefined') {
+    const loc = window.location.hostname;
+    if (loc === 'localhost' && effective.includes('127.0.0.1')) {
+      effective = effective.replace('127.0.0.1', 'localhost');
+    } else if (loc === '127.0.0.1' && effective.includes('localhost')) {
+      effective = effective.replace('localhost', '127.0.0.1');
+    }
+  }
+  return `${effective.replace(/\/+$/, '')}/forward?u=${encodeURIComponent(url)}`;
 }
 
 function authHeaders(provider: AIProvider): Record<string, string> {

@@ -21,7 +21,7 @@ import https from 'node:https';
 import net from 'node:net';
 
 const PORT = Number(process.env.AI_PROXY_PORT ?? 20129);
-const HOST = process.env.AI_PROXY_HOST ?? '127.0.0.1';
+const HOST = process.env.AI_PROXY_HOST ?? '0.0.0.0';
 const EXTRA_ALLOWED = new Set(
   (process.env.AI_PROXY_ALLOW ?? '')
     .split(',')
@@ -79,7 +79,8 @@ function corsHeaders(origin) {
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     'Access-Control-Allow-Headers':
-      'authorization,content-type,accept,x-requested-with',
+      'authorization,content-type,accept,x-requested-with,access-control-request-private-network',
+    'Access-Control-Allow-Private-Network': 'true',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
   };
