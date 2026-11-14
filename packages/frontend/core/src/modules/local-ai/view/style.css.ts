@@ -196,3 +196,90 @@ export const statusErr = style({
   fontSize: 12,
   color: cssVarV2('button/error'),
 });
+
+export const historyDrawer = style({
+  position: 'absolute',
+  top: 48,
+  left: 16,
+  zIndex: 100,
+  width: 320,
+  maxHeight: 'calc(100% - 64px)',
+  background: cssVarV2('layer/background/primary'),
+  border: `1px solid ${cssVarV2('layer/insideBorder/border')}`,
+  borderRadius: 10,
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+});
+
+export const historyHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '10px 14px',
+  borderBottom: `1px solid ${cssVarV2('layer/insideBorder/border')}`,
+  fontWeight: 600,
+  fontSize: 13,
+});
+
+export const historyList = style({
+  flex: 1,
+  overflowY: 'auto',
+  padding: '6px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+});
+
+export const historyItem = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '8px 10px',
+  borderRadius: 6,
+  cursor: 'pointer',
+  fontSize: 13,
+  color: cssVarV2('text/primary'),
+  selectors: {
+    '&:hover': { background: cssVarV2('layer/background/hoverOverlay') },
+    '&[data-active="true"]': {
+      background: cssVarV2('layer/background/hoverOverlay'),
+      fontWeight: 500,
+      borderLeft: `3px solid ${cssVarV2('button/primary')}`,
+    },
+  },
+});
+
+export const historyItemTitle = style({
+  flex: 1,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  marginRight: 6,
+});
+
+export const historyItemTime = style({
+  fontSize: 11,
+  color: cssVarV2('text/secondary'),
+  marginRight: 6,
+  flexShrink: 0,
+});
+
+export const historyDeleteBtn = style({
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '2px 4px',
+  borderRadius: 4,
+  color: cssVarV2('text/secondary'),
+  fontSize: 12,
+  opacity: 0.6,
+  selectors: {
+    '&:hover': {
+      opacity: 1,
+      color: cssVarV2('button/error'),
+      background: cssVarV2('layer/background/hoverOverlay'),
+    },
+  },
+});

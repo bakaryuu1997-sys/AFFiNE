@@ -30,6 +30,7 @@ export const listViewRoot = style({
   gap: 8,
   borderRadius: 4,
   overflow: 'hidden',
+  cursor: 'pointer',
   containerName: 'list-view-root',
   containerType: 'size',
   selectors: {
@@ -189,6 +190,7 @@ export const cardViewRoot = style({
   gap: 8,
   padding: 16,
   borderRadius: 12,
+  cursor: 'pointer',
   backgroundColor: cssVarV2.layer.background.mobile.secondary,
   border: `0.5px solid ${cssVarV2.layer.insideBorder.border}`,
   // TODO: use variable

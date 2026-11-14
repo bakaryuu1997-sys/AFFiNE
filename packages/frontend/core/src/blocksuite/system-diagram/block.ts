@@ -71,6 +71,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     y: number;
   } | null = null;
   @state() private accessor notice: string | null = null;
+  @state() private accessor zoom = 1;
+  @state() private accessor isFullscreen = false;
 
   private version = 0;
   private cache: {
@@ -276,6 +278,27 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.notice = null;
   }
 
+  private zoomIn() {
+    this.zoom = Math.min(3.0, Number((this.zoom + 0.25).toFixed(2)));
+  }
+
+  private zoomOut() {
+    this.zoom = Math.max(0.5, Number((this.zoom - 0.25).toFixed(2)));
+  }
+
+  private resetZoom() {
+    this.zoom = 1;
+  }
+
+  private toggleFullscreen() {
+    this.isFullscreen = !this.isFullscreen;
+    if (this.isFullscreen) {
+      this.classList.add('sd-fullscreen');
+    } else {
+      this.classList.remove('sd-fullscreen');
+    }
+  }
+
   private toSvgPoint(svgEl: SVGSVGElement, event: PointerEvent) {
     const point = svgEl.createSVGPoint();
     point.x = event.clientX;
@@ -432,6 +455,34 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                 >
                   ${S.loadFullSample}
                 </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.zoomOut()}
+                  title=${S.zoomOut}
+                >
+                  -
+                </button>
+                <span
+                  class="sd-zoom-badge"
+                  @click=${() => this.resetZoom()}
+                  title=${S.resetZoom}
+                >
+                  ${Math.round(this.zoom * 100)}%
+                </span>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.zoomIn()}
+                  title=${S.zoomIn}
+                >
+                  +
+                </button>
+                <button
+                  class="sd-btn"
+                  @click=${() => this.toggleFullscreen()}
+                  title=${this.isFullscreen ? S.exitFullscreen : S.fullscreen}
+                >
+                  ${this.isFullscreen ? '✕ ' + S.exitFullscreen : '⛶ ' + S.fullscreen}
+                </button>
               `
         }
       </div>
@@ -449,7 +500,11 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
         : node;
     const placed = spec.nodes.map(position);
     const byId = new Map(placed.map(n => [n.id, n]));
-    const box = viewBoxOf(spec.nodes);
+    const baseBox = viewBoxOf(spec.nodes);
+    const currentW = baseBox.w / this.zoom;
+    const currentH = baseBox.h / this.zoom;
+    const currentX = baseBox.x + (baseBox.w - currentW) / 2;
+    const currentY = baseBox.y + (baseBox.h - currentH) / 2;
 
     const hint = this.connecting
       ? this.connectFrom
@@ -458,11 +513,20 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       : this.notice;
 
     return html`
-      <div class="sd-canvas">
+      <div
+        class="sd-canvas"
+        @wheel=${(e: WheelEvent) => {
+          if (e.ctrlKey) {
+            e.preventDefault();
+            if (e.deltaY < 0) this.zoomIn();
+            else this.zoomOut();
+          }
+        }}
+      >
         <svg
           class="sd-svg"
-          viewBox="${box.x} ${box.y} ${box.w} ${box.h}"
-          style="aspect-ratio: ${box.w} / ${box.h}"
+          viewBox="${currentX} ${currentY} ${currentW} ${currentH}"
+          style="aspect-ratio: ${baseBox.w} / ${baseBox.h}"
           preserveAspectRatio="xMidYMid meet"
           @pointerdown=${() => {
             this.selected = null;

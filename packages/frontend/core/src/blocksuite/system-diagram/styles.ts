@@ -302,4 +302,44 @@ export const systemDiagramStyles = css`
     stroke-width: 1;
     opacity: 0.6;
   }
+
+  system-diagram-block.sd-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: none !important;
+    background: var(--sd-bg, #1a1a1a) !important;
+    padding: 16px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  system-diagram-block.sd-fullscreen .sd-canvas {
+    flex: 1 !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  system-diagram-block.sd-fullscreen .sd-svg {
+    max-height: calc(100vh - 180px) !important;
+    height: 100% !important;
+  }
+
+  system-diagram-block .sd-zoom-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--sd-border);
+    color: var(--sd-text);
+    min-width: 38px;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+  }
 `;
