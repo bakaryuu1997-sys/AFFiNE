@@ -10,16 +10,29 @@ import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 /**
- * Sidebar entry for the 2.5D system diagram: creates a new doc that already
- * holds a sample diagram (web tier, cache, database) and opens it. The block
- * can still be inserted into any doc with `/`.
+ * Sidebar entry for the 2.5D system diagram: opens existing diagram document if present,
+ * or creates a new one once so it doesn't clutter the workspace with duplicates.
  */
 export const AppSidebarDiagramButton = () => {
   const docsService = useService(DocsService);
   const workbench = useService(WorkbenchService).workbench;
 
-  const onCreate = useCallback(() => {
+  const onOpenOrCreate = useCallback(() => {
     try {
+      // Find existing non-trashed diagram doc first to prevent creating multiple duplicates
+      const existing = docsService.list.docs$.value.find(
+        doc =>
+          !doc.trash$.value &&
+          (doc.title$.value === S.untitled ||
+            doc.title$.value === 'Sơ đồ hệ thống' ||
+            doc.title$.value === 'System diagram' ||
+            doc.title$.value === 'システム構成図')
+      );
+      if (existing) {
+        workbench.openDoc(existing.id);
+        return;
+      }
+
       const title = S.untitled;
       const spec = createFullSampleSpec(sampleNames());
       const record = docsService.createDoc({
@@ -50,7 +63,7 @@ export const AppSidebarDiagramButton = () => {
     <MenuItem
       data-testid="slider-bar-system-diagram-button"
       icon={<ConnectorCIcon />}
-      onClick={onCreate}
+      onClick={onOpenOrCreate}
     >
       {S.slashName}
     </MenuItem>

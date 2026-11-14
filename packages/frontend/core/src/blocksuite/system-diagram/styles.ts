@@ -27,7 +27,7 @@ export const systemDiagramStyles = css`
     background: var(--sd-bg);
     color: var(--sd-text);
     font-size: 13px;
-    overflow: hidden;
+    overflow: visible;
     user-select: none;
   }
 
@@ -107,6 +107,7 @@ export const systemDiagramStyles = css`
 
   system-diagram-block .sd-canvas {
     position: relative;
+    overflow: hidden;
   }
   system-diagram-block .sd-svg {
     display: block;
@@ -481,7 +482,8 @@ export const systemDiagramStyles = css`
   system-diagram-block .sd-flyout-menu {
     position: absolute;
     top: calc(100% + 4px);
-    left: 0;
+    right: 0;
+    left: auto;
     z-index: 1000;
     display: flex;
     background: var(--sd-surface, #1e1e22);
