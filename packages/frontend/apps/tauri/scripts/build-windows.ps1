@@ -8,11 +8,15 @@
     .\build-windows.ps1 -WebDist "\\wsl.localhost\Ubuntu\home\<you>\AFFiNE\packages\frontend\apps\web\dist"
 
   Output (in the work folder): the NSIS installer and affine-mcp.exe.
+  By default, the work folder is $HOME\affine-build (%USERPROFILE%\affine-build)
+  to avoid permission issues when writing directly to C:\ root.
+  Also, building outside the repository avoids rust-toolchain.toml pinning
+  to 1.97.1 (which may be broken on Windows, while Windows uses stable 1.99.1).
 #>
 param(
   [Parameter(Mandatory = $true)][string]$WebDist,
-  # a short ASCII path: the C++ toolchain does not like long or accented ones
-  [string]$Work = 'C:\affine-build'
+  # a short ASCII path in the user profile: avoids root C:\ permission issues and long/accented paths
+  [string]$Work = (Join-Path $env:USERPROFILE 'affine-build')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +28,11 @@ if (-not (Test-Path (Join-Path $WebDist 'index.html'))) {
 }
 foreach ($tool in 'cargo', 'node', 'npx') {
   if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool is not on PATH." }
+}
+
+# Limit parallel cargo jobs to 2 to prevent rustc STATUS_STACK_BUFFER_OVERRUN (0xc0000409)
+if (-not $env:CARGO_BUILD_JOBS) {
+  $env:CARGO_BUILD_JOBS = '2'
 }
 
 Write-Host "==> Copying the project to $Work"

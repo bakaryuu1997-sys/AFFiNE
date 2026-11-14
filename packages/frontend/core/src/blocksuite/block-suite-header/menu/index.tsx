@@ -1,23 +1,14 @@
 import { notify, toast, useConfirmModal } from '@affine/component';
-import {
-  Menu,
-  MenuItem,
-  MenuSeparator,
-  MenuSub,
-} from '@affine/component/ui/menu';
-import { PageHistoryModal } from '@affine/core/components/affine/page-history-modal';
+import { Menu, MenuItem, MenuSeparator } from '@affine/component/ui/menu';
 import { useGuard } from '@affine/core/components/guard';
 import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
-import { useEnableCloud } from '@affine/core/components/hooks/affine/use-enable-cloud';
 import { useExportPage } from '@affine/core/components/hooks/affine/use-export-page';
+import { useSharingUrl } from '@affine/core/components/hooks/affine/use-share-url';
 import { Export, MoveToTrash } from '@affine/core/components/page-list';
 import { IsFavoriteIcon } from '@affine/core/components/pure/icons';
-import { useDetailPageHeaderResponsive } from '@affine/core/desktop/pages/workspace/detail-page/use-header-responsive';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { EditorService } from '@affine/core/modules/editor';
-import { OpenInAppService } from '@affine/core/modules/open-in-app/services';
 import { GuardService } from '@affine/core/modules/permissions';
-import { ShareMenuContent } from '@affine/core/modules/share-menu';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { ViewService } from '@affine/core/modules/workbench/services/view';
 import { WorkspaceService } from '@affine/core/modules/workspace';
@@ -29,27 +20,19 @@ import {
   EdgelessIcon,
   EditIcon,
   FrameIcon,
-  HistoryIcon,
   ImportIcon,
   InformationIcon,
-  LocalWorkspaceIcon,
+  LinkIcon,
   OpenInNewIcon,
   PageIcon,
-  ShareIcon,
   SplitViewIcon,
   TocIcon,
 } from '@blocksuite/icons/rc';
-import {
-  useLiveData,
-  useService,
-  useServiceOptional,
-} from '@toeverything/infra';
-import { useCallback, useState } from 'react';
+import { useLiveData, useService } from '@toeverything/infra';
+import { useCallback } from 'react';
 
 import { HeaderDropDownButton } from '../../../components/pure/header-drop-down-button';
 import { useFavorite } from '../favorite';
-import { HistoryTipsModal } from './history-tips-modal';
-import { shareMenu } from './style.css';
 
 type PageMenuProps = {
   rename?: () => void;
@@ -64,14 +47,10 @@ export const PageHeaderMenuButton = ({
   isJournal,
   containerWidth,
 }: PageMenuProps) => {
-  const workspace = useService(WorkspaceService).workspace;
   const editorService = useService(EditorService);
   const isInTrash = useLiveData(
     editorService.editor.doc.meta$.map(meta => meta.trash)
   );
-
-  const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [openHistoryTipsModal, setOpenHistoryTipsModal] = useState(false);
 
   const handleMenuOpenChange = useCallback((open: boolean) => {
     if (open) {
@@ -79,69 +58,36 @@ export const PageHeaderMenuButton = ({
     }
   }, []);
 
-  const openHistoryModal = useCallback(() => {
-    track.$.header.history.open();
-    if (workspace.flavour !== 'local') {
-      return setHistoryModalOpen(true);
-    }
-    return setOpenHistoryTipsModal(true);
-  }, [setOpenHistoryTipsModal, workspace.flavour]);
-
   if (isInTrash) {
     return null;
   }
 
   return (
-    <>
-      <Menu
-        items={
-          <PageHeaderMenuItem
-            page={page}
-            containerWidth={containerWidth}
-            rename={rename}
-            isJournal={isJournal}
-            openHistoryModal={openHistoryModal}
-          />
-        }
-        contentOptions={{
-          align: 'center',
-        }}
-        rootOptions={{
-          onOpenChange: handleMenuOpenChange,
-        }}
-      >
-        <HeaderDropDownButton />
-      </Menu>
-      {workspace.flavour !== 'local' ? (
-        <PageHistoryModal
-          docCollection={workspace.docCollection}
-          open={historyModalOpen}
-          pageId={page.id}
-          onOpenChange={setHistoryModalOpen}
+    <Menu
+      items={
+        <PageHeaderMenuItem
+          page={page}
+          containerWidth={containerWidth}
+          rename={rename}
+          isJournal={isJournal}
         />
-      ) : null}
-      <HistoryTipsModal
-        open={openHistoryTipsModal}
-        setOpen={setOpenHistoryTipsModal}
-      />
-    </>
+      }
+      contentOptions={{
+        align: 'center',
+      }}
+      rootOptions={{
+        onOpenChange: handleMenuOpenChange,
+      }}
+    >
+      <HeaderDropDownButton />
+    </Menu>
   );
 };
 
 // fixme: refactor this file
-const PageHeaderMenuItem = ({
-  rename,
-  page,
-  isJournal,
-  containerWidth,
-  openHistoryModal,
-}: PageMenuProps & {
-  openHistoryModal: () => void;
-}) => {
+const PageHeaderMenuItem = ({ rename, page, isJournal }: PageMenuProps) => {
   const pageId = page?.id;
   const t = useI18n();
-  const { hideShare } = useDetailPageHeaderResponsive(containerWidth);
-  const confirmEnableCloud = useEnableCloud();
 
   const workspace = useService(WorkspaceService).workspace;
   const guardService = useService(GuardService);
@@ -150,7 +96,6 @@ const PageHeaderMenuItem = ({
   const primaryMode = useLiveData(editorService.editor.doc.primaryMode$);
 
   const workbench = useService(WorkbenchService).workbench;
-  const openInAppService = useServiceOptional(OpenInAppService);
 
   const { favorite, toggleFavorite } = useFavorite(pageId);
 
@@ -284,66 +229,25 @@ const PageHeaderMenuItem = ({
     });
   }, [workspaceDialogService, handleOpenDocs]);
 
-  const handleShareMenuOpenChange = useCallback((open: boolean) => {
-    if (open) {
-      track.$.sharePanel.$.open();
-    }
-  }, []);
-
   const handleToggleFavorite = useCallback(() => {
     track.$.header.docOptions.toggleFavorite();
     toggleFavorite();
   }, [toggleFavorite]);
 
-  const showResponsiveMenu = hideShare;
-  const ResponsiveMenuItems = (
-    <>
-      {hideShare ? (
-        <MenuSub
-          subContentOptions={{
-            sideOffset: 12,
-            alignOffset: -8,
+  const { onClickCopyLink } = useSharingUrl({
+    workspaceId: workspace.id,
+    pageId,
+  });
 
-            // to handle overflow when the width is not enough
-            collisionPadding: 20,
-          }}
-          items={
-            <div className={shareMenu}>
-              <ShareMenuContent
-                workspaceMetadata={workspace.meta}
-                currentPage={page}
-                onEnableAffineCloud={() =>
-                  confirmEnableCloud(workspace, {
-                    openPageId: page.id,
-                  })
-                }
-              />
-            </div>
-          }
-          triggerOptions={{
-            prefixIcon: <ShareIcon />,
-          }}
-          subOptions={{
-            onOpenChange: handleShareMenuOpenChange,
-          }}
-        >
-          {t['com.affine.share-menu.shareButton']()}
-        </MenuSub>
-      ) : null}
-      <MenuSeparator />
-    </>
-  );
-
-  const onOpenInDesktop = useCallback(() => {
-    openInAppService?.showOpenInAppPage();
-  }, [openInAppService]);
+  const handleCopyLink = useCallback(() => {
+    onClickCopyLink(currentMode);
+  }, [currentMode, onClickCopyLink]);
 
   const canEdit = useGuard('Doc_Update', pageId);
   const canMoveToTrash = useGuard('Doc_Trash', pageId);
 
   return (
     <>
-      {showResponsiveMenu ? ResponsiveMenuItems : null}
       {!isJournal && (
         <MenuItem
           prefixIcon={<EditIcon />}
@@ -372,6 +276,13 @@ const PageHeaderMenuItem = ({
         {favorite
           ? t['com.affine.favoritePageOperation.remove']()
           : t['com.affine.favoritePageOperation.add']()}
+      </MenuItem>
+      <MenuItem
+        prefixIcon={<LinkIcon />}
+        data-testid="editor-option-menu-copy-link"
+        onSelect={handleCopyLink}
+      >
+        {t['com.affine.share-menu.copy']()}
       </MenuItem>
       <MenuSeparator />
       <MenuItem
@@ -416,13 +327,6 @@ const PageHeaderMenuItem = ({
           {t['com.affine.header.option.view-frame']()}
         </MenuItem>
       )}
-      <MenuItem
-        prefixIcon={<HistoryIcon />}
-        data-testid="editor-option-menu-history"
-        onSelect={openHistoryModal}
-      >
-        {t['com.affine.history.view-history-version']()}
-      </MenuItem>
       <MenuSeparator />
       {!isJournal && (
         <MenuItem
@@ -447,15 +351,6 @@ const PageHeaderMenuItem = ({
         onSelect={handleOpenTrashModal}
         disabled={!canMoveToTrash}
       />
-      {BUILD_CONFIG.isWeb && workspace.flavour !== 'local' ? (
-        <MenuItem
-          prefixIcon={<LocalWorkspaceIcon />}
-          data-testid="editor-option-menu-link"
-          onSelect={onOpenInDesktop}
-        >
-          {t['com.affine.header.option.open-in-desktop']()}
-        </MenuItem>
-      ) : null}
     </>
   );
 };

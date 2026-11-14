@@ -142,8 +142,12 @@ export const useSharingUrl = ({ workspaceId, pageId }: UseSharingUrl) => {
 
   const onClickCopyLink = useCallback(
     (mode?: DocMode, blockIds?: string[], elementIds?: string[]) => {
+      const baseUrl =
+        typeof location !== 'undefined' && location.origin
+          ? location.origin
+          : serverService.server.baseUrl;
       const sharingUrl = generateUrl({
-        baseUrl: serverService.server.baseUrl,
+        baseUrl,
         workspaceId,
         pageId,
         blockIds,

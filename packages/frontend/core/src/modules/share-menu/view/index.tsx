@@ -1,4 +1,3 @@
-import { useEnableCloud } from '@affine/core/components/hooks/affine/use-enable-cloud';
 import { WorkspaceShareSettingService } from '@affine/core/modules/share-setting';
 import type { Workspace } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
@@ -21,7 +20,7 @@ export const SharePageButton = ({ workspace, page }: SharePageModalProps) => {
   const shareSetting = useService(WorkspaceShareSettingService).sharePreview;
   const enableSharing = useLiveData(shareSetting.enableSharing$);
 
-  const confirmEnableCloud = useEnableCloud();
+  const confirmEnableCloud = useCallback((..._args: any[]) => {}, []);
   const handleOpenShareModal = useCallback((open: boolean) => {
     if (open) {
       track.$.sharePanel.$.open();

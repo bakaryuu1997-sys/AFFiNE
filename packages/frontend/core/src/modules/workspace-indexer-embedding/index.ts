@@ -23,5 +23,3 @@ export function configureIndexerEmbeddingModule(framework: Framework) {
     .entity(IgnoredDocs, [WorkspaceService, EmbeddingStore])
     .entity(EmbeddingProgress, [WorkspaceService, EmbeddingStore]);
 }
-
-export { EmbeddingSettings } from './view';

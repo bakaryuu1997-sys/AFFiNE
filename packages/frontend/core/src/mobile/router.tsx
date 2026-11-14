@@ -51,32 +51,23 @@ export const topLevelRoutes = [
       },
       {
         path: '/auth/:authType',
-        lazy: () => import('./pages/auth'),
+        loader: () => redirect('/'),
       },
       {
         path: '/sign-in',
-        lazy: () => import('./pages/sign-in'),
+        loader: () => redirect('/'),
       },
       {
         path: '/magic-link',
-        lazy: () =>
-          import(
-            /* webpackChunkName: "auth" */ '@affine/core/desktop/pages/auth/magic-link'
-          ),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/login',
-        lazy: () =>
-          import(
-            /* webpackChunkName: "auth" */ '@affine/core/desktop/pages/auth/oauth-login'
-          ),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/callback',
-        lazy: () =>
-          import(
-            /* webpackChunkName: "auth" */ '@affine/core/desktop/pages/auth/oauth-callback'
-          ),
+        loader: () => redirect('/'),
       },
       {
         path: '/redirect-proxy',

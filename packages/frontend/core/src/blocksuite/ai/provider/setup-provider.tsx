@@ -19,7 +19,7 @@ function toAIUserInfo(account: AuthAccountInfo | null) {
 
 export function setupAIProvider(
   requestService: AIRequestService,
-  globalDialogService: GlobalDialogService,
+  _globalDialogService: GlobalDialogService,
   authService: AuthService
 ) {
   setAIRequestService(requestService);
@@ -61,7 +61,7 @@ export function setupAIProvider(
   });
 
   const disposeRequestLoginHandler = AIAppEvents.requestLogin.subscribe(() => {
-    globalDialogService.open('sign-in', {});
+    // no-op in personal local app
   });
 
   const trackerDisposer = setupTracker(requestService);

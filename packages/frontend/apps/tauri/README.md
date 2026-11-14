@@ -36,7 +36,7 @@ cd \\wsl.localhost\Ubuntu\home\<tên-bạn>\AFFiNE\packages\frontend\apps\tauri\
 .\build-windows.ps1 -WebDist "\\wsl.localhost\Ubuntu\home\<tên-bạn>\AFFiNE\packages\frontend\apps\web\dist"
 ```
 
-Script chép dự án sang `C:\affine-build` (đường dẫn ngắn, không dấu), build và in ra:
+Script chép dự án sang thư mục làm việc `%USERPROFILE%\affine-build` (đường dẫn trong hồ sơ người dùng, tránh lỗi quyền hạn ghi ổ C và tránh đường dẫn có dấu), build và in ra:
 
 - bộ cài NSIS (`target\release\bundle\nsis\*.exe`)
 - `affine-personal.exe` — ứng dụng
@@ -60,7 +60,7 @@ Ví dụ cấu hình kiểu `mcpServers`:
 {
   "mcpServers": {
     "affine": {
-      "command": "C:\\affine-build\\target\\release\\affine-mcp.exe",
+      "command": "C:\\Users\\<tên-bạn>\\affine-build\\target\\release\\affine-mcp.exe",
       "args": ["--stdio"]
     }
   }
@@ -68,6 +68,15 @@ Ví dụ cấu hình kiểu `mcpServers`:
 ```
 
 (Cách mỗi client khai báo MCP có thể khác nhau; kiểm tra tài liệu của client đó.)
+
+## Lỗi thường gặp và cách xử lý
+
+1. **Ghi vào gốc `C:\` bị từ chối quyền (Access is denied)**:
+   Mặc định script hiện tại sử dụng `%USERPROFILE%\affine-build` (trong thư mục người dùng) thay vì `C:\affine-build`. Nếu bạn tự chỉ định `-Work`, hãy chọn thư mục có toàn quyền ghi.
+2. **`rustc` bị sập với lỗi `STATUS_STACK_BUFFER_OVERRUN` (0xc0000409)**:
+   Xảy ra trên Windows khi biên dịch quá nhiều crate song song gây tràn stack. Script `build-windows.ps1` tự động thiết lập `$env:CARGO_BUILD_JOBS = '2'` để hạn chế số luồng và ngăn ngừa lỗi này.
+3. **Xung đột phiên bản Rust toolchain (`rust-toolchain.toml`)**:
+   Tệp `rust-toolchain.toml` ở gốc repo AFFiNE ghim phiên bản 1.97.1 (bản này trên Windows có thể bị lỗi thiếu manifest). Script tự sao chép phần mã nguồn Tauri ra ngoài thư mục `%USERPROFILE%\affine-build` để sử dụng bộ toolchain Rust stable mặc định của hệ thống Windows (1.99+), không bị ghim bởi cấu hình monorepo của Linux.
 
 ## Chạy thử bản dev
 

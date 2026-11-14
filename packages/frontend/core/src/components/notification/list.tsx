@@ -10,7 +10,6 @@ import {
   Skeleton,
 } from '@affine/component';
 import { AuthService, InvitationService } from '@affine/core/modules/cloud';
-import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import {
   type Notification,
   NotificationListService,
@@ -56,7 +55,6 @@ export const NotificationList = () => {
   const t = useI18n();
   const notificationListService = useService(NotificationListService);
   const authService = useService(AuthService);
-  const globalDialogService = useService(GlobalDialogService);
   const authStatus = useLiveData(authService.session.status$);
   const notifications = useLiveData(notificationListService.notifications$);
   const isLoading = useLiveData(notificationListService.isLoading$);
@@ -97,8 +95,8 @@ export const NotificationList = () => {
   }, [authStatus, hasMore, notificationListService]);
 
   const handleSignIn = useCallback(() => {
-    globalDialogService.open('sign-in', {});
-  }, [globalDialogService]);
+    // no-op in personal local app
+  }, []);
 
   const handleDeleteAll = useCallback(() => {
     notificationListService.readAllNotifications().catch(err => {

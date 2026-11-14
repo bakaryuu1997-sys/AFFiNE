@@ -108,9 +108,6 @@ const DetailPageImpl = ({
     featureFlagService.flags.enable_mobile_keyboard_toolbar.value;
   const enableEdgelessEditing =
     featureFlagService.flags.enable_mobile_edgeless_editing.value;
-  const enableAIButton = useLiveData(
-    featureFlagService.flags.enable_mobile_ai_button.$
-  );
 
   // TODO(@eyhn): remove jotai here
   const [_, setActiveBlockSuiteEditor] = useActiveBlocksuiteEditor();
@@ -138,13 +135,8 @@ const DetailPageImpl = ({
   }, [doc, globalContext, mode]);
 
   useEffect(() => {
-    if (!enableAIButton) return;
-    aIButtonService.presentAIButton(true);
-
-    return () => {
-      aIButtonService.presentAIButton(false);
-    };
-  }, [aIButtonService, enableAIButton]);
+    aIButtonService.presentAIButton(false);
+  }, [aIButtonService]);
 
   useEffect(() => {
     globalContext.isTrashDoc.set(!!isInTrash);

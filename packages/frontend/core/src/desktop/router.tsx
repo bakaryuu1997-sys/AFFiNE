@@ -74,11 +74,7 @@ export const topLevelRoutes = [
       },
       {
         path: '/try-cloud',
-        loader: () => {
-          return redirect(
-            `/sign-in?redirect_uri=${encodeURIComponent('/?initCloud=true')}`
-          );
-        },
+        loader: () => redirect('/'),
       },
       {
         path: '/theme-editor',
@@ -114,46 +110,39 @@ export const topLevelRoutes = [
       },
       {
         path: '/auth/:authType',
-        lazy: () => import(/* webpackChunkName: "auth" */ './pages/auth/auth'),
+        loader: () => redirect('/'),
+      },
+      {
+        path: '/sign-in',
+        loader: () => redirect('/'),
       },
       {
         path: '/sign-In',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/sign-in'),
+        loader: () => redirect('/'),
       },
       {
         path: '/magic-link',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/magic-link'),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/login',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-login'),
+        loader: () => redirect('/'),
       },
       {
         path: '/oauth/callback',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-callback'),
+        loader: () => redirect('/'),
       },
-      // deprecated, keep for old client compatibility
-      // TODO(@forehalo): remove
       {
         path: '/desktop-signin',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/oauth-login'),
+        loader: () => redirect('/'),
       },
-      // deprecated, keep for old client compatibility
-      // use '/sign-in'
-      // TODO(@forehalo): remove
       {
         path: '/signIn',
-        lazy: () =>
-          import(/* webpackChunkName: "auth" */ './pages/auth/sign-in'),
+        loader: () => redirect('/'),
       },
       {
         path: '/open-app/:action',
-        lazy: () => import('./pages/open-app'),
+        loader: () => redirect('/'),
       },
       {
         path: CATCH_ALL_ROUTE_PATH,

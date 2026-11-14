@@ -222,6 +222,7 @@ export function createCopyAsPngMenuItem(framework: FrameworkProvider) {
     label: 'Copy as Image',
     type: 'copy-as-image',
     when: (ctx: MenuContext) => {
+      if (!apis) return false;
       if (ctx.isEmpty()) return false;
       const { editor } = framework.get(EditorService);
       const mode = editor.mode$.value;

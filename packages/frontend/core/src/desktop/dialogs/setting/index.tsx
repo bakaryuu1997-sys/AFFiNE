@@ -3,7 +3,6 @@ import { WorkspaceDetailSkeleton } from '@affine/component/setting-components';
 import type { ModalProps } from '@affine/component/ui/modal';
 import { Modal } from '@affine/component/ui/modal';
 import {
-  AuthService,
   DefaultServerService,
   ServersService,
 } from '@affine/core/modules/cloud';
@@ -28,7 +27,6 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 
-import { AccountSetting } from './account-setting';
 import { GeneralSetting } from './general-setting';
 import { SettingSidebar } from './setting-sidebar';
 import * as style from './style.css';
@@ -80,9 +78,6 @@ const SettingModalInner = ({
     useLiveData(
       currentServerId ? serversService.server$(currentServerId) : null
     ) ?? defaultServerService.server;
-  const loginStatus = useLiveData(
-    currentServer.scope.get(AuthService).session.status$
-  );
 
   const modalContentRef = useRef<HTMLDivElement>(null);
   const modalContentWrapperRef = useRef<HTMLDivElement>(null);
@@ -185,10 +180,7 @@ const SettingModalInner = ({
             <div className={style.centerContainer}>
               <div ref={modalContentRef} className={style.content}>
                 <Suspense fallback={<WorkspaceDetailSkeleton />}>
-                  {settingState.activeTab === 'account' &&
-                  loginStatus === 'authenticated' ? (
-                    <AccountSetting onChangeSettingState={setSettingState} />
-                  ) : isWorkspaceSetting(settingState.activeTab) ? (
+                  {isWorkspaceSetting(settingState.activeTab) ? (
                     <WorkspaceSetting
                       activeTab={settingState.activeTab}
                       scrollAnchor={settingState.scrollAnchor}

@@ -10,7 +10,6 @@ import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hoo
 import { useSeekTime } from '@affine/core/components/hooks/use-seek-time';
 import { CurrentServerScopeProvider } from '@affine/core/components/providers/current-server-scope';
 import { PublicUserLabel } from '@affine/core/modules/cloud/views/public-user';
-import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import type { AudioAttachmentBlock } from '@affine/core/modules/media/entities/audio-attachment-block';
 import { AudioAttachmentService } from '@affine/core/modules/media/services/audio-attachment';
 import { Trans, useI18n } from '@affine/i18n';
@@ -77,8 +76,6 @@ const AttachmentAudioPlayer = ({ block }: { block: AudioAttachmentBlock }) => {
 
   const enableAi = useEnableAI();
 
-  const globalDialogService = useService(GlobalDialogService);
-
   const handleNotesClick = useAsyncCallback(async () => {
     if (!enableAi || transcribing) {
       return;
@@ -103,9 +100,7 @@ const AttachmentAudioPlayer = ({ block }: { block: AudioAttachmentBlock }) => {
           variant: 'primary',
         },
         cancelText: t['com.affine.ai.login-required.dialog-cancel'](),
-        onConfirm: () => {
-          globalDialogService.open('sign-in', {});
-        },
+        onConfirm: () => {},
       });
       track.doc.editor.audioBlock.openTranscribeNotes({
         type: 'Meeting record',
@@ -144,16 +139,7 @@ const AttachmentAudioPlayer = ({ block }: { block: AudioAttachmentBlock }) => {
         option: 'handle transcribing',
       });
     }
-  }, [
-    enableAi,
-    transcribing,
-    transcribed,
-    block,
-    expanded,
-    confirmModal,
-    t,
-    globalDialogService,
-  ]);
+  }, [enableAi, transcribing, transcribed, block, expanded, confirmModal, t]);
 
   const notesEntry = useMemo(() => {
     if (!enableAi) {
