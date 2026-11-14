@@ -112,7 +112,13 @@ function load(): LocalAISettings {
       : [];
 
     // Merge standard providers with saved ones so new providers are always available
-    const mergedProviders: AIProvider[] = [...savedProviders];
+    const mergedProviders: AIProvider[] = savedProviders.map(p => {
+      const std = STANDARD_PROVIDERS.find(s => s.id === p.id);
+      if (std && !p.apiKey && std.apiKey) {
+        return { ...p, apiKey: std.apiKey };
+      }
+      return p;
+    });
     for (const std of STANDARD_PROVIDERS) {
       if (!mergedProviders.some(p => p.id === std.id)) {
         mergedProviders.push(std);
