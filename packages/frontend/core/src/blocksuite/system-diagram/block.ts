@@ -252,6 +252,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   @state() private accessor isPanning = false;
   @state() private accessor showAddMenu = false;
   @state() private accessor activeCategory = 'database';
+  @state() private accessor saveNotice = false;
 
   private panStart = { x: 0, y: 0 };
   private panInitial = { x: 0, y: 0 };
@@ -408,6 +409,48 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     this.addNode(type, tech);
   }
 
+  public updateTitle(newTitle: string) {
+    this.model.store.updateBlock(this.model, { title: newTitle });
+    const input = this.querySelector<HTMLInputElement>('.sd-title');
+    if (input) input.value = newTitle;
+    try {
+      const store = this.model.store as any;
+      const docId = store.id || store.doc?.id;
+      const collection = store.collection || store.doc?.collection;
+      if (collection?.meta?.setDocMeta && docId) {
+        collection.meta.setDocMeta(docId, { title: newTitle });
+      }
+      if (store.meta) {
+        store.meta.title = newTitle;
+      }
+    } catch (err) {
+      console.error('Failed to sync doc title', err);
+    }
+  }
+
+  public triggerManualSave() {
+    const currentTitle = this.model.props.title || 'Sơ đồ hệ thống';
+    this.updateTitle(currentTitle);
+    this.saveNotice = true;
+    setTimeout(() => {
+      this.saveNotice = false;
+    }, 2000);
+  }
+
+  public createNewDiagram() {
+    this.commit(createEmptySpec());
+    const freshTitle = 'Sơ đồ hệ thống mới';
+    this.updateTitle(freshTitle);
+    const input = this.querySelector<HTMLInputElement>('.sd-title');
+    if (input) {
+      input.value = freshTitle;
+      input.focus();
+      input.select();
+    }
+    this.resetZoom();
+    this.selected = null;
+  }
+
   private onSelectPreset(e: Event) {
     const select = e.target as HTMLSelectElement;
     const value = select.value;
@@ -439,16 +482,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       newTitle = S.templateBasic;
     }
 
-    this.model.store.updateBlock(this.model, { title: newTitle });
-    const input = this.querySelector<HTMLInputElement>('.sd-title');
-    if (input) input.value = newTitle;
-    try {
-      const doc = (this.model.store as any).doc;
-      if (doc?.meta && (!doc.meta.title || doc.meta.title === S.untitled || doc.meta.title === 'Sơ đồ hệ thống')) {
-        doc.meta.title = newTitle;
-      }
-    } catch {}
-
+    this.updateTitle(newTitle);
     this.resetZoom();
     this.selected = null;
   }
@@ -700,169 +734,189 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     const readonly = this.isReadonly;
     return html`
       <div class="sd-bar">
-        <input
-          class="sd-title"
-          type="text"
-          placeholder=${S.untitled}
-          aria-label=${S.title}
-          .value=${this.model.props.title ?? ''}
-          ?disabled=${readonly}
-          @change=${(e: Event) =>
-            this.model.store.updateBlock(this.model, {
-              title: (e.target as HTMLInputElement).value,
-            })}
-        />
-        <button
-          class="sd-btn"
-          title=${this.playing ? S.pause : S.play}
-          @click=${() => (this.playing = !this.playing)}
-        >
-          ${this.playing ? '❚❚' : '▶'}
-        </button>
-        <select
-          aria-label=${S.speed}
-          @change=${(e: Event) =>
-            (this.speed = Number((e.target as HTMLSelectElement).value))}
-        >
-          ${SPEEDS.map(
-            s =>
-              html`<option value=${s} ?selected=${s === this.speed}>
-                ${s}×
-              </option>`
-          )}
-        </select>
-        <input
-          class="sd-time"
-          type="range"
-          aria-label=${S.time}
-          min="0"
-          max=${spec.traffic.durationSec}
-          step=${Math.max(0.1, spec.traffic.durationSec / 200)}
-          .value=${String(this.time)}
-          @input=${(e: Event) => {
-            const value = Number((e.target as HTMLInputElement).value);
-            this.playing = false;
-            this.clock = value;
-            this.time = value;
-          }}
-        />
-        ${
-          readonly
-            ? html`<span>${S.readonly}</span>`
-            : html`
-                <div class="sd-add-menu-container">
-                  <button
-                    class="sd-btn sd-add-btn ${this.showAddMenu ? 'active' : ''}"
-                    @click=${(e: Event) => {
-                      e.stopPropagation();
-                      this.showAddMenu = !this.showAddMenu;
-                    }}
-                  >
-                    + ${S.addComponent}... ▾
-                  </button>
-                  ${this.showAddMenu ? this.renderAddFlyoutMenu() : nothing}
-                </div>
-                <select
-                  class="sd-preset-select"
-                  aria-label=${S.presets}
-                  @change=${(e: Event) => this.onSelectPreset(e)}
-                >
-                  <option value="">📁 ${S.presets}</option>
-                  <option value="3tier">${S.template3Tier}</option>
-                  <option value="microservices">
-                    ${S.templateMicroservices}
-                  </option>
-                  <option value="batch">${S.templateBatchEtl}</option>
-                  <option value="rag">${S.templateRagAi}</option>
-                  <option value="hadr">${S.templateHaDr}</option>
-                  <option value="full">${S.templateFull}</option>
-                  <option value="sample">${S.templateBasic}</option>
-                </select>
-                <button
-                  class="sd-btn ${this.connecting ? 'active' : ''}"
-                  @click=${() => {
-                    this.connecting = !this.connecting;
-                    this.connectFrom = null;
-                    this.notice = null;
-                  }}
-                >
-                  ${S.connect}
-                </button>
-                <button
-                  class="sd-btn"
-                  ?disabled=${!this.selected}
-                  @click=${() => this.removeSelected()}
-                >
-                  ${S.remove}
-                </button>
-                <div class="sd-zoom-controls">
-                  <button
-                    class="sd-btn sd-zoom-btn"
-                    @click=${() => this.zoomOut()}
-                    title=${S.zoomOut}
-                  >
-                    -
-                  </button>
-                  <span
-                    class="sd-zoom-badge"
-                    @click=${() => this.resetZoom()}
-                    title=${S.resetZoom}
-                  >
-                    ${Math.round(this.zoom * 100)}%
-                  </span>
-                  <button
-                    class="sd-btn sd-zoom-btn"
-                    @click=${() => this.zoomIn()}
-                    title=${S.zoomIn}
-                  >
-                    +
-                  </button>
-                </div>
-                <span class="sd-save-badge" title="Tất cả thay đổi được tự động lưu cục bộ">
-                  💾 Đã lưu
-                </span>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.toggleFullscreen()}
-                  title=${this.isFullscreen ? S.exitFullscreen : S.fullscreen}
-                >
-                  ${this.isFullscreen ? '✕ ' + S.exitFullscreen : '⛶ ' + S.fullscreen}
-                </button>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.exportPng()}
-                  title=${S.exportPng}
-                >
-                  📷 ${S.exportPng}
-                </button>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.copyMermaid()}
-                  title=${S.copyMermaid}
-                >
-                  📋 ${S.copyMermaid}
-                </button>
-                <button
-                  class="sd-btn"
-                  @click=${() => {
-                    this.commit(createEmptySpec());
-                    const freshTitle = 'Sơ đồ hệ thống mới';
-                    this.model.store.updateBlock(this.model, { title: freshTitle });
-                    const input = this.querySelector<HTMLInputElement>('.sd-title');
-                    if (input) {
-                      input.value = freshTitle;
-                      input.focus();
-                      input.select();
-                    }
-                    this.resetZoom();
-                    this.selected = null;
-                  }}
-                  title=${S.newDiagram}
-                >
-                  ${S.newDiagram}
-                </button>
-              `
-        }
+        <!-- Row 1: Diagram Meta, Presets, Add Component & Zoom/Save/Fullscreen -->
+        <div class="sd-bar-row sd-bar-main-row">
+          <div class="sd-bar-group sd-bar-left">
+            <div class="sd-title-wrapper" title="Bấm để đổi tên sơ đồ hệ thống">
+              <span class="sd-title-icon">🏷️</span>
+              <input
+                class="sd-title"
+                type="text"
+                placeholder="Nhập tên sơ đồ..."
+                aria-label=${S.title}
+                .value=${this.model.props.title ?? ''}
+                ?disabled=${readonly}
+                @change=${(e: Event) =>
+                  this.updateTitle((e.target as HTMLInputElement).value)}
+              />
+            </div>
+
+            ${
+              readonly
+                ? html`<span>${S.readonly}</span>`
+                : html`
+                    <button
+                      class="sd-btn sd-btn-primary"
+                      @click=${() => this.createNewDiagram()}
+                      title="Tạo sơ đồ hệ thống mới trắng"
+                    >
+                      + Sơ đồ mới
+                    </button>
+
+                    <select
+                      class="sd-preset-select"
+                      aria-label=${S.presets}
+                      @change=${(e: Event) => this.onSelectPreset(e)}
+                    >
+                      <option value="">📁 ${S.presets}...</option>
+                      <option value="3tier">${S.template3Tier}</option>
+                      <option value="microservices">${S.templateMicroservices}</option>
+                      <option value="batch">${S.templateBatchEtl}</option>
+                      <option value="rag">${S.templateRagAi}</option>
+                      <option value="hadr">${S.templateHaDr}</option>
+                      <option value="full">${S.templateFull}</option>
+                      <option value="sample">${S.templateBasic}</option>
+                    </select>
+
+                    <div class="sd-add-menu-container">
+                      <button
+                        class="sd-btn sd-add-btn ${this.showAddMenu ? 'active' : ''}"
+                        @click=${(e: Event) => {
+                          e.stopPropagation();
+                          this.showAddMenu = !this.showAddMenu;
+                        }}
+                      >
+                        + ${S.addComponent}... ▾
+                      </button>
+                      ${this.showAddMenu ? this.renderAddFlyoutMenu() : nothing}
+                    </div>
+                  `
+            }
+          </div>
+
+          <div class="sd-bar-group sd-bar-right">
+            <button
+              class="sd-btn sd-save-btn"
+              @click=${() => this.triggerManualSave()}
+              title="Lưu thủ công (Dữ liệu đã tự động lưu thời gian thực)"
+            >
+              ${this.saveNotice ? '✓ Đã lưu!' : '💾 Lưu'}
+            </button>
+
+            <div class="sd-zoom-controls">
+              <button
+                class="sd-btn sd-zoom-btn"
+                @click=${() => this.zoomOut()}
+                title=${S.zoomOut}
+              >
+                -
+              </button>
+              <span
+                class="sd-zoom-badge"
+                @click=${() => this.resetZoom()}
+                title=${S.resetZoom}
+              >
+                ${Math.round(this.zoom * 100)}%
+              </span>
+              <button
+                class="sd-btn sd-zoom-btn"
+                @click=${() => this.zoomIn()}
+                title=${S.zoomIn}
+              >
+                +
+              </button>
+            </div>
+
+            <button
+              class="sd-btn"
+              @click=${() => this.toggleFullscreen()}
+              title=${this.isFullscreen ? S.exitFullscreen : S.fullscreen}
+            >
+              ${this.isFullscreen ? '✕ Thu nhỏ' : '⛶ Toàn màn hình'}
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 2: Traffic Simulation & Diagram Actions -->
+        <div class="sd-bar-row sd-bar-sub-row">
+          <div class="sd-bar-group sd-bar-sim-group">
+            <span class="sd-sub-label">Mô phỏng:</span>
+            <button
+              class="sd-btn sd-play-btn ${this.playing ? 'active' : ''}"
+              title=${this.playing ? S.pause : S.play}
+              @click=${() => (this.playing = !this.playing)}
+            >
+              ${this.playing ? '❚❚ Tạm dừng' : '▶ Chạy'}
+            </button>
+            <select
+              aria-label=${S.speed}
+              @change=${(e: Event) =>
+                (this.speed = Number((e.target as HTMLSelectElement).value))}
+            >
+              ${SPEEDS.map(
+                s =>
+                  html`<option value=${s} ?selected=${s === this.speed}>
+                    ${s}×
+                  </option>`
+              )}
+            </select>
+            <input
+              class="sd-time"
+              type="range"
+              aria-label=${S.time}
+              min="0"
+              max=${spec.traffic.durationSec}
+              step=${Math.max(0.1, spec.traffic.durationSec / 200)}
+              .value=${String(this.time)}
+              @input=${(e: Event) => {
+                const value = Number((e.target as HTMLInputElement).value);
+                this.playing = false;
+                this.clock = value;
+                this.time = value;
+              }}
+            />
+          </div>
+
+          ${
+            readonly
+              ? nothing
+              : html`
+                  <div class="sd-bar-group sd-bar-actions-group">
+                    <button
+                      class="sd-btn ${this.connecting ? 'active' : ''}"
+                      @click=${() => {
+                        this.connecting = !this.connecting;
+                        this.connectFrom = null;
+                        this.notice = null;
+                      }}
+                    >
+                      🔗 ${S.connect}
+                    </button>
+                    <button
+                      class="sd-btn"
+                      ?disabled=${!this.selected}
+                      @click=${() => this.removeSelected()}
+                    >
+                      🗑️ ${S.remove}
+                    </button>
+                    <button
+                      class="sd-btn"
+                      @click=${() => this.copyMermaid()}
+                      title=${S.copyMermaid}
+                    >
+                      📋 ${S.copyMermaid}
+                    </button>
+                    <button
+                      class="sd-btn"
+                      @click=${() => this.exportPng()}
+                      title=${S.exportPng}
+                    >
+                      📷 ${S.exportPng}
+                    </button>
+                  </div>
+                `
+          }
+        </div>
       </div>
     `;
   }
@@ -940,7 +994,19 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       >
         <div class="sd-nft-title">
           <span>🛠️ ${S.node}: <b>${node.label}</b></span>
-          <span class="sd-nft-type">${S.types[node.type]}</span>
+          <select
+            class="sd-nft-type-select"
+            ?disabled=${this.isReadonly}
+            aria-label="Loại thành phần"
+            @change=${(e: Event) => {
+              const newType = (e.target as HTMLSelectElement).value as NodeType;
+              this.patchNode(node.id, { type: newType });
+            }}
+          >
+            ${(Object.keys(S.types) as NodeType[]).map(
+              t => html`<option value=${t} ?selected=${node.type === t}>${S.types[t]}</option>`
+            )}
+          </select>
         </div>
         <div class="sd-nft-edit-row">
           <input

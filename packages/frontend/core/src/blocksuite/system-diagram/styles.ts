@@ -33,13 +33,94 @@ export const systemDiagramStyles = css`
 
   system-diagram-block .sd-bar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px 8px 12px;
+    flex-direction: column;
+    gap: 0;
     border-bottom: 1px solid var(--sd-border);
     box-sizing: border-box;
     width: 100%;
+    background: var(--sd-surface);
+  }
+
+  system-diagram-block .sd-bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 16px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  system-diagram-block .sd-bar-main-row {
+    border-bottom: 1px solid color-mix(in srgb, var(--sd-border) 60%, transparent);
+  }
+
+  system-diagram-block .sd-bar-sub-row {
+    padding: 6px 16px;
+    background: color-mix(in srgb, var(--sd-bg) 40%, var(--sd-surface));
+    font-size: 12px;
+  }
+
+  system-diagram-block .sd-bar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  system-diagram-block .sd-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: color-mix(in srgb, var(--sd-bg) 60%, var(--sd-surface));
+    border: 1px solid var(--sd-border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    transition: border-color 0.15s ease;
+  }
+  system-diagram-block .sd-title-wrapper:focus-within {
+    border-color: var(--sd-accent);
+  }
+
+  system-diagram-block .sd-title-icon {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  system-diagram-block .sd-title {
+    width: 190px;
+    min-width: 140px;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: var(--sd-text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 2px 0 !important;
+  }
+
+  system-diagram-block .sd-btn-primary {
+    background: color-mix(in srgb, var(--sd-accent) 25%, transparent) !important;
+    border-color: var(--sd-accent) !important;
+    color: #fff !important;
+    font-weight: 500;
+  }
+  system-diagram-block .sd-btn-primary:hover {
+    background: var(--sd-accent) !important;
+  }
+
+  system-diagram-block .sd-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    color: var(--sd-ok, #3fb68b) !important;
+    border-color: color-mix(in srgb, var(--sd-ok, #3fb68b) 40%, transparent) !important;
+    background: color-mix(in srgb, var(--sd-ok, #3fb68b) 12%, transparent) !important;
+    white-space: nowrap;
+  }
+  system-diagram-block .sd-save-btn:hover {
+    background: color-mix(in srgb, var(--sd-ok, #3fb68b) 22%, transparent) !important;
   }
 
   system-diagram-block .sd-zoom-controls {
@@ -49,6 +130,7 @@ export const systemDiagramStyles = css`
     border-radius: 6px;
     overflow: hidden;
     background: var(--sd-surface);
+    flex-shrink: 0;
   }
 
   system-diagram-block .sd-zoom-btn {
@@ -59,6 +141,29 @@ export const systemDiagramStyles = css`
   }
   system-diagram-block .sd-zoom-btn:hover {
     background: color-mix(in srgb, var(--sd-accent) 20%, transparent) !important;
+  }
+
+  system-diagram-block .sd-zoom-badge {
+    padding: 3px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sd-muted);
+    cursor: pointer;
+    min-width: 36px;
+    text-align: center;
+    user-select: none;
+  }
+  system-diagram-block .sd-zoom-badge:hover {
+    color: var(--sd-text);
+  }
+
+  system-diagram-block .sd-sub-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sd-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
   }
 
   system-diagram-block .sd-save-badge {
@@ -444,6 +549,22 @@ export const systemDiagramStyles = css`
     color: var(--sd-muted);
     font-weight: 400;
     margin-left: auto;
+  }
+
+  system-diagram-block .sd-nft-type-select {
+    background: var(--sd-surface);
+    color: var(--sd-text);
+    border: 1px solid var(--sd-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-left: auto;
+    outline: none;
+  }
+  system-diagram-block .sd-nft-type-select:focus {
+    border-color: var(--sd-accent);
   }
 
   system-diagram-block .sd-nft-edit-row {
