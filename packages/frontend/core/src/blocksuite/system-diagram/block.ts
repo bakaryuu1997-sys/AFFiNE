@@ -415,21 +415,40 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     if (!value) return;
 
     const names = sampleNames();
+    let newTitle = S.untitled;
     if (value === 'full') {
       this.commit(createFullSampleSpec(names));
+      newTitle = S.templateFull;
     } else if (value === '3tier') {
       this.commit(createOffshore3TierSpec(names));
+      newTitle = S.template3Tier;
     } else if (value === 'microservices') {
       this.commit(createOffshoreMicroservicesSpec(names));
+      newTitle = S.templateMicroservices;
     } else if (value === 'batch') {
       this.commit(createOffshoreBatchEtlSpec(names));
+      newTitle = S.templateBatchEtl;
     } else if (value === 'rag') {
       this.commit(createOffshoreRagAiSpec(names));
+      newTitle = S.templateRagAi;
     } else if (value === 'hadr') {
       this.commit(createOffshoreHaDrSpec(names));
+      newTitle = S.templateHaDr;
     } else if (value === 'sample') {
       this.commit(createSampleSpec(names));
+      newTitle = S.templateBasic;
     }
+
+    this.model.store.updateBlock(this.model, { title: newTitle });
+    const input = this.querySelector<HTMLInputElement>('.sd-title');
+    if (input) input.value = newTitle;
+    try {
+      const doc = (this.model.store as any).doc;
+      if (doc?.meta && (!doc.meta.title || doc.meta.title === S.untitled || doc.meta.title === 'Sơ đồ hệ thống')) {
+        doc.meta.title = newTitle;
+      }
+    } catch {}
+
     this.resetZoom();
     this.selected = null;
   }
@@ -776,27 +795,32 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                 >
                   ${S.remove}
                 </button>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.zoomOut()}
-                  title=${S.zoomOut}
-                >
-                  -
-                </button>
-                <span
-                  class="sd-zoom-badge"
-                  @click=${() => this.resetZoom()}
-                  title=${S.resetZoom}
-                >
-                  ${Math.round(this.zoom * 100)}%
+                <div class="sd-zoom-controls">
+                  <button
+                    class="sd-btn sd-zoom-btn"
+                    @click=${() => this.zoomOut()}
+                    title=${S.zoomOut}
+                  >
+                    -
+                  </button>
+                  <span
+                    class="sd-zoom-badge"
+                    @click=${() => this.resetZoom()}
+                    title=${S.resetZoom}
+                  >
+                    ${Math.round(this.zoom * 100)}%
+                  </span>
+                  <button
+                    class="sd-btn sd-zoom-btn"
+                    @click=${() => this.zoomIn()}
+                    title=${S.zoomIn}
+                  >
+                    +
+                  </button>
+                </div>
+                <span class="sd-save-badge" title="Tất cả thay đổi được tự động lưu cục bộ">
+                  💾 Đã lưu
                 </span>
-                <button
-                  class="sd-btn"
-                  @click=${() => this.zoomIn()}
-                  title=${S.zoomIn}
-                >
-                  +
-                </button>
                 <button
                   class="sd-btn"
                   @click=${() => this.toggleFullscreen()}
@@ -822,6 +846,14 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   class="sd-btn"
                   @click=${() => {
                     this.commit(createEmptySpec());
+                    const freshTitle = 'Sơ đồ hệ thống mới';
+                    this.model.store.updateBlock(this.model, { title: freshTitle });
+                    const input = this.querySelector<HTMLInputElement>('.sd-title');
+                    if (input) {
+                      input.value = freshTitle;
+                      input.focus();
+                      input.select();
+                    }
                     this.resetZoom();
                     this.selected = null;
                   }}

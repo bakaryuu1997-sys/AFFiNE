@@ -36,8 +36,44 @@ export const systemDiagramStyles = css`
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
+    padding: 8px 18px 8px 12px;
     border-bottom: 1px solid var(--sd-border);
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  system-diagram-block .sd-zoom-controls {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--sd-border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--sd-surface);
+  }
+
+  system-diagram-block .sd-zoom-btn {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 3px 8px !important;
+    background: transparent !important;
+  }
+  system-diagram-block .sd-zoom-btn:hover {
+    background: color-mix(in srgb, var(--sd-accent) 20%, transparent) !important;
+  }
+
+  system-diagram-block .sd-save-badge {
+    font-size: 11px;
+    color: var(--sd-ok, #3fb68b);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    background: color-mix(in srgb, var(--sd-ok, #3fb68b) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--sd-ok, #3fb68b) 30%, transparent);
+    border-radius: 5px;
+    font-weight: 500;
+    user-select: none;
+    white-space: nowrap;
   }
 
   system-diagram-block .sd-title {
