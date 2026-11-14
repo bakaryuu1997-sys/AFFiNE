@@ -22,10 +22,25 @@ export function edgePath(from: Point, to: Point): string {
   return `M ${a.x} ${a.y} C ${a.x + dx} ${a.y}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
 }
 
-export function edgeMidpoint(from: Point, to: Point): Point {
+export function edgeMidpoint(from: Point, to: Point, allNodes?: Point[]): Point {
   const a = nodeCenter(from);
   const b = nodeCenter(to);
-  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const midX = (a.x + b.x) / 2;
+  const midY = (a.y + b.y) / 2;
+
+  if (allNodes && allNodes.length > 0) {
+    for (const n of allNodes) {
+      // If midpoint is close to any node center (within 85px X and 70px Y)
+      if (Math.abs(midX - n.x) < 85 && Math.abs(midY - n.y) < 70) {
+        // Shift position towards source node at t = 0.30 with a slight upward clearance
+        return {
+          x: a.x + (b.x - a.x) * 0.3,
+          y: a.y + (b.y - a.y) * 0.3 - 12,
+        };
+      }
+    }
+  }
+  return { x: midX, y: midY };
 }
 
 export interface ViewBox {
@@ -35,16 +50,20 @@ export interface ViewBox {
   h: number;
 }
 
-/** The area that contains every node plus its glyph and label. */
-export function viewBoxOf(nodes: Point[], margin = 24): ViewBox {
+/** The area that contains every node plus its glyph and label with generous breathing room. */
+export function viewBoxOf(nodes: Point[], margin = 60): ViewBox {
   if (nodes.length === 0) return { x: 0, y: 0, w: 640, h: 300 };
   const xs = nodes.map(n => n.x);
   const ys = nodes.map(n => n.y);
-  const x = Math.min(...xs) + NODE_BOX.left - margin;
-  const y = Math.min(...ys) + NODE_BOX.top - margin;
-  const w = Math.max(...xs) + NODE_BOX.right + margin - x;
-  const h = Math.max(...ys) + NODE_BOX.bottom + margin - y;
-  return { x, y, w: Math.max(w, 360), h: Math.max(h, 220) };
+  const leftPad = Math.max(margin, 80);
+  const rightPad = Math.max(margin, 100);
+  const topPad = Math.max(margin, 50);
+  const bottomPad = Math.max(margin, 60);
+  const x = Math.min(...xs) + NODE_BOX.left - leftPad;
+  const y = Math.min(...ys) + NODE_BOX.top - topPad;
+  const w = Math.max(...xs) + NODE_BOX.right + rightPad - x;
+  const h = Math.max(...ys) + NODE_BOX.bottom + bottomPad - y;
+  return { x, y, w: Math.max(w, 420), h: Math.max(h, 240) };
 }
 
 /** How many particles to draw on an edge carrying `rps` requests per second. */

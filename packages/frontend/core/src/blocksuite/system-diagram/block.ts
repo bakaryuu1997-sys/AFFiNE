@@ -285,8 +285,15 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     }
   };
 
+  private readonly handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && this.isFullscreen) {
+      this.toggleFullscreen();
+    }
+  };
+
   override connectedCallback() {
     window.addEventListener('click', this.handleDocumentClick);
+    window.addEventListener('keydown', this.handleKeyDown);
     super.connectedCallback();
     this.contentEditable = 'false';
     this.disposables.add(
@@ -300,6 +307,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
 
   override disconnectedCallback() {
     window.removeEventListener('click', this.handleDocumentClick);
+    window.removeEventListener('keydown', this.handleKeyDown);
     cancelAnimationFrame(this.raf);
     super.disconnectedCallback();
   }
@@ -605,6 +613,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     } else {
       this.classList.remove('sd-fullscreen');
     }
+    this.resetZoom();
+    this.requestUpdate();
   }
 
   private exportPng() {
@@ -760,7 +770,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                       @click=${() => this.createNewDiagram()}
                       title="Tạo sơ đồ hệ thống mới trắng"
                     >
-                      + Sơ đồ mới
+                      + Sơ đồ
                     </button>
 
                     <select
@@ -768,7 +778,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                       aria-label=${S.presets}
                       @change=${(e: Event) => this.onSelectPreset(e)}
                     >
-                      <option value="">📁 ${S.presets}...</option>
+                      <option value="">📁 Mẫu kiến trúc ▾</option>
                       <option value="3tier">${S.template3Tier}</option>
                       <option value="microservices">${S.templateMicroservices}</option>
                       <option value="batch">${S.templateBatchEtl}</option>
@@ -785,8 +795,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                           e.stopPropagation();
                           this.showAddMenu = !this.showAddMenu;
                         }}
+                        title="Thêm thành phần hệ thống"
                       >
-                        + ${S.addComponent}... ▾
+                        + Thêm ▾
                       </button>
                       ${this.showAddMenu ? this.renderAddFlyoutMenu() : nothing}
                     </div>
@@ -830,7 +841,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
             <button
               class="sd-btn"
               @click=${() => this.toggleFullscreen()}
-              title=${this.isFullscreen ? S.exitFullscreen : S.fullscreen}
+              title=${this.isFullscreen ? 'Thu nhỏ (Esc)' : 'Toàn màn hình'}
             >
               ${this.isFullscreen ? '✕ Thu nhỏ' : '⛶ Toàn màn hình'}
             </button>
@@ -846,7 +857,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
               title=${this.playing ? S.pause : S.play}
               @click=${() => (this.playing = !this.playing)}
             >
-              ${this.playing ? '❚❚ Tạm dừng' : '▶ Chạy'}
+              ${this.playing ? '❚❚ Dừng' : '▶ Chạy'}
             </button>
             <select
               aria-label=${S.speed}
@@ -889,6 +900,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                         this.connectFrom = null;
                         this.notice = null;
                       }}
+                      title="Nối 2 thành phần với nhau"
                     >
                       🔗 ${S.connect}
                     </button>
@@ -896,6 +908,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                       class="sd-btn"
                       ?disabled=${!this.selected}
                       @click=${() => this.removeSelected()}
+                      title="Xóa thành phần hoặc đường nối đang chọn"
                     >
                       🗑️ ${S.remove}
                     </button>
@@ -904,14 +917,14 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                       @click=${() => this.copyMermaid()}
                       title=${S.copyMermaid}
                     >
-                      📋 ${S.copyMermaid}
+                      📋 Mermaid
                     </button>
                     <button
                       class="sd-btn"
                       @click=${() => this.exportPng()}
                       title=${S.exportPng}
                     >
-                      📷 ${S.exportPng}
+                      📷 PNG
                     </button>
                   </div>
                 `
@@ -1107,7 +1120,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
             const a = byId.get(edge.from);
             const b = byId.get(edge.to);
             if (!a || !b) return nothing;
-            return this.renderEdgePill(edge.id, edge.label, a, b, result);
+            return this.renderEdgePill(edge.id, edge.label, a, b, result, placed);
           })}
         </svg>
         ${this.renderFloatingNodeToolbar(spec)}
@@ -1181,12 +1194,13 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     label: string | undefined,
     a: DiagramNode,
     b: DiagramNode,
-    result: SimResult | null
+    result: SimResult | null,
+    placed?: DiagramNode[]
   ) {
     const flow = result?.edges[id] ?? 0;
     const hot = result?.nodes[b.id]?.status === 'saturated';
     const text = `${label ? `${label} ` : ''}${formatRate(flow)}`;
-    const mid = edgeMidpoint(a, b);
+    const mid = edgeMidpoint(a, b, placed);
     const w = pillWidth(text);
     const tone = hot ? 'bad' : '';
     return svg`
@@ -1218,8 +1232,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
         r.status === 'saturated' ? 'bad' : r.status === 'busy' ? 'warn' : '';
       const w = pillWidth(text);
       badge = html`${svg`
-        <rect class="pill ${tone}" x=${-w / 2} y="42" width=${w} height="18" rx="9" />
-        <text class="pill-text ${tone}" x="0" y="51">${text}</text>`}`;
+        <rect class="pill ${tone}" x=${-w / 2} y="44" width=${w} height="18" rx="9" />
+        <text class="pill-text ${tone}" x="0" y="53">${text}</text>`}`;
     }
 
     return svg`

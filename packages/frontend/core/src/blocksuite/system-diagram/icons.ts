@@ -172,7 +172,7 @@ export const TYPE_ACCENT: Record<NodeType, string> = {
 };
 
 /** Hit area of a node (relative to its anchor): glyph above, label below. */
-export const NODE_BOX = { left: -48, right: 48, top: -76, bottom: 58 } as const;
+export const NODE_BOX = { left: -48, right: 48, top: -76, bottom: 66 } as const;
 
 export function nodeGlyph(type: NodeType): SVGTemplateResult {
   return glyph(type);

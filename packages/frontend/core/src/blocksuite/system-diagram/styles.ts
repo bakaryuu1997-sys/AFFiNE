@@ -8,6 +8,11 @@ export const systemDiagramStyles = css`
   system-diagram-block {
     display: block;
     margin: 12px 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 5;
   }
 
   system-diagram-block .sd {
@@ -27,8 +32,12 @@ export const systemDiagramStyles = css`
     background: var(--sd-bg);
     color: var(--sd-text);
     font-size: 13px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     overflow: visible;
     user-select: none;
+    position: relative;
   }
 
   system-diagram-block .sd-bar {
@@ -38,17 +47,20 @@ export const systemDiagramStyles = css`
     border-bottom: 1px solid var(--sd-border);
     box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
     background: var(--sd-surface);
   }
 
   system-diagram-block .sd-bar-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding: 8px 16px;
+    gap: 6px 10px;
+    padding: 6px 12px;
     box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
   }
 
   system-diagram-block .sd-bar-main-row {
@@ -56,7 +68,7 @@ export const systemDiagramStyles = css`
   }
 
   system-diagram-block .sd-bar-sub-row {
-    padding: 6px 16px;
+    padding: 5px 12px;
     background: color-mix(in srgb, var(--sd-bg) 40%, var(--sd-surface));
     font-size: 12px;
   }
@@ -64,18 +76,37 @@ export const systemDiagramStyles = css`
   system-diagram-block .sd-bar-group {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: nowrap;
+    gap: 6px;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  system-diagram-block .sd-bar-left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  system-diagram-block .sd-bar-right {
+    flex-shrink: 0;
+  }
+  system-diagram-block .sd-bar-sim-group {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  system-diagram-block .sd-bar-actions-group {
+    flex-shrink: 0;
   }
 
   system-diagram-block .sd-title-wrapper {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     background: color-mix(in srgb, var(--sd-bg) 60%, var(--sd-surface));
     border: 1px solid var(--sd-border);
     border-radius: 6px;
-    padding: 2px 8px;
+    padding: 2px 6px;
+    flex: 1 1 110px;
+    max-width: 180px;
+    min-width: 90px;
     transition: border-color 0.15s ease;
   }
   system-diagram-block .sd-title-wrapper:focus-within {
@@ -83,20 +114,19 @@ export const systemDiagramStyles = css`
   }
 
   system-diagram-block .sd-title-icon {
-    font-size: 13px;
+    font-size: 12px;
     opacity: 0.8;
   }
 
   system-diagram-block .sd-title {
-    width: 190px;
-    min-width: 140px;
+    width: 100%;
     background: transparent !important;
     border: none !important;
     outline: none !important;
     color: var(--sd-text);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
-    padding: 2px 0 !important;
+    padding: 1px 0 !important;
   }
 
   system-diagram-block .sd-btn-primary {
@@ -448,28 +478,54 @@ export const systemDiagramStyles = css`
   system-diagram-block.sd-fullscreen {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 99999 !important;
+    z-index: 999999 !important;
     width: 100vw !important;
     height: 100vh !important;
     max-height: none !important;
-    background: var(--sd-bg, #1a1a1a) !important;
-    padding: 16px !important;
+    background: var(--sd-bg, #1c1c1f) !important;
+    padding: 0 !important;
     margin: 0 !important;
     box-sizing: border-box !important;
     border-radius: 0 !important;
     display: flex !important;
     flex-direction: column !important;
   }
-  system-diagram-block.sd-fullscreen .sd-canvas {
-    flex: 1 !important;
+
+  system-diagram-block.sd-fullscreen .sd {
+    display: flex !important;
+    flex-direction: column !important;
     height: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: var(--sd-bg, #1c1c1f) !important;
+  }
+
+  system-diagram-block.sd-fullscreen .sd-bar {
+    flex-shrink: 0 !important;
+    border-radius: 0 !important;
+    background: var(--sd-surface) !important;
+  }
+
+  system-diagram-block.sd-fullscreen .sd-canvas {
+    flex: 1 1 0% !important;
+    height: 100% !important;
+    width: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    overflow: hidden !important;
+    background: var(--sd-bg, #1c1c1f) !important;
   }
+
   system-diagram-block.sd-fullscreen .sd-svg {
-    max-height: calc(100vh - 180px) !important;
+    width: 100% !important;
     height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
   }
 
   system-diagram-block .sd-zoom-badge {

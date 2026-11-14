@@ -48,6 +48,7 @@ import {
   WorkspacePropertiesTable,
 } from '../../components/properties';
 import { BiDirectionalLinkPanel } from './bi-directional-link-panel';
+import { SystemDiagramFlavour } from '../system-diagram/model';
 import { DocIconPicker } from './doc-icon-picker';
 import { BlocksuiteEditorJournalDocTitle } from './journal-doc-title';
 import { StarterBar } from './starter-bar';
@@ -253,6 +254,11 @@ export const BlocksuiteDocEditor = forwardRef<
     []
   );
 
+  const isSystemDiagram = Boolean(
+    page.meta?.title?.includes('Sơ đồ hệ thống') ||
+    page.getBlocksByFlavour?.(SystemDiagramFlavour)?.length > 0
+  );
+
   return (
     <>
       <div className={styles.affineDocViewport}>
@@ -290,7 +296,7 @@ export const BlocksuiteDocEditor = forwardRef<
         {!readonly && !BUILD_CONFIG.isMobileEdition && (
           <StarterBar doc={page} />
         )}
-        {!shared && displayBiDirectionalLink ? (
+        {!shared && displayBiDirectionalLink && !isSystemDiagram ? (
           <BiDirectionalLinkPanel />
         ) : null}
       </div>
