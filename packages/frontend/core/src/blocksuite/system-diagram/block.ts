@@ -9,11 +9,18 @@ import {
 import { state } from 'lit/decorators.js';
 
 import {
+  resolveDiagramHint,
+  resolveExportSvg,
+  syncDocTitle,
+} from './block-helpers';
+import {
   connectError,
   edgeMidpoint,
   edgePath,
   freePosition,
+  layoutEdgePills,
   particleCount,
+  type Point,
   uniqueId,
   viewBoxOf,
 } from './geometry';
@@ -422,15 +429,7 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     const input = this.querySelector<HTMLInputElement>('.sd-title');
     if (input) input.value = newTitle;
     try {
-      const store = this.model.store as any;
-      const docId = store.id || store.doc?.id;
-      const collection = store.collection || store.doc?.collection;
-      if (collection?.meta?.setDocMeta && docId) {
-        collection.meta.setDocMeta(docId, { title: newTitle });
-      }
-      if (store.meta) {
-        store.meta.title = newTitle;
-      }
+      syncDocTitle(this.model.store, newTitle);
     } catch (err) {
       console.error('Failed to sync doc title', err);
     }
@@ -618,29 +617,73 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
   }
 
   private exportPng() {
-    const svgEl = this.shadowRoot?.querySelector(
-      'svg.sd-canvas'
-    ) as SVGSVGElement | null;
+    const svgEl = resolveExportSvg(this);
     if (!svgEl) return;
 
     try {
+      const sdEl = this.querySelector<HTMLElement>('.sd');
+      const cs = sdEl ? getComputedStyle(sdEl) : null;
+      const bg = cs?.getPropertyValue('--sd-bg').trim() || '#1e1e20';
+      const surface = cs?.getPropertyValue('--sd-surface').trim() || '#28282c';
+      const text = cs?.getPropertyValue('--sd-text').trim() || '#e4e4e7';
+      const border = cs?.getPropertyValue('--sd-border').trim() || '#3f3f46';
+      const accent = cs?.getPropertyValue('--sd-accent').trim() || '#5b7cfa';
+      const busy = cs?.getPropertyValue('--sd-busy').trim() || '#e09f3e';
+      const hot = cs?.getPropertyValue('--sd-hot').trim() || '#e05a47';
+
+      const clone = svgEl.cloneNode(true) as SVGSVGElement;
+      const w = svgEl.clientWidth || 960;
+      const h = svgEl.clientHeight || 540;
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clone.setAttribute('width', String(w));
+      clone.setAttribute('height', String(h));
+
+      const styleEl = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'style'
+      );
+      styleEl.textContent = `
+        text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .node-box { fill: transparent; stroke: none; }
+        .node-label { font-size: 12px; font-weight: 600; fill: ${text}; text-anchor: middle; }
+        .node-type { font-size: 10px; fill: ${accent}; text-anchor: middle; opacity: 0.9; }
+        .link { fill: none; stroke: ${border}; stroke-width: 1.6; }
+        .link.live { stroke: ${accent}; opacity: 0.7; }
+        .link.hot { stroke: ${hot}; }
+        .p { fill: ${accent}; }
+        .p.hot { fill: ${hot}; }
+        .pill { fill: ${surface}; stroke: ${border}; stroke-width: 1; }
+        .pill.warn { stroke: ${busy}; }
+        .pill.bad { stroke: ${hot}; }
+        .pill-text { font-size: 10px; fill: ${text}; text-anchor: middle; dominant-baseline: central; }
+        .edge { stroke: ${text}; stroke-opacity: 0.35; stroke-width: 0.8; }
+        .ring { stroke: ${text}; stroke-opacity: 0.4; stroke-width: 1; }
+        .code { stroke: #ffffff; stroke-opacity: 0.75; stroke-width: 1.4; fill: none; }
+      `;
+      clone.insertBefore(styleEl, clone.firstChild);
+
       const serializer = new XMLSerializer();
-      const svgStr = serializer.serializeToString(svgEl);
+      const svgStr = serializer.serializeToString(clone);
       const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const scale = 2;
-        canvas.width = (svgEl.clientWidth || 960) * scale;
-        canvas.height = (svgEl.clientHeight || 540) * scale;
+        canvas.width = w * scale;
+        canvas.height = h * scale;
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          ctx.fillStyle = '#1e1e20';
+          ctx.fillStyle = bg;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const safeName = (this.model.props.title || 'so-do-he-thong')
+            .replace(/[^\p{L}\p{N}\s_-]+/gu, '')
+            .trim()
+            .replace(/\s+/g, '-')
+            .toLowerCase();
           const a = document.createElement('a');
-          a.download = 'so-do-he-thong-11-thanh-phan.png';
+          a.download = `${safeName || 'so-do-he-thong'}.png`;
           a.href = canvas.toDataURL('image/png');
           a.click();
         }
@@ -1085,11 +1128,24 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     const currentX = baseBox.x + (baseBox.w - currentW) / 2;
     const currentY = baseBox.y + (baseBox.h - currentH) / 2;
 
-    const hint = this.connecting
-      ? this.connectFrom
-        ? S.connectPickTarget
-        : S.connectHint
-      : this.notice;
+    const hint = resolveDiagramHint(
+      this.connecting,
+      this.connectFrom,
+      this.notice,
+      S
+    );
+
+    const pillLayoutItems = spec.edges
+      .map(edge => {
+        const a = byId.get(edge.from);
+        const b = byId.get(edge.to);
+        if (!a || !b) return null;
+        const flow = result?.edges[edge.id] ?? 0;
+        const text = `${edge.label ? `${edge.label} ` : ''}${formatRate(flow)}`;
+        return { id: edge.id, from: a, to: b, width: pillWidth(text) };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+    const pillPositions = layoutEdgePills(pillLayoutItems, placed);
 
     return html`
       <div
@@ -1120,7 +1176,15 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
             const a = byId.get(edge.from);
             const b = byId.get(edge.to);
             if (!a || !b) return nothing;
-            return this.renderEdgePill(edge.id, edge.label, a, b, result, placed);
+            return this.renderEdgePill(
+              edge.id,
+              edge.label,
+              a,
+              b,
+              result,
+              placed,
+              pillPositions.get(edge.id)
+            );
           })}
         </svg>
         ${this.renderFloatingNodeToolbar(spec)}
@@ -1195,13 +1259,14 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     a: DiagramNode,
     b: DiagramNode,
     result: SimResult | null,
-    placed?: DiagramNode[]
+    placed?: DiagramNode[],
+    precomputedMid?: Point
   ) {
     const flow = result?.edges[id] ?? 0;
     const hot = result?.nodes[b.id]?.status === 'saturated';
     const text = `${label ? `${label} ` : ''}${formatRate(flow)}`;
-    const mid = edgeMidpoint(a, b, placed);
     const w = pillWidth(text);
+    const mid = precomputedMid ?? edgeMidpoint(a, b, placed, w);
     const tone = hot ? 'bad' : '';
     return svg`
       <g @pointerdown=${(e: Event) => {

@@ -22,25 +22,177 @@ export function edgePath(from: Point, to: Point): string {
   return `M ${a.x} ${a.y} C ${a.x + dx} ${a.y}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
 }
 
-export function edgeMidpoint(from: Point, to: Point, allNodes?: Point[]): Point {
+/** Evaluates a point at parameter `t` (0..1) along the cubic Bezier `edgePath`. */
+export function edgePointAt(from: Point, to: Point, t: number): Point {
   const a = nodeCenter(from);
   const b = nodeCenter(to);
-  const midX = (a.x + b.x) / 2;
-  const midY = (a.y + b.y) / 2;
+  const dx = Math.max(50, Math.abs(b.x - a.x) * 0.5) * (b.x >= a.x ? 1 : -1);
+  const p0x = a.x;
+  const p0y = a.y;
+  const p1x = a.x + dx;
+  const p1y = a.y;
+  const p2x = b.x - dx;
+  const p2y = b.y;
+  const p3x = b.x;
+  const p3y = b.y;
+  const u = 1 - t;
+  const u2 = u * u;
+  const u3 = u2 * u;
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return {
+    x: u3 * p0x + 3 * u2 * t * p1x + 3 * u * t2 * p2x + t3 * p3x,
+    y: u3 * p0y + 3 * u2 * t * p1y + 3 * u * t2 * p2y + t3 * p3y,
+  };
+}
 
-  if (allNodes && allNodes.length > 0) {
-    for (const n of allNodes) {
-      // If midpoint is close to any node center (within 85px X and 70px Y)
-      if (Math.abs(midX - n.x) < 85 && Math.abs(midY - n.y) < 70) {
-        // Shift position towards source node at t = 0.30 with a slight upward clearance
-        return {
-          x: a.x + (b.x - a.x) * 0.3,
-          y: a.y + (b.y - a.y) * 0.3 - 12,
-        };
+interface Box {
+  l: number;
+  r: number;
+  t: number;
+  b: number;
+}
+
+const boxesOverlap = (a: Box, b: Box, pad = 0): boolean =>
+  a.l - pad < b.r && a.r + pad > b.l && a.t - pad < b.b && a.b + pad > b.t;
+
+const nodeTextBoxOf = (n: Point & { label?: string }): Box => {
+  const labelLen = n.label ? n.label.length : 14;
+  const halfW = Math.max(60, (labelLen * 6.5) / 2 + 6);
+  return { l: n.x - halfW, r: n.x + halfW, t: n.y + 4, b: n.y + 66 };
+};
+
+const nodeGlyphBoxOf = (n: Point): Box => ({
+  l: n.x - 44,
+  r: n.x + 44,
+  t: n.y - 52,
+  b: n.y + 4,
+});
+
+const PILL_HALF_H = 9;
+const CANDIDATE_TS = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82];
+const CANDIDATE_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [0, 0],
+  [0, -18],
+  [0, 18],
+  [28, 0],
+  [-28, 0],
+  [0, -34],
+  [0, 34],
+  [28, -18],
+  [-28, -18],
+  [28, 18],
+  [-28, 18],
+  [52, 0],
+  [-52, 0],
+  [52, -20],
+  [-52, -20],
+  [52, 20],
+  [-52, 20],
+  [0, -52],
+  [0, 52],
+  [76, -24],
+  [-76, -24],
+  [76, 24],
+  [-76, 24],
+];
+
+function findBestPillPoint(
+  from: Point,
+  to: Point,
+  pillW: number,
+  hardBoxes: Box[],
+  softBoxes: Box[]
+): Point {
+  const halfW = pillW / 2;
+  const anchor = edgePointAt(from, to, 0.5);
+  let bestPoint = anchor;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (const t of CANDIDATE_TS) {
+    const base = edgePointAt(from, to, t);
+    for (const [ox, oy] of CANDIDATE_OFFSETS) {
+      const cx = base.x + ox;
+      const cy = base.y + oy;
+      const box: Box = {
+        l: cx - halfW,
+        r: cx + halfW,
+        t: cy - PILL_HALF_H,
+        b: cy + PILL_HALF_H,
+      };
+      let hardHits = 0;
+      for (const hb of hardBoxes) {
+        if (boxesOverlap(box, hb, 3)) hardHits++;
+      }
+      let softHits = 0;
+      for (const sb of softBoxes) {
+        if (boxesOverlap(box, sb, 2)) softHits++;
+      }
+      const distPenalty =
+        Math.hypot(cx - anchor.x, cy - anchor.y) * 0.15 + Math.abs(t - 0.5) * 30;
+      const score = hardHits * 100_000 + softHits * 1_000 + distPenalty;
+      if (score < bestScore) {
+        bestScore = score;
+        bestPoint = { x: cx, y: cy };
+        if (hardHits === 0 && softHits === 0 && ox === 0 && oy === 0 && t === 0.5) {
+          return bestPoint;
+        }
       }
     }
   }
-  return { x: midX, y: midY };
+  return bestPoint;
+}
+
+export function edgeMidpoint(
+  from: Point,
+  to: Point,
+  allNodes?: Array<Point & { label?: string }>,
+  pillWidthPx = 68
+): Point {
+  if (!allNodes || allNodes.length === 0) {
+    return edgePointAt(from, to, 0.5);
+  }
+  const hardBoxes = allNodes.map(nodeTextBoxOf);
+  const softBoxes = allNodes.map(nodeGlyphBoxOf);
+  return findBestPillPoint(from, to, pillWidthPx, hardBoxes, softBoxes);
+}
+
+export interface EdgePillLayoutItem {
+  id: string;
+  from: Point;
+  to: Point;
+  width: number;
+}
+
+/**
+ * Computes collision-free positions for all edge pills simultaneously so pills
+ * avoid every node's label/badge and never overlap each other.
+ */
+export function layoutEdgePills(
+  items: EdgePillLayoutItem[],
+  nodes: Array<Point & { label?: string }>
+): Map<string, Point> {
+  const result = new Map<string, Point>();
+  const hardBoxes: Box[] = nodes.map(nodeTextBoxOf);
+  const softBoxes: Box[] = nodes.map(nodeGlyphBoxOf);
+
+  for (const item of items) {
+    const pos = findBestPillPoint(
+      item.from,
+      item.to,
+      item.width,
+      hardBoxes,
+      softBoxes
+    );
+    result.set(item.id, pos);
+    hardBoxes.push({
+      l: pos.x - item.width / 2,
+      r: pos.x + item.width / 2,
+      t: pos.y - PILL_HALF_H,
+      b: pos.y + PILL_HALF_H,
+    });
+  }
+  return result;
 }
 
 export interface ViewBox {
@@ -75,10 +227,10 @@ export function particleCount(rps: number): number {
 /** A spot for a new node that does not sit on top of an existing one. */
 export function freePosition(nodes: DiagramNode[]): Point {
   const taken = (p: Point) =>
-    nodes.some(n => Math.abs(n.x - p.x) < 100 && Math.abs(n.y - p.y) < 90);
+    nodes.some(n => Math.abs(n.x - p.x) < 130 && Math.abs(n.y - p.y) < 135);
   for (let row = 0; row < 12; row++) {
     for (let col = 0; col < 8; col++) {
-      const p = { x: 80 + col * 180, y: 100 + row * 140 };
+      const p = { x: 80 + col * 180, y: 100 + row * 150 };
       if (!taken(p)) return p;
     }
   }

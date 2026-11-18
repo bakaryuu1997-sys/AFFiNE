@@ -116,11 +116,53 @@ export async function testModelConnection(
   }
 }
 
+const CLOUD_KEY_REQUIRED_PROVIDERS = new Set([
+  'openai',
+  'anthropic',
+  'openrouter',
+  'minimax',
+]);
+
+const PROVIDER_MODEL_FALLBACKS: Record<string, string[]> = {
+  openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini', 'gpt-4-turbo'],
+  anthropic: [
+    'claude-3-7-sonnet',
+    'claude-3-5-sonnet',
+    'claude-3-5-haiku',
+    'claude-3-opus',
+  ],
+  minimax: ['MiniMax-Text-01', 'abab6.5s-chat'],
+  openrouter: [
+    'deepseek/deepseek-r1',
+    'deepseek/deepseek-chat',
+    'anthropic/claude-3.5-sonnet',
+    'openai/gpt-4o',
+  ],
+  ollama: ['llama3.2', 'qwen2.5', 'mistral', 'deepseek-r1:8b', 'phi3'],
+  '9router': [
+    'free-logic',
+    'gemini-2.0-flash',
+    'deepseek-v3',
+    'claude-3-5-sonnet',
+  ],
+};
+
+function fallbackModelsFor(provider: AIProvider): string[] {
+  return PROVIDER_MODEL_FALLBACKS[provider.id] || ['default'];
+}
+
 export async function listModels(
   provider: AIProvider,
   proxyUrl: string,
   signal?: AbortSignal
 ): Promise<string[]> {
+  if (
+    CLOUD_KEY_REQUIRED_PROVIDERS.has(provider.id) &&
+    !provider.apiKey?.trim()
+  ) {
+    return fallbackModelsFor(provider);
+  }
+
   // First try standard OpenAI /models endpoint
   try {
     const res = await request(provider, proxyUrl, 'models', {
@@ -174,32 +216,7 @@ export async function listModels(
     }
   }
 
-  // Fallbacks for well-known providers when offline
-  const FALLBACKS: Record<string, string[]> = {
-    openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini', 'gpt-4-turbo'],
-    anthropic: [
-      'claude-3-7-sonnet',
-      'claude-3-5-sonnet',
-      'claude-3-5-haiku',
-      'claude-3-opus',
-    ],
-    minimax: ['MiniMax-Text-01', 'abab6.5s-chat'],
-    openrouter: [
-      'deepseek/deepseek-r1',
-      'deepseek/deepseek-chat',
-      'anthropic/claude-3.5-sonnet',
-      'openai/gpt-4o',
-    ],
-    ollama: ['llama3.2', 'qwen2.5', 'mistral', 'deepseek-r1:8b', 'phi3'],
-    '9router': [
-      'free-logic',
-      'gemini-2.0-flash',
-      'deepseek-v3',
-      'claude-3-5-sonnet',
-    ],
-  };
-
-  return FALLBACKS[provider.id] || ['default'];
+  return fallbackModelsFor(provider);
 }
 
 /** Streams a chat completion, calling `onDelta` with each text chunk. */

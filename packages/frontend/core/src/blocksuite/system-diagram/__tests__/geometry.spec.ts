@@ -2,13 +2,24 @@ import { describe, expect, test } from 'vitest';
 
 import {
   connectError,
+  edgeMidpoint,
   edgePath,
   freePosition,
+  layoutEdgePills,
   particleCount,
   uniqueId,
   viewBoxOf,
 } from '../geometry';
-import { createSampleSpec, defaultNode } from '../spec';
+import {
+  createFullSampleSpec,
+  createOffshore3TierSpec,
+  createOffshoreBatchEtlSpec,
+  createOffshoreHaDrSpec,
+  createOffshoreMicroservicesSpec,
+  createOffshoreRagAiSpec,
+  createSampleSpec,
+  defaultNode,
+} from '../spec';
 
 describe('geometry', () => {
   test('edgePath starts and ends at the node centers', () => {
@@ -41,6 +52,98 @@ describe('geometry', () => {
     expect(Math.abs(spot.x - 80) >= 100 || Math.abs(spot.y - 100) >= 90).toBe(
       true
     );
+  });
+
+  test('freePosition leaves full vertical clearance so badges never touch adjacent icons', () => {
+    const nodes = [defaultNode('client', { id: 'users', x: 70, y: 200 })];
+    const spot = freePosition(nodes);
+    expect(Math.abs(spot.x - 70) >= 130 || Math.abs(spot.y - 200) >= 135).toBe(
+      true
+    );
+  });
+
+  test('edgeMidpoint does not push short vertical edge pills onto the source node label', () => {
+    const cache = { x: 720, y: 100 };
+    const db = { x: 720, y: 220 };
+    const mid = edgeMidpoint(cache, db, [cache, db]);
+    // Must not sit on cache's icon/label area (y around 82..120) or badge (y around 144..162)
+    const onCacheLabel =
+      Math.abs(mid.x - cache.x) < 55 && mid.y > cache.y - 40 && mid.y < cache.y + 62;
+    expect(onCacheLabel).toBe(false);
+  });
+
+  test('layoutEdgePills produces zero pill-node-text and zero pill-pill overlaps on all 7 built-in presets', () => {
+    const specs = [
+      { name: '3tier', spec: createOffshore3TierSpec() },
+      { name: 'microservices', spec: createOffshoreMicroservicesSpec() },
+      { name: 'batch', spec: createOffshoreBatchEtlSpec() },
+      { name: 'rag', spec: createOffshoreRagAiSpec() },
+      { name: 'hadr', spec: createOffshoreHaDrSpec() },
+      { name: 'full', spec: createFullSampleSpec() },
+      { name: 'sample', spec: createSampleSpec() },
+    ];
+
+    const rectsOverlap = (
+      a: { l: number; r: number; t: number; b: number },
+      b: { l: number; r: number; t: number; b: number }
+    ) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+
+    for (const { name, spec } of specs) {
+      const byId = new Map(spec.nodes.map(n => [n.id, n]));
+      const items = spec.edges
+        .map(e => {
+          const from = byId.get(e.from);
+          const to = byId.get(e.to);
+          if (!from || !to) return null;
+          const text = `${e.label ? `${e.label} ` : ''}999/s`;
+          const width = Math.max(44, text.length * 6.4 + 16);
+          return { id: e.id, from, to, width };
+        })
+        .filter((x): x is NonNullable<typeof x> => Boolean(x));
+
+      const positions = layoutEdgePills(items, spec.nodes);
+
+      // Node text + badge area: x in [n.x - halfLabel, n.x + halfLabel], y in [n.y + 6, n.y + 64]
+      const nodeTextBoxes = spec.nodes.map(n => {
+        const halfW = Math.max(58, (n.label.length * 6.5) / 2 + 4);
+        return {
+          id: n.id,
+          l: n.x - halfW,
+          r: n.x + halfW,
+          t: n.y + 6,
+          b: n.y + 64,
+        };
+      });
+
+      const pillBoxes = items.map(item => {
+        const pos = positions.get(item.id)!;
+        return {
+          id: item.id,
+          l: pos.x - item.width / 2,
+          r: pos.x + item.width / 2,
+          t: pos.y - 9,
+          b: pos.y + 9,
+        };
+      });
+
+      for (const pb of pillBoxes) {
+        for (const nb of nodeTextBoxes) {
+          expect(
+            rectsOverlap(pb, nb),
+            `Preset ${name}: edge pill "${pb.id}" overlapped node "${nb.id}"`
+          ).toBe(false);
+        }
+      }
+
+      for (let i = 0; i < pillBoxes.length; i++) {
+        for (let j = i + 1; j < pillBoxes.length; j++) {
+          expect(
+            rectsOverlap(pillBoxes[i], pillBoxes[j]),
+            `Preset ${name}: edge pill "${pillBoxes[i].id}" overlapped edge pill "${pillBoxes[j].id}"`
+          ).toBe(false);
+        }
+      }
+    }
   });
 
   test('uniqueId adds a numeric suffix', () => {

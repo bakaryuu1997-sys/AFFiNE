@@ -130,13 +130,14 @@ export const systemDiagramStyles = css`
   }
 
   system-diagram-block .sd-btn-primary {
-    background: color-mix(in srgb, var(--sd-accent) 25%, transparent) !important;
+    background: color-mix(in srgb, var(--sd-accent) 14%, var(--sd-surface)) !important;
     border-color: var(--sd-accent) !important;
-    color: #fff !important;
-    font-weight: 500;
+    color: var(--sd-accent) !important;
+    font-weight: 600;
   }
   system-diagram-block .sd-btn-primary:hover {
     background: var(--sd-accent) !important;
+    color: #fff !important;
   }
 
   system-diagram-block .sd-save-btn {
@@ -253,8 +254,20 @@ export const systemDiagramStyles = css`
 
   system-diagram-block .sd-time {
     flex: 1 1 120px;
-    min-width: 100px;
+    min-width: 90px;
+    max-width: 180px;
+    height: 20px;
+    background: transparent;
     accent-color: var(--sd-accent);
+    cursor: pointer;
+  }
+  system-diagram-block .sd-time::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--sd-border);
+  }
+  system-diagram-block .sd-time::-webkit-slider-thumb {
+    margin-top: -5px;
   }
 
   system-diagram-block .sd-metrics {
@@ -479,8 +492,8 @@ export const systemDiagramStyles = css`
     position: fixed !important;
     inset: 0 !important;
     z-index: 999999 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     max-height: none !important;
     background: var(--sd-bg, #1c1c1f) !important;
     padding: 0 !important;
@@ -499,7 +512,8 @@ export const systemDiagramStyles = css`
     max-width: 100% !important;
     border: none !important;
     border-radius: 0 !important;
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     box-sizing: border-box !important;
     background: var(--sd-bg, #1c1c1f) !important;
   }
@@ -512,7 +526,7 @@ export const systemDiagramStyles = css`
 
   system-diagram-block.sd-fullscreen .sd-canvas {
     flex: 1 1 0% !important;
-    height: 100% !important;
+    min-height: 360px !important;
     width: 100% !important;
     display: flex !important;
     align-items: center !important;

@@ -1,0 +1,86 @@
+export interface DiagramHintStrings {
+  connectHint: string;
+  connectPickTarget: string;
+}
+
+/**
+ * Resolves the banner hint displayed on the diagram canvas.
+ * Validation errors (`notice`) always take precedence so users see why a
+ * connection failed even while connect mode stays active.
+ */
+export function resolveDiagramHint(
+  connecting: boolean,
+  connectFrom: string | null,
+  notice: string | null,
+  strings: DiagramHintStrings
+): string | null {
+  if (notice) return notice;
+  if (connecting) {
+    return connectFrom ? strings.connectPickTarget : strings.connectHint;
+  }
+  return null;
+}
+
+export interface SvgQueryHost {
+  shadowRoot: ParentNode | null;
+  querySelector<E extends Element = Element>(selectors: string): E | null;
+}
+
+/** Finds the rendered diagram SVG element across Light DOM or Shadow DOM. */
+export function resolveExportSvg(host: SvgQueryHost): SVGSVGElement | null {
+  return (
+    host.querySelector<SVGSVGElement>('svg.sd-svg') ??
+    host.shadowRoot?.querySelector<SVGSVGElement>('svg.sd-svg') ??
+    null
+  );
+}
+
+interface TitleSyncStore {
+  id?: string;
+  root?: {
+    title?: {
+      length?: number;
+      replace?: (index: number, length: number, text: string) => void;
+    };
+  } | null;
+  doc?: {
+    id?: string;
+    collection?: {
+      meta?: {
+        setDocMeta?: (id: string, meta: { title: string }) => void;
+      };
+    };
+  };
+  collection?: {
+    meta?: {
+      setDocMeta?: (id: string, meta: { title: string }) => void;
+    };
+  };
+  meta?: {
+    title?: string;
+  };
+}
+
+/**
+ * Keeps the document's root page Y.Text title and workspace metadata in sync
+ * so renaming a diagram or loading a template updates the H1 heading and
+ * persists across reopen/navigation.
+ */
+export function syncDocTitle(store: unknown, newTitle: string): void {
+  const s = store as TitleSyncStore | null | undefined;
+  if (!s) return;
+
+  const rootTitle = s.root?.title;
+  if (rootTitle && typeof rootTitle.replace === 'function') {
+    rootTitle.replace(0, rootTitle.length ?? 0, newTitle);
+  }
+
+  const docId = s.id || s.doc?.id;
+  const collection = s.collection || s.doc?.collection;
+  if (collection?.meta?.setDocMeta && docId) {
+    collection.meta.setDocMeta(docId, { title: newTitle });
+  }
+  if (s.meta) {
+    s.meta.title = newTitle;
+  }
+}
