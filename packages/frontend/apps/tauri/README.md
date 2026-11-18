@@ -84,3 +84,15 @@ Script tự động đồng bộ mã nguồn sang `%USERPROFILE%\affine-build`, 
 (một thư viện đóng gói rơi vào `eval`/`new Function` và quay vô hạn khi bị chặn) và cửa sổ chỉ còn trống.
 Vẫn chặn script nội tuyến và script từ máy chủ ngoài. Mỗi lần siết CSP phải build `.exe` và mở thử trước khi phát hành
 (test `modules/mcp-bridge/__tests__/tauri-csp.spec.ts` chỉ canh phần này).
+
+## Kiểm tra khói bản đã build (bắt buộc trước khi phát hành)
+
+```powershell
+node packages/frontend/apps/tauri/scripts/smoke.mjs                      # bản đã cài
+node packages/frontend/apps/tauri/scripts/smoke.mjs --exe C:\\duong\\dan\\affine-personal.exe --docs 8
+```
+
+Script mở app thật qua cổng gỡ lỗi WebView2 rồi kiểm tra: vào được workspace trong 60 giây (CSP sai làm app treo),
+mở N doc và doc giữ nguyên (lỗi cũ: bị đẩy về "Tất cả tài liệu"), không còn chữ đăng nhập/đồng bộ/chia sẻ/Discord ở màn hình,
+menu workspace và các tab Cài đặt, không có vi phạm CSP hay lỗi JS. Chỉ đọc, không gõ vào doc. Trả về mã thoát 1 nếu có mục hỏng.
+Lưu ý: nó đóng mọi `affine-personal.exe` đang chạy trước khi bắt đầu.
