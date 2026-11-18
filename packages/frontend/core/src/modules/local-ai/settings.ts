@@ -54,7 +54,7 @@ export const STANDARD_PROVIDERS: AIProvider[] = [
     baseUrl: 'https://api.anthropic.com/v1',
     apiKey: '',
     viaProxy: false,
-    model: 'claude-3-5-sonnet',
+    model: 'claude-sonnet-4-5',
   },
   {
     id: 'ollama',

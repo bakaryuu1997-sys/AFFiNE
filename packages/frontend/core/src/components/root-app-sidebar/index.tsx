@@ -10,6 +10,10 @@ import {
 } from '@affine/core/modules/app-sidebar/views';
 import { AuthService } from '@affine/core/modules/cloud';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
+import {
+  APP_PERSONAL_VERSION,
+  fetchTauriAppVersion,
+} from '@affine/core/modules/mcp-bridge/tauri';
 import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import type { Workspace } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
@@ -23,7 +27,7 @@ import {
 } from '@blocksuite/icons/rc';
 import { useLiveData, useService, useServices } from '@toeverything/infra';
 import type { ReactElement } from 'react';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import {
   CollapsibleSection,
@@ -204,6 +208,20 @@ export const RootAppSidebar = memo((): ReactElement => {
     [workbench]
   );
 
+  const [appVersion, setAppVersion] = useState(APP_PERSONAL_VERSION);
+
+  useEffect(() => {
+    let active = true;
+    fetchTauriAppVersion()
+      .then(v => {
+        if (active && v) setAppVersion(v);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const onOpenImportModal = useCallback(() => {
     track.$.navigationPanel.importModal.open();
     workspaceDialogService.open('import', undefined, payload => {
@@ -241,7 +259,7 @@ export const RootAppSidebar = memo((): ReactElement => {
             }}
             title="Phiên bản AFFiNE Cá nhân"
           >
-            v0.3.0
+            v{appVersion}
           </span>
         </div>
         <div className={quickSearchAndNewPage}>

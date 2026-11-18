@@ -134,24 +134,24 @@ const PROVIDER_MODEL_FALLBACKS: Record<string, string[]> = {
     'gemini-1.5-pro',
   ],
   anthropic: [
+    'claude-sonnet-4-5',
+    'claude-opus-4-1',
+    'claude-haiku-4-5',
     'claude-3-7-sonnet',
-    'claude-3-5-sonnet',
-    'claude-3-5-haiku',
-    'claude-3-opus',
   ],
   minimax: ['MiniMax-Text-01', 'abab6.5s-chat'],
   openrouter: [
     'deepseek/deepseek-r1',
     'deepseek/deepseek-chat',
-    'anthropic/claude-3.5-sonnet',
+    'anthropic/claude-sonnet-4.5',
     'openai/gpt-4o',
   ],
   ollama: ['llama3.2', 'qwen2.5', 'mistral', 'deepseek-r1:8b', 'phi3'],
   '9router': [
     'free-logic',
-    'gemini-2.0-flash',
+    'gemini-2.5-flash',
     'deepseek-v3',
-    'claude-3-5-sonnet',
+    'claude-sonnet-4-5',
   ],
 };
 

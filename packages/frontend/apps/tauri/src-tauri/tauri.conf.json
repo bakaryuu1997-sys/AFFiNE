@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "AFFiNE v0.3.0",
+        "title": "AFFiNE",
         "width": 1280,
         "height": 800,
         "minWidth": 480,
@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' asset: https://asset.localhost ipc: http://ipc.localhost; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' data:; img-src 'self' asset: https://asset.localhost data: blob: https:; font-src 'self' asset: https://asset.localhost data:; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
     }
   },
   "bundle": {

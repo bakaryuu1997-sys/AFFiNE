@@ -64,4 +64,16 @@ describe('listModels', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(models).toEqual(['gemini-2.5-flash', 'gemini-2.5-pro']);
   });
+
+  test('uses modern Claude 4 models for Anthropic defaults and fallback list', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const anthropic = STANDARD_PROVIDERS.find(p => p.id === 'anthropic')!;
+    expect(anthropic.model).toBe('claude-sonnet-4-5');
+
+    const models = await listModels(anthropic, 'http://127.0.0.1:20129');
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(models).toContain('claude-sonnet-4-5');
+    expect(models).toContain('claude-opus-4-1');
+    expect(models).not.toContain('claude-3-5-sonnet');
+  });
 });

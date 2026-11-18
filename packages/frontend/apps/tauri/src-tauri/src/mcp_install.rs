@@ -132,8 +132,48 @@ fn build_manual_command(client_id: &str, exe_str: &str) -> Option<String> {
   }
 }
 
+/// Merges the AFFiNE MCP entry into an existing JSON config without overwriting
+/// corrupt or non-object config files. Returns an error on invalid JSON.
+pub fn merge_mcp_json_config(
+  existing_content: Option<&str>,
+  exe_str: &str,
+) -> Result<String, String> {
+  let mut config: serde_json::Value = match existing_content {
+    Some(raw) if !raw.trim().is_empty() => serde_json::from_str(raw).map_err(|e| {
+      format!(
+        "Tệp cấu hình JSON hiện có bị lỗi cú pháp ({e}). Đã dừng lại và giữ nguyên tệp gốc để tránh mất dữ liệu."
+      )
+    })?,
+    _ => json!({}),
+  };
+
+  let root = config.as_object_mut().ok_or_else(|| {
+    "Tệp cấu hình hiện có không phải là một JSON object hợp lệ. Đã dừng lại và giữ nguyên tệp gốc."
+      .to_string()
+  })?;
+
+  let servers = root
+    .entry("mcpServers".to_string())
+    .or_insert_with(|| json!({}));
+  let servers_obj = servers.as_object_mut().ok_or_else(|| {
+    "Trường \"mcpServers\" trong tệp cấu hình không phải là một JSON object hợp lệ. Đã dừng lại để tránh ghi đè."
+      .to_string()
+  })?;
+
+  servers_obj.insert(
+    "affine".to_string(),
+    json!({
+      "command": exe_str,
+      "args": ["--mcp"]
+    }),
+  );
+
+  serde_json::to_string_pretty(&config).map_err(|e| e.to_string())
+}
+
 #[tauri::command]
-pub fn get_mcp_status() -> Result<Vec<McpClientStatus>, String> {
+pub fn get_mcp_status(window: tauri::WebviewWindow) -> Result<Vec<McpClientStatus>, String> {
+  crate::ensure_trusted_window(&window)?;
   let exe_path = std::env::current_exe()
     .map_err(|e| format!("Không lấy được đường dẫn tệp thực thi: {e}"))?
     .to_string_lossy()
@@ -172,7 +212,11 @@ pub fn get_mcp_status() -> Result<Vec<McpClientStatus>, String> {
 }
 
 #[tauri::command]
-pub fn install_mcp_config(client_id: String) -> Result<String, String> {
+pub fn install_mcp_config(
+  window: tauri::WebviewWindow,
+  client_id: String,
+) -> Result<String, String> {
+  crate::ensure_trusted_window(&window)?;
   let exe_path = std::env::current_exe().map_err(|e| format!("Không lấy được đường dẫn tệp thực thi: {e}"))?;
   let exe_str = exe_path.to_string_lossy().to_string();
 
@@ -197,24 +241,16 @@ pub fn install_mcp_config(client_id: String) -> Result<String, String> {
       if let Some(parent) = config_path.parent() {
         let _ = fs::create_dir_all(parent);
       }
+      let existing_content = if config_path.exists() {
+        Some(fs::read_to_string(config_path).map_err(|e| e.to_string())?)
+      } else {
+        None
+      };
+      let new_content = merge_mcp_json_config(existing_content.as_deref(), &exe_str)?;
       if config_path.exists() {
         let backup_path = config_path.with_extension("bak");
         let _ = fs::copy(config_path, backup_path);
       }
-      let mut config: serde_json::Value = if config_path.exists() {
-        let content = fs::read_to_string(config_path).map_err(|e| e.to_string())?;
-        serde_json::from_str(&content).unwrap_or(json!({}))
-      } else {
-        json!({})
-      };
-      if config.get("mcpServers").is_none() {
-        config["mcpServers"] = json!({});
-      }
-      config["mcpServers"]["affine"] = json!({
-        "command": exe_str,
-        "args": ["--mcp"]
-      });
-      let new_content = serde_json::to_string_pretty(&config).map_err(|e| e.to_string())?;
       fs::write(config_path, new_content).map_err(|e| e.to_string())?;
       return Ok(client.name.to_string());
     }
@@ -233,8 +269,16 @@ pub fn install_mcp_config(client_id: String) -> Result<String, String> {
       if let Some(parent) = config_path.parent() {
         let _ = fs::create_dir_all(parent);
       }
-      let existing = fs::read_to_string(config_path).unwrap_or_default();
+      let existing = if config_path.exists() {
+        fs::read_to_string(config_path).map_err(|e| e.to_string())?
+      } else {
+        String::new()
+      };
       if !existing.contains("[mcp_servers.affine]") {
+        if config_path.exists() {
+          let backup_path = config_path.with_extension("bak");
+          let _ = fs::copy(config_path, backup_path);
+        }
         let entry = format!(
           "\n[mcp_servers.affine]\ncommand = \"{}\"\nargs = [\"--mcp\"]\n",
           exe_str.replace('\\', "\\\\")
@@ -257,29 +301,56 @@ pub fn install_mcp_config(client_id: String) -> Result<String, String> {
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
   }
 
+  let existing_content = if config_path.exists() {
+    Some(fs::read_to_string(config_path).map_err(|e| e.to_string())?)
+  } else {
+    None
+  };
+  let new_content = merge_mcp_json_config(existing_content.as_deref(), &exe_str)?;
+
   if config_path.exists() {
     let backup_path = config_path.with_extension("bak");
     let _ = fs::copy(config_path, backup_path);
   }
-
-  let mut config: serde_json::Value = if config_path.exists() {
-    let content = fs::read_to_string(config_path).map_err(|e| e.to_string())?;
-    serde_json::from_str(&content).unwrap_or(json!({}))
-  } else {
-    json!({})
-  };
-
-  if config.get("mcpServers").is_none() {
-    config["mcpServers"] = json!({});
-  }
-
-  config["mcpServers"]["affine"] = json!({
-    "command": exe_str,
-    "args": ["--mcp"]
-  });
-
-  let new_content = serde_json::to_string_pretty(&config).map_err(|e| e.to_string())?;
   fs::write(config_path, new_content).map_err(|e| e.to_string())?;
 
   Ok(client.name.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::merge_mcp_json_config;
+
+  #[test]
+  fn merges_into_empty_or_missing_config() {
+    let out = merge_mcp_json_config(None, "C:\\affine.exe").expect("should merge");
+    let parsed: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(parsed["mcpServers"]["affine"]["command"], "C:\\affine.exe");
+    assert_eq!(parsed["mcpServers"]["affine"]["args"], serde_json::json!(["--mcp"]));
+  }
+
+  #[test]
+  fn preserves_existing_servers_and_keys() {
+    let existing = r#"{ "theme": "dark", "mcpServers": { "other": { "command": "npx" } } }"#;
+    let out = merge_mcp_json_config(Some(existing), "/usr/bin/affine").expect("should merge");
+    let parsed: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(parsed["theme"], "dark");
+    assert_eq!(parsed["mcpServers"]["other"]["command"], "npx");
+    assert_eq!(parsed["mcpServers"]["affine"]["command"], "/usr/bin/affine");
+  }
+
+  #[test]
+  fn refuses_to_overwrite_invalid_json() {
+    let broken = "{ invalid json";
+    let err = merge_mcp_json_config(Some(broken), "C:\\affine.exe").unwrap_err();
+    assert!(err.contains("lỗi cú pháp"));
+  }
+
+  #[test]
+  fn refuses_non_object_root_or_mcp_servers() {
+    assert!(merge_mcp_json_config(Some("[]"), "C:\\affine.exe").is_err());
+    assert!(
+      merge_mcp_json_config(Some(r#"{ "mcpServers": [] }"#), "C:\\affine.exe").is_err()
+    );
+  }
 }

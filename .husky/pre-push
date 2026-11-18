@@ -1,0 +1,15 @@
+#!/bin/sh
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
+echo "[pre-push] Running oxlint on modified personal-fork modules..."
+npx oxlint --deny-warnings \
+  packages/frontend/core/src/blocksuite/system-diagram \
+  packages/frontend/core/src/modules/local-ai \
+  packages/frontend/core/src/modules/mcp-bridge \
+  packages/frontend/core/src/components/root-app-sidebar/diagram-button.tsx \
+  packages/frontend/core/src/components/root-app-sidebar/index.tsx \
+  packages/frontend/component/src/ui/date-picker/week-date-picker.tsx \
+  packages/frontend/component/src/ui/date-picker/week-date-picker-locale.ts || exit 1
+
+echo "[pre-push] Running TypeScript web typecheck..."
+npx tsc -p tsconfig.web.json --noEmit || exit 1

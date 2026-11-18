@@ -305,11 +305,6 @@ export const LocalAIChat = () => {
 
   const stop = useCallback(() => abortRef.current?.abort(), []);
 
-  const clear = useCallback(() => {
-    abortRef.current?.abort();
-    updateActiveMessages(() => []);
-  }, [updateActiveMessages]);
-
   const quick = useCallback(
     (instruction: string) => {
       const lastReply = [...messages]
@@ -399,12 +394,11 @@ export const LocalAIChat = () => {
         </Button>
         <span className={styles.spacer} />
         <Button variant="primary" onClick={createNewSession}>
-          + Mới
+          + {t['com.affine.localAI.clear']()}
         </Button>
         <Button onClick={() => setShowHistory(v => !v)}>
           Lịch sử ({sessions.length})
         </Button>
-        <Button onClick={clear}>{t['com.affine.localAI.clear']()}</Button>
         <Button
           onClick={() =>
             workspaceDialogService.open('setting', { activeTab: 'ai' })

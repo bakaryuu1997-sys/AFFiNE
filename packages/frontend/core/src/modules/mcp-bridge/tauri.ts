@@ -28,6 +28,8 @@ export interface McpClientStatus {
   manual_command?: string | null;
 }
 
+export const APP_PERSONAL_VERSION = '0.3.0';
+
 export function isTauri(): boolean {
   return (
     typeof window !== 'undefined' &&
@@ -102,6 +104,23 @@ export function parseMcpInfo(value: unknown): TauriMcpInfo | null {
   if (typeof url !== 'string' || typeof token !== 'string') return null;
   if (!/^wss?:\/\//.test(url) || token.length < 16) return null;
   return { url, token };
+}
+
+/** Reads the desktop app version from Tauri's Cargo.toml, falling back outside Tauri. */
+export async function fetchTauriAppVersion(): Promise<string> {
+  if (!isTauri()) return APP_PERSONAL_VERSION;
+  const invoke = (window as unknown as { __TAURI__: TauriGlobal }).__TAURI__
+    .core?.invoke;
+  if (!invoke) return APP_PERSONAL_VERSION;
+  try {
+    const version = await invoke('app_version');
+    if (typeof version === 'string' && version.trim()) {
+      return version.trim();
+    }
+    return APP_PERSONAL_VERSION;
+  } catch {
+    return APP_PERSONAL_VERSION;
+  }
 }
 
 /** Asks the Tauri shell for the bridge settings; null outside Tauri. */

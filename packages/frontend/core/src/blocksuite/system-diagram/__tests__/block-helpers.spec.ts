@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   resolveDiagramHint,
   resolveExportSvg,
+  shouldAutoSyncDiagramTitle,
   type SvgQueryHost,
   syncDocTitle,
 } from '../block-helpers';
@@ -114,5 +115,28 @@ describe('syncDocTitle', () => {
     expect(setDocMeta).toHaveBeenCalledWith('doc-456', {
       title: '🌐 Web 3-Tier Chuẩn Offshore (AWS)',
     });
+  });
+});
+
+describe('shouldAutoSyncDiagramTitle', () => {
+  test('returns true when legacy doc has generic title but diagram block has a custom title', () => {
+    expect(
+      shouldAutoSyncDiagramTitle(
+        '🤖 Hệ thống AI Doanh nghiệp (RAG & LLM)',
+        'Sơ đồ hệ thống'
+      )
+    ).toBe(true);
+    expect(shouldAutoSyncDiagramTitle('Kiến trúc AWS', '')).toBe(true);
+    expect(shouldAutoSyncDiagramTitle('Kiến trúc AWS', 'Untitled')).toBe(true);
+  });
+
+  test('returns false when block title is empty/generic or doc already has a custom title', () => {
+    expect(shouldAutoSyncDiagramTitle('Sơ đồ hệ thống', 'Sơ đồ hệ thống')).toBe(
+      false
+    );
+    expect(shouldAutoSyncDiagramTitle('', 'Sơ đồ hệ thống')).toBe(false);
+    expect(
+      shouldAutoSyncDiagramTitle('Tên trong khối', 'Tên tài liệu tùy chỉnh')
+    ).toBe(false);
   });
 });

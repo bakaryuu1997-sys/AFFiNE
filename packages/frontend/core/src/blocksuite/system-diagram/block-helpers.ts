@@ -89,3 +89,45 @@ export function syncDocTitle(store: unknown, newTitle: string): void {
     s.meta.title = newTitle;
   }
 }
+
+const GENERIC_DIAGRAM_TITLES = new Set([
+  '',
+  'sơ đồ hệ thống',
+  'system diagram',
+  'システム構成図',
+  'untitled',
+]);
+
+/**
+ * Returns true when an existing diagram doc still carries a generic/empty page
+ * title even though its diagram block already has a specific custom title.
+ */
+export function shouldAutoSyncDiagramTitle(
+  blockTitle: string | null | undefined,
+  docTitle: string | null | undefined
+): boolean {
+  const normalizedBlock = (blockTitle ?? '').trim();
+  if (!normalizedBlock) return false;
+  if (GENERIC_DIAGRAM_TITLES.has(normalizedBlock.toLowerCase())) return false;
+
+  const normalizedDoc = (docTitle ?? '').trim().toLowerCase();
+  return GENERIC_DIAGRAM_TITLES.has(normalizedDoc);
+}
+
+export function getDocTitle(store: unknown): string {
+  const s = store as
+    | (TitleSyncStore & {
+        root?: {
+          title?: { toString?: () => string };
+          props?: { title?: { toString?: () => string } };
+        } | null;
+      })
+    | null
+    | undefined;
+  const rootTitle = s?.root?.props?.title ?? s?.root?.title;
+  const fromRoot =
+    rootTitle && typeof rootTitle.toString === 'function'
+      ? rootTitle.toString()
+      : '';
+  return fromRoot || s?.meta?.title || '';
+}

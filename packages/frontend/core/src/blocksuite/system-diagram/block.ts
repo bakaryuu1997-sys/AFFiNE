@@ -9,8 +9,10 @@ import {
 import { state } from 'lit/decorators.js';
 
 import {
+  getDocTitle,
   resolveDiagramHint,
   resolveExportSvg,
+  shouldAutoSyncDiagramTitle,
   syncDocTitle,
 } from './block-helpers';
 import {
@@ -448,6 +450,18 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       })
     );
     this.raf = requestAnimationFrame(this.frame);
+    queueMicrotask(() => {
+      if (!this.isConnected || this.isReadonly) return;
+      const blockTitle = this.model.props.title;
+      const docTitle = getDocTitle(this.model.store);
+      if (shouldAutoSyncDiagramTitle(blockTitle, docTitle)) {
+        try {
+          syncDocTitle(this.model.store, blockTitle);
+        } catch (err) {
+          console.error('Failed to auto-sync legacy diagram title', err);
+        }
+      }
+    });
   }
 
   override disconnectedCallback() {

@@ -15,7 +15,9 @@ import {
 
 import { observeResize } from '../../utils';
 import { IconButton } from '../button';
+import { lunarLocale } from './calendar/lunar-locale';
 import * as styles from './week-date-picker.css';
+import { getWeekDayLabels } from './week-date-picker-locale';
 
 export interface WeekDatePickerHandle {
   /** control cursor manually */
@@ -31,9 +33,6 @@ export interface WeekDatePickerProps extends Omit<
   handleRef?: ForwardedRef<WeekDatePickerHandle>;
 }
 
-// TODO(catsjuice): i18n
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-// const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 const format = 'YYYY-MM-DD';
 
 export const WeekDatePicker = memo(function WeekDatePicker({
@@ -201,7 +200,7 @@ const Cell = ({ day, dense, value, cursor, onClick }: CellProps) => {
   const isToday = day.isSame(dayjs(), 'day');
 
   const dayIndex = day.day();
-  const label = weekDays[dayIndex];
+  const label = getWeekDayLabels(lunarLocale())[dayIndex];
 
   return (
     <button
@@ -217,7 +216,7 @@ const Cell = ({ day, dense, value, cursor, onClick }: CellProps) => {
       onClick={() => onClick(day)}
     >
       <div className={styles.dayCellWeek}>
-        {dense ? label.slice(0, 1) : label}
+        {dense && label.length > 2 ? label.slice(0, 1) : label}
       </div>
       <div className={styles.dayCellDate}>{day.format('D')}</div>
     </button>

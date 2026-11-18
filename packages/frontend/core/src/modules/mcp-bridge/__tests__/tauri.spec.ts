@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { fetchTauriMcpInfo, isTauri, parseMcpInfo } from '../tauri';
+import { createDefaultSettings } from '../settings';
+import {
+  APP_PERSONAL_VERSION,
+  fetchTauriAppVersion,
+  fetchTauriMcpInfo,
+  isTauri,
+  parseMcpInfo,
+} from '../tauri';
 
 describe('parseMcpInfo', () => {
   const token = 'a'.repeat(32);
@@ -27,5 +34,13 @@ describe('outside Tauri', () => {
   test('there is no shell to ask', async () => {
     expect(isTauri()).toBe(false);
     expect(await fetchTauriMcpInfo()).toBeNull();
+    expect(await fetchTauriAppVersion()).toBe(APP_PERSONAL_VERSION);
+  });
+});
+
+describe('MCP bridge default safety settings', () => {
+  test('defaults writeEnabled to false (read-only until explicitly enabled)', () => {
+    const defaults = createDefaultSettings();
+    expect(defaults.writeEnabled).toBe(false);
   });
 });

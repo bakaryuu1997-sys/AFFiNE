@@ -23,7 +23,7 @@ export function createDefaultSettings(): McpBridgeSettings {
     enabled: false,
     url: DEFAULT_BRIDGE_URL,
     token: '',
-    writeEnabled: true,
+    writeEnabled: false,
   };
 }
 
@@ -40,7 +40,7 @@ function load(): McpBridgeSettings {
           ? parsed.url
           : fallback.url,
       token: typeof parsed.token === 'string' ? parsed.token : '',
-      writeEnabled: parsed.writeEnabled !== false,
+      writeEnabled: parsed.writeEnabled === true,
     };
   } catch {
     return fallback;
