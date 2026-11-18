@@ -129,12 +129,19 @@ function findBestPillPoint(
         if (boxesOverlap(box, sb, 2)) softHits++;
       }
       const distPenalty =
-        Math.hypot(cx - anchor.x, cy - anchor.y) * 0.15 + Math.abs(t - 0.5) * 30;
+        Math.hypot(cx - anchor.x, cy - anchor.y) * 0.15 +
+        Math.abs(t - 0.5) * 30;
       const score = hardHits * 100_000 + softHits * 1_000 + distPenalty;
       if (score < bestScore) {
         bestScore = score;
         bestPoint = { x: cx, y: cy };
-        if (hardHits === 0 && softHits === 0 && ox === 0 && oy === 0 && t === 0.5) {
+        if (
+          hardHits === 0 &&
+          softHits === 0 &&
+          ox === 0 &&
+          oy === 0 &&
+          t === 0.5
+        ) {
           return bestPoint;
         }
       }

@@ -52,6 +52,7 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\asus\affine-build\scripts\bui
 ```
 
 Script tự động đồng bộ mã nguồn sang `%USERPROFILE%\affine-build`, biên dịch và cập nhật:
+
 - Bộ cài NSIS: `%USERPROFILE%\affine-build\target\release\bundle\nsis\AFFiNE Ca nhan_0.3.0_x64-setup.exe`
 - Ứng dụng chạy trực tiếp: `%USERPROFILE%\affine-build\target\release\affine-personal.exe` (tự động chép đè bản cài tại `%LOCALAPPDATA%\AFFiNE Ca nhan\affine-personal.exe`)
 - Công cụ MCP CLI: `%USERPROFILE%\affine-build\target\release\affine-mcp.exe`

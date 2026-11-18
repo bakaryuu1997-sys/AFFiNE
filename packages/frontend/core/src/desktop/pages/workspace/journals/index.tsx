@@ -127,7 +127,10 @@ export const JournalsPageWithConfirmation = () => {
       <ViewTitle title="" />
       <ViewIcon icon="journal" />
       <ViewHeader>
-        <div className={styles.header} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div
+          className={styles.header}
+          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+        >
           <WeekDatePicker
             data-testid="journal-week-picker"
             handleRef={handleRef}

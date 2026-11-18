@@ -131,7 +131,6 @@ export const TECH_SUGGESTIONS: Record<NodeType, string[]> = {
   cdn: ['Cloudflare CDN', 'AWS CloudFront', 'Fastly', 'Akamai'],
 };
 
-
 export interface ComponentCategory {
   id: string;
   name: string;
@@ -149,13 +148,41 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Cơ sở dữ liệu',
     icon: '🗄️',
     items: [
-      { name: 'PostgreSQL', type: 'database', desc: 'CSDL quan hệ chuẩn ACID & JSON mạnh mẽ' },
-      { name: 'MySQL', type: 'database', desc: 'Hệ quản trị CSDL quan hệ phổ biến nhất' },
-      { name: 'MongoDB', type: 'database', desc: 'CSDL phi quan hệ dạng tài liệu (NoSQL)' },
-      { name: 'Redis Database', type: 'database', desc: 'CSDL In-Memory tốc độ cực cao' },
-      { name: 'ClickHouse', type: 'database', desc: 'CSDL cột phân tích OLAP & Data Warehouse' },
-      { name: 'SQLite', type: 'database', desc: 'CSDL nhúng nhẹ cục bộ không cần server' },
-      { name: 'Oracle DB', type: 'database', desc: 'Hệ CSDL doanh nghiệp quy mô lớn' },
+      {
+        name: 'PostgreSQL',
+        type: 'database',
+        desc: 'CSDL quan hệ chuẩn ACID & JSON mạnh mẽ',
+      },
+      {
+        name: 'MySQL',
+        type: 'database',
+        desc: 'Hệ quản trị CSDL quan hệ phổ biến nhất',
+      },
+      {
+        name: 'MongoDB',
+        type: 'database',
+        desc: 'CSDL phi quan hệ dạng tài liệu (NoSQL)',
+      },
+      {
+        name: 'Redis Database',
+        type: 'database',
+        desc: 'CSDL In-Memory tốc độ cực cao',
+      },
+      {
+        name: 'ClickHouse',
+        type: 'database',
+        desc: 'CSDL cột phân tích OLAP & Data Warehouse',
+      },
+      {
+        name: 'SQLite',
+        type: 'database',
+        desc: 'CSDL nhúng nhẹ cục bộ không cần server',
+      },
+      {
+        name: 'Oracle DB',
+        type: 'database',
+        desc: 'Hệ CSDL doanh nghiệp quy mô lớn',
+      },
     ],
   },
   {
@@ -163,9 +190,21 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Bộ nhớ đệm (Cache)',
     icon: '⚡',
     items: [
-      { name: 'Redis Cache', type: 'cache', desc: 'Bộ nhớ đệm In-Memory giảm tải CSDL' },
-      { name: 'Memcached', type: 'cache', desc: 'Bộ nhớ đệm phân tán hiệu năng cao' },
-      { name: 'Varnish Cache', type: 'cache', desc: 'Bộ đệm tăng tốc nội dung web HTTP' },
+      {
+        name: 'Redis Cache',
+        type: 'cache',
+        desc: 'Bộ nhớ đệm In-Memory giảm tải CSDL',
+      },
+      {
+        name: 'Memcached',
+        type: 'cache',
+        desc: 'Bộ nhớ đệm phân tán hiệu năng cao',
+      },
+      {
+        name: 'Varnish Cache',
+        type: 'cache',
+        desc: 'Bộ đệm tăng tốc nội dung web HTTP',
+      },
     ],
   },
   {
@@ -173,12 +212,36 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Cân bằng tải & Mạng',
     icon: '⚖️',
     items: [
-      { name: 'AWS ALB', type: 'load-balancer', desc: 'Application Load Balancer tầng 7' },
-      { name: 'Nginx Reverse Proxy', type: 'load-balancer', desc: 'Proxy ngược & cân bằng tải web' },
-      { name: 'HAProxy', type: 'load-balancer', desc: 'Bộ cân bằng tải TCP/HTTP độ trễ siêu thấp' },
-      { name: 'Kong API Gateway', type: 'load-balancer', desc: 'Cổng API Gateway quản lý routing & auth' },
-      { name: 'AWS Route 53', type: 'dns', desc: 'Hệ thống định tuyến DNS toàn cầu' },
-      { name: 'Cloudflare CDN & WAF', type: 'cdn', desc: 'Mạng phân phối nội dung & tường lửa bảo mật' },
+      {
+        name: 'AWS ALB',
+        type: 'load-balancer',
+        desc: 'Application Load Balancer tầng 7',
+      },
+      {
+        name: 'Nginx Reverse Proxy',
+        type: 'load-balancer',
+        desc: 'Proxy ngược & cân bằng tải web',
+      },
+      {
+        name: 'HAProxy',
+        type: 'load-balancer',
+        desc: 'Bộ cân bằng tải TCP/HTTP độ trễ siêu thấp',
+      },
+      {
+        name: 'Kong API Gateway',
+        type: 'load-balancer',
+        desc: 'Cổng API Gateway quản lý routing & auth',
+      },
+      {
+        name: 'AWS Route 53',
+        type: 'dns',
+        desc: 'Hệ thống định tuyến DNS toàn cầu',
+      },
+      {
+        name: 'Cloudflare CDN & WAF',
+        type: 'cdn',
+        desc: 'Mạng phân phối nội dung & tường lửa bảo mật',
+      },
     ],
   },
   {
@@ -186,11 +249,31 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Máy chủ & Ứng dụng',
     icon: '🖥️',
     items: [
-      { name: 'Node.js API', type: 'api', desc: 'Máy chủ backend xử lý I/O bất đồng bộ' },
-      { name: 'FastAPI Backend', type: 'api', desc: 'Framework Python hiệu năng cao cho AI & API' },
-      { name: 'Spring Boot API', type: 'api', desc: 'Nền tảng Java doanh nghiệp mạnh mẽ' },
-      { name: 'Golang API Server', type: 'api', desc: 'Máy chủ Go siêu nhẹ và đồng thời cao' },
-      { name: 'Microservice', type: 'api', desc: 'Dịch vụ nghiệp vụ độc lập theo kiến trúc vi dịch vụ' },
+      {
+        name: 'Node.js API',
+        type: 'api',
+        desc: 'Máy chủ backend xử lý I/O bất đồng bộ',
+      },
+      {
+        name: 'FastAPI Backend',
+        type: 'api',
+        desc: 'Framework Python hiệu năng cao cho AI & API',
+      },
+      {
+        name: 'Spring Boot API',
+        type: 'api',
+        desc: 'Nền tảng Java doanh nghiệp mạnh mẽ',
+      },
+      {
+        name: 'Golang API Server',
+        type: 'api',
+        desc: 'Máy chủ Go siêu nhẹ và đồng thời cao',
+      },
+      {
+        name: 'Microservice',
+        type: 'api',
+        desc: 'Dịch vụ nghiệp vụ độc lập theo kiến trúc vi dịch vụ',
+      },
     ],
   },
   {
@@ -198,12 +281,36 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Hàng đợi & Xử lý nền',
     icon: '📬',
     items: [
-      { name: 'RabbitMQ', type: 'queue', desc: 'Message Broker định tuyến thông điệp tin cậy' },
-      { name: 'Apache Kafka', type: 'queue', desc: 'Hệ thống luồng dữ liệu sự kiện phân tán quy mô lớn' },
-      { name: 'AWS SQS', type: 'queue', desc: 'Hàng đợi thông điệp đám mây không cần quản trị' },
-      { name: 'Background Worker', type: 'worker', desc: 'Tiến trình xử lý công việc tác vụ chạy ngầm' },
-      { name: 'Cron Job / Batch', type: 'worker', desc: 'Tác vụ chạy định kỳ theo lịch biểu' },
-      { name: 'ETL Worker', type: 'worker', desc: 'Tiến trình trích xuất và biến đổi dữ liệu lớn' },
+      {
+        name: 'RabbitMQ',
+        type: 'queue',
+        desc: 'Message Broker định tuyến thông điệp tin cậy',
+      },
+      {
+        name: 'Apache Kafka',
+        type: 'queue',
+        desc: 'Hệ thống luồng dữ liệu sự kiện phân tán quy mô lớn',
+      },
+      {
+        name: 'AWS SQS',
+        type: 'queue',
+        desc: 'Hàng đợi thông điệp đám mây không cần quản trị',
+      },
+      {
+        name: 'Background Worker',
+        type: 'worker',
+        desc: 'Tiến trình xử lý công việc tác vụ chạy ngầm',
+      },
+      {
+        name: 'Cron Job / Batch',
+        type: 'worker',
+        desc: 'Tác vụ chạy định kỳ theo lịch biểu',
+      },
+      {
+        name: 'ETL Worker',
+        type: 'worker',
+        desc: 'Tiến trình trích xuất và biến đổi dữ liệu lớn',
+      },
     ],
   },
   {
@@ -211,9 +318,21 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Lưu trữ tệp (Storage)',
     icon: '📦',
     items: [
-      { name: 'AWS S3', type: 'storage', desc: 'Lưu trữ đối tượng đám mây mở rộng không giới hạn' },
-      { name: 'MinIO', type: 'storage', desc: 'Lưu trữ đối tượng cục bộ tương thích chuẩn S3' },
-      { name: 'Google Cloud Storage', type: 'storage', desc: 'Lưu trữ tệp & media trên Google Cloud' },
+      {
+        name: 'AWS S3',
+        type: 'storage',
+        desc: 'Lưu trữ đối tượng đám mây mở rộng không giới hạn',
+      },
+      {
+        name: 'MinIO',
+        type: 'storage',
+        desc: 'Lưu trữ đối tượng cục bộ tương thích chuẩn S3',
+      },
+      {
+        name: 'Google Cloud Storage',
+        type: 'storage',
+        desc: 'Lưu trữ tệp & media trên Google Cloud',
+      },
     ],
   },
   {
@@ -221,9 +340,21 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Tìm kiếm & AI Vector',
     icon: '🔍',
     items: [
-      { name: 'Elasticsearch', type: 'search', desc: 'Bộ máy tìm kiếm toàn văn & phân tích log' },
-      { name: 'Vector DB (Qdrant)', type: 'search', desc: 'CSDL Vector chuyên dụng cho AI RAG & Embeddings' },
-      { name: 'OpenSearch', type: 'search', desc: 'Tìm kiếm và phân tích phân tán mã nguồn mở' },
+      {
+        name: 'Elasticsearch',
+        type: 'search',
+        desc: 'Bộ máy tìm kiếm toàn văn & phân tích log',
+      },
+      {
+        name: 'Vector DB (Qdrant)',
+        type: 'search',
+        desc: 'CSDL Vector chuyên dụng cho AI RAG & Embeddings',
+      },
+      {
+        name: 'OpenSearch',
+        type: 'search',
+        desc: 'Tìm kiếm và phân tích phân tán mã nguồn mở',
+      },
     ],
   },
   {
@@ -231,8 +362,16 @@ export const COMPONENT_CATEGORIES: ComponentCategory[] = [
     name: 'Người dùng & Giao diện',
     icon: '👥',
     items: [
-      { name: 'Trình duyệt Web', type: 'client', desc: 'Người dùng truy cập từ Desktop hoặc Web' },
-      { name: 'Ứng dụng Di động', type: 'client', desc: 'Ứng dụng Native iOS / Android' },
+      {
+        name: 'Trình duyệt Web',
+        type: 'client',
+        desc: 'Người dùng truy cập từ Desktop hoặc Web',
+      },
+      {
+        name: 'Ứng dụng Di động',
+        type: 'client',
+        desc: 'Ứng dụng Native iOS / Android',
+      },
     ],
   },
 ];
@@ -282,7 +421,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     { el: SVGPathElement; length: number }
   >();
   private dots: SVGCircleElement[] = [];
-
 
   private readonly handleDocumentClick = (e: MouseEvent) => {
     if (!this.showAddMenu) return;
@@ -823,7 +961,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                     >
                       <option value="">📁 Mẫu kiến trúc ▾</option>
                       <option value="3tier">${S.template3Tier}</option>
-                      <option value="microservices">${S.templateMicroservices}</option>
+                      <option value="microservices">
+                        ${S.templateMicroservices}
+                      </option>
                       <option value="batch">${S.templateBatchEtl}</option>
                       <option value="rag">${S.templateRagAi}</option>
                       <option value="hadr">${S.templateHaDr}</option>
@@ -977,7 +1117,6 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     `;
   }
 
-
   private renderAddFlyoutMenu() {
     const activeCat =
       COMPONENT_CATEGORIES.find(c => c.id === this.activeCategory) ??
@@ -1023,9 +1162,11 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                   }}
                 >
                   <div class="sd-subitem-title">${item.name}</div>
-                  ${item.desc
-                    ? html`<div class="sd-subitem-desc">${item.desc}</div>`
-                    : nothing}
+                  ${
+                    item.desc
+                      ? html`<div class="sd-subitem-desc">${item.desc}</div>`
+                      : nothing
+                  }
                 </div>
               `
             )}
@@ -1060,7 +1201,10 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
             }}
           >
             ${(Object.keys(S.types) as NodeType[]).map(
-              t => html`<option value=${t} ?selected=${node.type === t}>${S.types[t]}</option>`
+              t =>
+                html`<option value=${t} ?selected=${node.type === t}>
+                  ${S.types[t]}
+                </option>`
             )}
           </select>
         </div>

@@ -47,8 +47,8 @@ import {
   type DefaultOpenProperty,
   WorkspacePropertiesTable,
 } from '../../components/properties';
-import { BiDirectionalLinkPanel } from './bi-directional-link-panel';
 import { SystemDiagramFlavour } from '../system-diagram/model';
+import { BiDirectionalLinkPanel } from './bi-directional-link-panel';
 import { DocIconPicker } from './doc-icon-picker';
 import { BlocksuiteEditorJournalDocTitle } from './journal-doc-title';
 import { StarterBar } from './starter-bar';

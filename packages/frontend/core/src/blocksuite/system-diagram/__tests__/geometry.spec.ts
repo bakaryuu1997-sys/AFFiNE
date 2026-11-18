@@ -68,7 +68,9 @@ describe('geometry', () => {
     const mid = edgeMidpoint(cache, db, [cache, db]);
     // Must not sit on cache's icon/label area (y around 82..120) or badge (y around 144..162)
     const onCacheLabel =
-      Math.abs(mid.x - cache.x) < 55 && mid.y > cache.y - 40 && mid.y < cache.y + 62;
+      Math.abs(mid.x - cache.x) < 55 &&
+      mid.y > cache.y - 40 &&
+      mid.y < cache.y + 62;
     expect(onCacheLabel).toBe(false);
   });
 

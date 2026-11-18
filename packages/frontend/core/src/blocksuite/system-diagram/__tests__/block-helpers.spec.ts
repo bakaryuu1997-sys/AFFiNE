@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   resolveDiagramHint,
   resolveExportSvg,
+  type SvgQueryHost,
   syncDocTitle,
 } from '../block-helpers';
 
@@ -47,7 +48,7 @@ describe('resolveExportSvg', () => {
       shadowRoot: null,
       querySelector: (selector: string) =>
         selector === 'svg.sd-svg' ? fakeSvg : null,
-    };
+    } as unknown as SvgQueryHost;
     expect(resolveExportSvg(fakeHost)).toBe(fakeSvg);
   });
 });

@@ -64,7 +64,8 @@ export const systemDiagramStyles = css`
   }
 
   system-diagram-block .sd-bar-main-row {
-    border-bottom: 1px solid color-mix(in srgb, var(--sd-border) 60%, transparent);
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--sd-border) 60%, transparent);
   }
 
   system-diagram-block .sd-bar-sub-row {
@@ -130,7 +131,11 @@ export const systemDiagramStyles = css`
   }
 
   system-diagram-block .sd-btn-primary {
-    background: color-mix(in srgb, var(--sd-accent) 14%, var(--sd-surface)) !important;
+    background: color-mix(
+      in srgb,
+      var(--sd-accent) 14%,
+      var(--sd-surface)
+    ) !important;
     border-color: var(--sd-accent) !important;
     color: var(--sd-accent) !important;
     font-weight: 600;
@@ -146,12 +151,24 @@ export const systemDiagramStyles = css`
     gap: 4px;
     font-weight: 500;
     color: var(--sd-ok, #3fb68b) !important;
-    border-color: color-mix(in srgb, var(--sd-ok, #3fb68b) 40%, transparent) !important;
-    background: color-mix(in srgb, var(--sd-ok, #3fb68b) 12%, transparent) !important;
+    border-color: color-mix(
+      in srgb,
+      var(--sd-ok, #3fb68b) 40%,
+      transparent
+    ) !important;
+    background: color-mix(
+      in srgb,
+      var(--sd-ok, #3fb68b) 12%,
+      transparent
+    ) !important;
     white-space: nowrap;
   }
   system-diagram-block .sd-save-btn:hover {
-    background: color-mix(in srgb, var(--sd-ok, #3fb68b) 22%, transparent) !important;
+    background: color-mix(
+      in srgb,
+      var(--sd-ok, #3fb68b) 22%,
+      transparent
+    ) !important;
   }
 
   system-diagram-block .sd-zoom-controls {
@@ -171,7 +188,11 @@ export const systemDiagramStyles = css`
     background: transparent !important;
   }
   system-diagram-block .sd-zoom-btn:hover {
-    background: color-mix(in srgb, var(--sd-accent) 20%, transparent) !important;
+    background: color-mix(
+      in srgb,
+      var(--sd-accent) 20%,
+      transparent
+    ) !important;
   }
 
   system-diagram-block .sd-zoom-badge {
@@ -715,7 +736,9 @@ export const systemDiagramStyles = css`
     display: flex;
     background: var(--sd-surface, #1e1e22);
     border: 1px solid var(--sd-border, #333338);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     overflow: hidden;
     width: 490px;
@@ -756,7 +779,9 @@ export const systemDiagramStyles = css`
     color: var(--sd-text, #e2e2e8);
     cursor: pointer;
     user-select: none;
-    transition: background 0.12s ease, color 0.12s ease;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease;
   }
 
   system-diagram-block .sd-flyout-cat-item:hover,

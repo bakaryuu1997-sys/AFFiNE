@@ -601,7 +601,8 @@ export const AiSettingsPanel = () => {
                 }}
               >
                 URL gốc của API tương thích OpenAI. Ví dụ:
-                https://api.openai.com/v1, http://localhost:11434/v1, https://openrouter.ai/api/v1
+                https://api.openai.com/v1, http://localhost:11434/v1,
+                https://openrouter.ai/api/v1
               </div>
             </div>
 
