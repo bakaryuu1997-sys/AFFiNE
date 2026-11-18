@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' asset: https://asset.localhost ipc: http://ipc.localhost; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' data:; img-src 'self' asset: https://asset.localhost data: blob: https:; font-src 'self' asset: https://asset.localhost data:; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+      "csp": "default-src 'self' asset: https://asset.localhost ipc: http://ipc.localhost; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' data:; img-src 'self' asset: https://asset.localhost data: blob: https:; font-src 'self' asset: https://asset.localhost data:; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; worker-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
     }
   },
   "bundle": {

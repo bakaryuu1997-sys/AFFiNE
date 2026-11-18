@@ -77,3 +77,10 @@ Script tự động đồng bộ mã nguồn sang `%USERPROFILE%\affine-build`, 
 1. **Ghi vào gốc `C:\` bị từ chối quyền:** Script dùng mặc định `%USERPROFILE%\affine-build`.
 2. **Lỗi `rustc` `STATUS_STACK_BUFFER_OVERRUN (0xc0000409)`:** Script tự giới hạn `CARGO_BUILD_JOBS=2`.
 3. **Xung đột `rust-toolchain.toml`:** Build ngoài thư mục monorepo giúp Windows dùng Rust stable hệ thống thay vì toolchain Linux.
+
+## Lưu ý về CSP (`tauri.conf.json`)
+
+`script-src` **phải giữ `'unsafe-eval'`**. Nếu bỏ, ứng dụng web treo luồng chính ngay khi khởi động
+(một thư viện đóng gói rơi vào `eval`/`new Function` và quay vô hạn khi bị chặn) và cửa sổ chỉ còn trống.
+Vẫn chặn script nội tuyến và script từ máy chủ ngoài. Mỗi lần siết CSP phải build `.exe` và mở thử trước khi phát hành
+(test `modules/mcp-bridge/__tests__/tauri-csp.spec.ts` chỉ canh phần này).
