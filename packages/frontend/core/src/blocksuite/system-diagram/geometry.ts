@@ -58,7 +58,7 @@ const boxesOverlap = (a: Box, b: Box, pad = 0): boolean =>
 
 const nodeTextBoxOf = (n: Point & { label?: string }): Box => {
   const labelLen = n.label ? n.label.length : 14;
-  const halfW = Math.max(60, (labelLen * 6.5) / 2 + 6);
+  const halfW = Math.max(66, (labelLen * 7.6) / 2 + 8);
   return { l: n.x - halfW, r: n.x + halfW, t: n.y + 4, b: n.y + 66 };
 };
 

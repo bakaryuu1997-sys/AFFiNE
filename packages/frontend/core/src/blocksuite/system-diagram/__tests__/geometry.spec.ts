@@ -103,15 +103,15 @@ describe('geometry', () => {
 
       const positions = layoutEdgePills(items, spec.nodes);
 
-      // Node text + badge area: x in [n.x - halfLabel, n.x + halfLabel], y in [n.y + 6, n.y + 64]
+      // Node text + badge area using realistic rendered font width (7.4px/char)
       const nodeTextBoxes = spec.nodes.map(n => {
-        const halfW = Math.max(58, (n.label.length * 6.5) / 2 + 4);
+        const halfW = Math.max(64, (n.label.length * 7.4) / 2 + 6);
         return {
           id: n.id,
           l: n.x - halfW,
           r: n.x + halfW,
-          t: n.y + 6,
-          b: n.y + 64,
+          t: n.y + 4,
+          b: n.y + 66,
         };
       });
 

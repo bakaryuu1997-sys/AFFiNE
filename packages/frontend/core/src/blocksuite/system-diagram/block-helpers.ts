@@ -35,12 +35,17 @@ export function resolveExportSvg(host: SvgQueryHost): SVGSVGElement | null {
   );
 }
 
+interface EditableTitleText {
+  length?: number;
+  replace?: (index: number, length: number, text: string) => void;
+}
+
 interface TitleSyncStore {
   id?: string;
   root?: {
-    title?: {
-      length?: number;
-      replace?: (index: number, length: number, text: string) => void;
+    title?: EditableTitleText;
+    props?: {
+      title?: EditableTitleText;
     };
   } | null;
   doc?: {
@@ -70,7 +75,7 @@ export function syncDocTitle(store: unknown, newTitle: string): void {
   const s = store as TitleSyncStore | null | undefined;
   if (!s) return;
 
-  const rootTitle = s.root?.title;
+  const rootTitle = s.root?.props?.title ?? s.root?.title;
   if (rootTitle && typeof rootTitle.replace === 'function') {
     rootTitle.replace(0, rootTitle.length ?? 0, newTitle);
   }

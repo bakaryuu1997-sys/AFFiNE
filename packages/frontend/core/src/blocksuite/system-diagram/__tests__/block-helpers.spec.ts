@@ -81,4 +81,37 @@ describe('syncDocTitle', () => {
     });
     expect(store.meta.title).toBe('Kiến trúc 3-Tier AWS');
   });
+
+  test('updates BlockSuite 0.27 store.root.props.title Y.Text so H1 heading and reopen persist', () => {
+    const replace = vi.fn();
+    const setDocMeta = vi.fn();
+    const store = {
+      id: 'doc-456',
+      root: {
+        props: {
+          title: {
+            length: 14,
+            replace,
+          },
+        },
+      },
+      doc: {
+        id: 'doc-456',
+        collection: {
+          meta: { setDocMeta },
+        },
+      },
+    };
+
+    syncDocTitle(store, '🌐 Web 3-Tier Chuẩn Offshore (AWS)');
+
+    expect(replace).toHaveBeenCalledWith(
+      0,
+      14,
+      '🌐 Web 3-Tier Chuẩn Offshore (AWS)'
+    );
+    expect(setDocMeta).toHaveBeenCalledWith('doc-456', {
+      title: '🌐 Web 3-Tier Chuẩn Offshore (AWS)',
+    });
+  });
 });
