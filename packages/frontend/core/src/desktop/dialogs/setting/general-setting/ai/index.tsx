@@ -38,6 +38,19 @@ const ProviderIcon = ({
           />
         </svg>
       );
+    case 'gemini':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 2.5C12.8 8.2 15.8 11.2 21.5 12C15.8 12.8 12.8 15.8 12 21.5C11.2 15.8 8.2 12.8 2.5 12C8.2 11.2 11.2 8.2 12 2.5Z"
+            fill="#4285F4"
+            fillOpacity="0.22"
+            stroke="#4285F4"
+            strokeWidth="1.9"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
     case 'anthropic':
       return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -546,8 +559,9 @@ export const AiSettingsPanel = () => {
                     color: 'var(--affine-text-secondary-color)',
                   }}
                 >
-                  API Key được lưu trữ cục bộ trên máy của bạn và chỉ gửi trực
-                  tiếp tới máy chủ của nhà cung cấp.
+                  {activeProvider.id === 'gemini'
+                    ? 'Lấy Gemini API Key tại Google AI Studio (aistudio.google.com/apikey). Key được lưu cục bộ trên máy và chỉ gửi trực tiếp tới Google.'
+                    : 'API Key được lưu trữ cục bộ trên máy của bạn và chỉ gửi trực tiếp tới máy chủ của nhà cung cấp.'}
                 </div>
               </div>
             )}

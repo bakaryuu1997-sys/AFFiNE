@@ -118,6 +118,7 @@ export async function testModelConnection(
 
 const CLOUD_KEY_REQUIRED_PROVIDERS = new Set([
   'openai',
+  'gemini',
   'anthropic',
   'openrouter',
   'minimax',
@@ -125,6 +126,13 @@ const CLOUD_KEY_REQUIRED_PROVIDERS = new Set([
 
 const PROVIDER_MODEL_FALLBACKS: Record<string, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini', 'gpt-4-turbo'],
+  gemini: [
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-pro',
+  ],
   anthropic: [
     'claude-3-7-sonnet',
     'claude-3-5-sonnet',
@@ -181,6 +189,7 @@ export async function listModels(
       const list = items
         .map(m => m.id ?? m.name ?? m.model)
         .filter((id): id is string => typeof id === 'string')
+        .map(id => id.replace(/^models\//, ''))
         .sort((a, b) => a.localeCompare(b));
       if (list.length > 0) return list;
     }

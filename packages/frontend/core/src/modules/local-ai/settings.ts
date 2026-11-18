@@ -41,6 +41,14 @@ export const STANDARD_PROVIDERS: AIProvider[] = [
     model: 'gpt-4o',
   },
   {
+    id: 'gemini',
+    name: 'Google Gemini',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    apiKey: '',
+    viaProxy: false,
+    model: 'gemini-2.5-flash',
+  },
+  {
     id: 'anthropic',
     name: 'Anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
