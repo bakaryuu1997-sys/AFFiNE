@@ -48,6 +48,7 @@ testem.log
 .pnpm-debug.log
 /typings
 tsconfig.tsbuildinfo
+tsconfig*.tsbuildinfo
 .context
 /*.md
 .codex

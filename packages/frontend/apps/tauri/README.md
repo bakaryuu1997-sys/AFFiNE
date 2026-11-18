@@ -1,60 +1,64 @@
-# AFFiNE cá nhân — ứng dụng desktop (Tauri)
+# AFFiNE Cá nhân — Tài liệu Tổng quan, Build & Vận hành
 
-Bọc bản web của fork này thành ứng dụng Windows (`.exe`), kèm cầu nối MCP viết bằng Rust
-để AI agent (Claude, Antigravity...) đọc và sửa workspace.
+Bản fork **AFFiNE cá nhân (local-first, Việt hóa 100%)** đóng gói thành ứng dụng Windows (`.exe`) bằng **Tauri**, tích hợp sẵn cầu nối **MCP (Rust)** và **Trợ lý AI BYOK** (người dùng tự cấu hình API Key cục bộ).
 
-```
-apps/tauri/
-├─ mcp-bridge/   cầu nối MCP bằng Rust (thư viện + lệnh `affine-mcp`), cùng giao thức với scripts/mcp
-├─ src-tauri/    ứng dụng Tauri: cửa sổ, cầu nối MCP chạy cùng ứng dụng, icon
+## Tính năng chính của bản Cá nhân
+
+- **Giao diện tiếng Việt & Local-first:** Dữ liệu lưu trực tiếp trong IndexedDB của WebView2 (không phụ thuộc cloud/tài khoản, loại bỏ các thành phần thanh toán/team/analytics).
+- **Sơ đồ hệ thống tương tác (`system-diagram`):** 7 mẫu kiến trúc chuẩn Offshore/Production (Web 3-Tier AWS, Microservices & Kafka, Batch/ETL, AI RAG, HA/DR, Tổng hợp 11 thành phần, Tối giản), mô phỏng lưu lượng thời gian thực, né va chạm nhãn tự động, xuất **Mermaid** và **PNG**, chế độ toàn màn hình (`Esc` để thoát).
+- **Trợ lý AI cục bộ / BYOK (`Trí tuệ` & `Cài đặt → Cài đặt AI`):** Hỗ trợ **OpenAI**, **Google Gemini** (`https://generativelanguage.googleapis.com/v1beta/openai`), **Anthropic**, **Ollama (Cục bộ)**, **OpenRouter**, **OpenAI Compatible (Tự do)**, **MiniMax**, **9Router**. API Key lưu hoàn toàn cục bộ trên máy.
+- **Tiện ích cá nhân:** Hộp **Việc cần làm** gom checkbox toàn workspace (hỗ trợ hạn `@YYYY-MM-DD HH:mm`), **Nhật ký** kèm lịch âm/ngày lễ Việt Nam và bộ chọn Ngày/Tháng/Năm, **Tìm kiếm không dấu**, xuất toàn bộ workspace ra thư mục **Markdown**.
+- **Cầu nối MCP (Rust):** Tích hợp 1-click cho Claude Desktop, Claude Code, Codex, Cursor, Windsurf, Antigravity.
+
+```text
+packages/frontend/apps/tauri/
+├─ mcp-bridge/   cầu nối MCP viết bằng Rust (`affine-mcp.exe`)
+├─ src-tauri/    ứng dụng Tauri: cửa sổ desktop, nhúng cầu nối MCP, icon
 ├─ scripts/      build-windows.ps1, make-icons.py
-└─ web-dist/     (do script tạo) bản web đã build
+└─ web-dist/     bản web đã build (do script tạo)
 ```
 
-## Dữ liệu nằm ở đâu
+## Dữ liệu & Sao lưu
 
-Workspace lưu trong **IndexedDB của WebView2**, giống trình duyệt. Xóa hồ sơ ứng dụng là mất dữ liệu,
-nên hãy dùng **Cài đặt → Lưu trữ → Xuất ra Markdown** để sao lưu định kỳ (có thể chọn thẳng một thư mục git).
+Workspace lưu trong **IndexedDB của WebView2**. Nên sao lưu định kỳ bằng **Cài đặt → Lưu trữ → Xuất ra Markdown** (có thể trỏ thẳng tới một thư mục đồng bộ Google Drive hoặc Git).
 
-## Build ra `.exe`
+## Kiểm thử & Build ra `.exe`
 
-Chia hai bước vì repo nằm trong WSL còn `.exe` phải build bằng bộ công cụ Windows.
+Repo phát triển nằm trong **WSL2 Ubuntu** (`/home/bakaryuu/AFFiNE`, nhánh `vi-lean`); tệp `.exe` và bộ cài đặt NSIS được build bằng bộ công cụ **Windows**.
 
-**1. Build bản web (trong WSL)**
+### 1. Chạy Unit Test & Lint (trong WSL)
 
 ```bash
-cd ~/AFFiNE
-yarn workspace @affine/web build        # ra packages/frontend/apps/web/dist
+cd /home/bakaryuu/AFFiNE
+yarn vitest --run packages/frontend/core/src/blocksuite/system-diagram packages/frontend/core/src/modules/local-ai
+npx oxlint packages/frontend/core/src/blocksuite/system-diagram packages/frontend/core/src/modules/local-ai
 ```
 
-**2. Build ứng dụng (trong PowerShell trên Windows)**
+### 2. Build bản Web (trong WSL)
 
-Cần sẵn: Rust (`cargo`), Visual Studio Build Tools có thành phần C++, Node.js, WebView2 (đã có trên Windows 11).
+```bash
+cd /home/bakaryuu/AFFiNE
+NODE_OPTIONS="--max-old-space-size=6144" node --import=file:///home/bakaryuu/AFFiNE/tools/cli/tsx-register.js /home/bakaryuu/AFFiNE/tools/cli/src/affine.ts bundle -p @affine/web
+```
+
+Đầu ra nằm tại `packages/frontend/apps/web/dist`.
+
+### 3. Build ứng dụng Windows & bộ cài NSIS (trong PowerShell Windows)
+
+Yêu cầu: Rust (`cargo`), Visual Studio Build Tools (C++), Node.js, WebView2.
 
 ```powershell
-cd \\wsl.localhost\Ubuntu\home\<tên-bạn>\AFFiNE\packages\frontend\apps\tauri\scripts
-.\build-windows.ps1 -WebDist "\\wsl.localhost\Ubuntu\home\<tên-bạn>\AFFiNE\packages\frontend\apps\web\dist"
+powershell -ExecutionPolicy Bypass -File "C:\Users\asus\affine-build\scripts\build-windows.ps1" -WebDist "\\wsl.localhost\Ubuntu\home\bakaryuu\AFFiNE\packages\frontend\apps\web\dist"
 ```
 
-Script chép dự án sang thư mục làm việc `%USERPROFILE%\affine-build` (đường dẫn trong hồ sơ người dùng, tránh lỗi quyền hạn ghi ổ C và tránh đường dẫn có dấu), build và in ra:
+Script tự động đồng bộ mã nguồn sang `%USERPROFILE%\affine-build`, biên dịch và cập nhật:
+- Bộ cài NSIS: `%USERPROFILE%\affine-build\target\release\bundle\nsis\AFFiNE Ca nhan_0.3.0_x64-setup.exe`
+- Ứng dụng chạy trực tiếp: `%USERPROFILE%\affine-build\target\release\affine-personal.exe` (tự động chép đè bản cài tại `%LOCALAPPDATA%\AFFiNE Ca nhan\affine-personal.exe`)
+- Công cụ MCP CLI: `%USERPROFILE%\affine-build\target\release\affine-mcp.exe`
 
-- bộ cài NSIS (`target\release\bundle\nsis\*.exe`)
-- `affine-personal.exe` — ứng dụng
-- `affine-mcp.exe` — công cụ dòng lệnh cho MCP
+## Kết nối với AI Agent (MCP)
 
-Lần build đầu mất khá lâu vì biên dịch Tauri; các lần sau nhanh hơn do giữ lại thư mục `target`.
-
-## Dùng với AI agent (MCP)
-
-Ứng dụng tự chạy cầu nối MCP ở `127.0.0.1:20130` khi mở, và tự điền địa chỉ + token vào
-**Cài đặt → Lưu trữ → Cầu nối MCP** (bật công tắc là xong). Token nằm ở `%USERPROFILE%\.affine-mcp\token`.
-Agent chỉ làm việc được **khi ứng dụng đang mở**.
-
-- **Client dùng HTTP** (Claude Code...): trỏ tới `http://127.0.0.1:20130/mcp`, header `Authorization: Bearer <token>`.
-- **Client dùng lệnh** (Claude Desktop, Antigravity...): lệnh là `affine-mcp.exe`, tham số `--stdio`.
-  Nếu ứng dụng đang chạy thì nó dùng cầu nối của ứng dụng.
-
-Ví dụ cấu hình kiểu `mcpServers`:
+Ứng dụng tự bật cầu nối MCP tại `127.0.0.1:20130` khi đang mở. Token nằm ở `%USERPROFILE%\.affine-mcp\token`. Mở **Tích hợp MCP** trên thanh bên để cài cấu hình 1-click, hoặc khai báo thủ công:
 
 ```json
 {
@@ -67,23 +71,8 @@ Ví dụ cấu hình kiểu `mcpServers`:
 }
 ```
 
-(Cách mỗi client khai báo MCP có thể khác nhau; kiểm tra tài liệu của client đó.)
+## Ghi chú xử lý sự cố build
 
-## Lỗi thường gặp và cách xử lý
-
-1. **Ghi vào gốc `C:\` bị từ chối quyền (Access is denied)**:
-   Mặc định script hiện tại sử dụng `%USERPROFILE%\affine-build` (trong thư mục người dùng) thay vì `C:\affine-build`. Nếu bạn tự chỉ định `-Work`, hãy chọn thư mục có toàn quyền ghi.
-2. **`rustc` bị sập với lỗi `STATUS_STACK_BUFFER_OVERRUN` (0xc0000409)**:
-   Xảy ra trên Windows khi biên dịch quá nhiều crate song song gây tràn stack. Script `build-windows.ps1` tự động thiết lập `$env:CARGO_BUILD_JOBS = '2'` để hạn chế số luồng và ngăn ngừa lỗi này.
-3. **Xung đột phiên bản Rust toolchain (`rust-toolchain.toml`)**:
-   Tệp `rust-toolchain.toml` ở gốc repo AFFiNE ghim phiên bản 1.97.1 (bản này trên Windows có thể bị lỗi thiếu manifest). Script tự sao chép phần mã nguồn Tauri ra ngoài thư mục `%USERPROFILE%\affine-build` để sử dụng bộ toolchain Rust stable mặc định của hệ thống Windows (1.99+), không bị ghim bởi cấu hình monorepo của Linux.
-
-## Chạy thử bản dev
-
-```powershell
-npx @tauri-apps/cli@2 dev      # sau khi đã có web-dist
-```
-
-## Đổi icon
-
-Sửa `scripts/make-icons.py` rồi chạy `python scripts/make-icons.py` (không cần thư viện ngoài).
+1. **Ghi vào gốc `C:\` bị từ chối quyền:** Script dùng mặc định `%USERPROFILE%\affine-build`.
+2. **Lỗi `rustc` `STATUS_STACK_BUFFER_OVERRUN (0xc0000409)`:** Script tự giới hạn `CARGO_BUILD_JOBS=2`.
+3. **Xung đột `rust-toolchain.toml`:** Build ngoài thư mục monorepo giúp Windows dùng Rust stable hệ thống thay vì toolchain Linux.
