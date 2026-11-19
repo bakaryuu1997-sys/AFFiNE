@@ -451,8 +451,11 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
     );
     this.raf = requestAnimationFrame(this.frame);
     try {
-      if (typeof localStorage !== 'undefined' && this.doc?.id) {
-        localStorage.setItem('affine:last-system-diagram-id', this.doc.id);
+      if (typeof localStorage !== 'undefined' && this.model?.store?.id) {
+        localStorage.setItem(
+          'affine:last-system-diagram-id',
+          this.model.store.id
+        );
       }
     } catch {}
     queueMicrotask(() => {
@@ -992,7 +995,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
 
                     <div class="sd-add-menu-container">
                       <button
-                        class="sd-btn sd-add-btn ${this.showAddMenu ? 'active' : ''}"
+                        class="sd-btn sd-add-btn ${
+                          this.showAddMenu ? 'active' : ''
+                        }"
                         @click=${(e: Event) => {
                           e.stopPropagation();
                           this.showAddMenu = !this.showAddMenu;
@@ -1151,7 +1156,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
           ${COMPONENT_CATEGORIES.map(
             cat => html`
               <div
-                class="sd-flyout-cat-item ${this.activeCategory === cat.id ? 'active' : ''}"
+                class="sd-flyout-cat-item ${
+                  this.activeCategory === cat.id ? 'active' : ''
+                }"
                 @mouseenter=${() => {
                   this.activeCategory = cat.id;
                 }}
@@ -1258,7 +1265,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
                       tech => html`
                         <button
                           type="button"
-                          class="sd-badge-btn ${node.label === tech ? 'active' : ''}"
+                          class="sd-badge-btn ${
+                            node.label === tech ? 'active' : ''
+                          }"
                           @click=${() => this.patchNode(node.id, { label: tech })}
                         >
                           ${tech}
@@ -1324,7 +1333,9 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       >
         <svg
           class="sd-svg"
-          viewBox="${currentX + this.panX} ${currentY + this.panY} ${currentW} ${currentH}"
+          viewBox="${currentX + this.panX} ${
+            currentY + this.panY
+          } ${currentW} ${currentH}"
           style="aspect-ratio: ${baseBox.w} / ${baseBox.h}"
           preserveAspectRatio="xMidYMid meet"
         >
@@ -1532,7 +1543,11 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
         <span class=${tone}>${S.success}: <b>${percent}%</b></span>
         <span>${S.latency}: <b>${result.latencyMs} ms</b></span>
         <span class=${bottleneck ? 'warn' : ''}>
-          ${bottleneck ? html`${S.bottleneck}: <b>${bottleneck}</b>` : S.noBottleneck}
+          ${
+            bottleneck
+              ? html`${S.bottleneck}: <b>${bottleneck}</b>`
+              : S.noBottleneck
+          }
         </span>
       </div>
     `;
@@ -1642,7 +1657,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
           <button
             class="sd-btn"
             ?disabled=${this.isReadonly || node.replicas <= 1}
-            @click=${() => this.patchNode(node.id, { replicas: node.replicas - 1 })}
+            @click=${() =>
+              this.patchNode(node.id, { replicas: node.replicas - 1 })}
           >
             −
           </button>
@@ -1666,7 +1682,8 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
           <button
             class="sd-btn"
             ?disabled=${this.isReadonly || node.replicas >= 1000}
-            @click=${() => this.patchNode(node.id, { replicas: node.replicas + 1 })}
+            @click=${() =>
+              this.patchNode(node.id, { replicas: node.replicas + 1 })}
           >
             +
           </button>

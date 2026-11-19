@@ -2,6 +2,7 @@ export interface RawDocItem {
   id: string;
   title: string;
   isTrash: boolean;
+  isTemplate?: boolean;
 }
 
 export interface DocReferenceItem {
@@ -41,11 +42,21 @@ export interface KnowledgeGraphData {
 const SAMPLE_DOC_INDICATORS = [
   'getting started',
   'bắt đầu sử dụng',
+  'bắt đầu với affine',
   'write, draw, plan with affine',
+  'viết, vẽ, lập kế hoạch với affine',
+  'viết, vẽ, lập kế hoạch',
   'how to use folder and tags in affine',
+  'cách sử dụng thư mục và thẻ trong affine',
+  'cách sử dụng thư mục và thẻ',
   "affine's edge",
+  'tính năng vượt trội của affine',
+  'tính năng vượt trội',
   'workspace overview',
+  'tổng quan không gian làm việc',
+  'tổng quan không gian',
   'welcome to affine',
+  'chào mừng đến với affine',
   'はじめる',
 ];
 
@@ -67,10 +78,11 @@ export function buildKnowledgeGraphData(options: {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  // 1. Filter out trash and optional sample docs
+  // 1. Filter out trash and optional sample/template docs
   const filtered = options.docs.filter(d => {
     if (d.isTrash) return false;
-    if (options.hideSamples && isSampleDoc(d.title)) return false;
+    if (options.hideSamples && (d.isTemplate || isSampleDoc(d.title)))
+      return false;
     return true;
   });
 
@@ -128,7 +140,7 @@ export function buildKnowledgeGraphData(options: {
       y,
       radius,
       degree: deg,
-      isSample: isSampleDoc(doc.title),
+      isSample: Boolean(doc.isTemplate || isSampleDoc(doc.title)),
     };
     nodeMap.set(doc.id, node);
   });
@@ -149,7 +161,7 @@ export function buildKnowledgeGraphData(options: {
       y,
       radius: 14,
       degree: 0,
-      isSample: isSampleDoc(doc.title),
+      isSample: Boolean(doc.isTemplate || isSampleDoc(doc.title)),
     };
     nodeMap.set(doc.id, node);
   });

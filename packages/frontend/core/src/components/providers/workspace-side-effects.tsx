@@ -20,6 +20,7 @@ import {
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import { DocsService } from '@affine/core/modules/doc';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
+import { MarkdownExportService } from '@affine/core/modules/markdown-export';
 import { useRegisterNavigationCommands } from '@affine/core/modules/navigation/view/use-register-navigation-commands';
 import { QuickSearchContainer } from '@affine/core/modules/quicksearch';
 import { NbstoreService } from '@affine/core/modules/storage';
@@ -183,15 +184,15 @@ export const WorkspaceSideEffects = () => {
   ]);
 
   // Automatic daily local Markdown backup (background snapshot)
+  const markdownExportService = useService(MarkdownExportService);
   useEffect(() => {
     const timer = setTimeout(() => {
-      checkAndRunScheduledAutoBackup(
-        docsList.docs$.value as any,
-        currentWorkspace.docCollection as any
-      ).catch(console.error);
+      checkAndRunScheduledAutoBackup(markdownExportService).catch(
+        console.error
+      );
     }, 6000);
     return () => clearTimeout(timer);
-  }, [currentWorkspace.docCollection, docsList.docs$]);
+  }, [markdownExportService]);
 
   useRegisterWorkspaceCommands();
   useRegisterNavigationCommands();

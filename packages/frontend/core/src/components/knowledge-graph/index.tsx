@@ -1,9 +1,13 @@
 import { Button, Checkbox, IconButton, Input, Modal } from '@affine/component';
 import { DocsService } from '@affine/core/modules/doc';
+import { DocsSearchService } from '@affine/core/modules/docs-search';
+import { TemplateDocService } from '@affine/core/modules/template-doc';
 import { WorkbenchService } from '@affine/core/modules/workbench';
+import { WorkspaceService } from '@affine/core/modules/workspace';
 import { CollaborationIcon } from '@blocksuite/icons/rc';
-import { useLiveData, useService } from '@toeverything/infra';
+import { LiveData, useLiveData, useService } from '@toeverything/infra';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { of } from 'rxjs';
 
 import {
   buildKnowledgeGraphData,
@@ -19,43 +23,83 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   const docsService = useService(DocsService);
+  const docsSearchService = useService(DocsSearchService);
+  const templateDocService = useService(TemplateDocService);
+  const workspaceService = useService(WorkspaceService);
   const workbench = useService(WorkbenchService).workbench;
   const docs = useLiveData(docsService.list.docs$);
 
-  // Extract real cross-doc links from block collections
+  const activeDocIds = useMemo(() => {
+    if (!docs) return [];
+    return docs.filter(d => !d.trash$.value).map(d => d.id);
+  }, [docs]);
+
+  // Query real cross-document references via search indexer
+  const refsBySourceMap = useLiveData(
+    useMemo(
+      () =>
+        LiveData.from(
+          open && activeDocIds.length > 0
+            ? docsSearchService.watchRefsBySourceFrom(activeDocIds)
+            : of(new Map<string, any[]>()),
+          new Map<string, any[]>()
+        ),
+      [docsSearchService, activeDocIds, open]
+    )
+  );
+
+  // Extract real cross-doc links from indexer and live block collections
   const references = useMemo<DocReferenceItem[]>(() => {
-    if (!docs || docs.length === 0) return [];
-    const docCollection = (docsService.list as any).docCollection;
     const refs: DocReferenceItem[] = [];
     const seen = new Set<string>();
 
-    for (const docRecord of docs) {
-      if (docRecord.trash$.value) continue;
-      const sourceId = docRecord.id;
-      const bsDoc = docCollection?.getDoc
-        ? docCollection.getDoc(sourceId)
-        : null;
-      if (!bsDoc) continue;
-
-      const blocks = bsDoc.getBlocks ? bsDoc.getBlocks() : [];
-      for (const b of blocks) {
-        // affine:reference block or embed-linked-doc block
-        const targetId =
-          b.model?.pageId ||
-          b.model?.refDocId ||
-          (b.model?.referenceInfo && b.model.referenceInfo.pageId);
-
-        if (typeof targetId === 'string' && targetId && targetId !== sourceId) {
-          const key = `${sourceId}->${targetId}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            refs.push({ sourceId, targetId });
+    if (refsBySourceMap) {
+      for (const [sourceId, sourceRefs] of refsBySourceMap.entries()) {
+        for (const ref of sourceRefs) {
+          const targetId = ref.docId;
+          if (
+            typeof targetId === 'string' &&
+            targetId &&
+            targetId !== sourceId
+          ) {
+            const key = `${sourceId}->${targetId}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              refs.push({ sourceId, targetId });
+            }
           }
         }
       }
     }
+
+    const docCollection = workspaceService.workspace.docCollection;
+    if (docCollection?.docs) {
+      for (const [sourceId, doc] of docCollection.docs.entries()) {
+        const bsDoc = (doc as any).getStore ? (doc as any).getStore() : doc;
+        if (bsDoc?.getBlocks) {
+          for (const b of bsDoc.getBlocks()) {
+            const targetId =
+              b.model?.pageId ||
+              b.model?.refDocId ||
+              (b.model?.referenceInfo && b.model.referenceInfo.pageId);
+            if (
+              typeof targetId === 'string' &&
+              targetId &&
+              targetId !== sourceId
+            ) {
+              const key = `${sourceId}->${targetId}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                refs.push({ sourceId, targetId });
+              }
+            }
+          }
+        }
+      }
+    }
+
     return refs;
-  }, [docs, docsService.list]);
+  }, [refsBySourceMap, workspaceService.workspace.docCollection]);
 
   const rawDocs = useMemo<RawDocItem[]>(() => {
     if (!docs) return [];
@@ -63,8 +107,9 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
       id: d.id,
       title: d.title$.value || '',
       isTrash: Boolean(d.trash$.value),
+      isTemplate: templateDocService.list.listStore.isTemplateDoc(d.id),
     }));
-  }, [docs]);
+  }, [docs, templateDocService.list.listStore]);
 
   const graphData = useMemo(() => {
     return buildKnowledgeGraphData({
@@ -186,19 +231,11 @@ export const KnowledgeGraphButton = memo(function KnowledgeGraphButton() {
               />
 
               <div style={{ display: 'flex', gap: '2px' }}>
-                <Button
-                  size="small"
-                  onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}
-                >
+                <Button onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}>
                   -
                 </Button>
-                <Button size="small" onClick={() => setZoom(1)}>
-                  100%
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() => setZoom(z => Math.min(2.0, z + 0.2))}
-                >
+                <Button onClick={() => setZoom(1)}>100%</Button>
+                <Button onClick={() => setZoom(z => Math.min(2.0, z + 0.2))}>
                   +
                 </Button>
               </div>

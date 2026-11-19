@@ -1,5 +1,6 @@
 import type { SettingTab } from '@affine/core/modules/dialogs/constant';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
+import { isTauri } from '@affine/core/modules/mcp-bridge/tauri';
 import { MeetingSettingsService } from '@affine/core/modules/media/services/meeting-settings';
 import { useI18n } from '@affine/i18n';
 import {
@@ -79,7 +80,7 @@ export const useGeneralSettingList = (): GeneralSettingList => {
       });
     }
 
-    if (BUILD_CONFIG.isElectron) {
+    if (BUILD_CONFIG.isElectron || isTauri()) {
       settings.push({
         key: 'backup',
         title: t['com.affine.settings.workspace.backup'](),

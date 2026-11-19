@@ -3,22 +3,31 @@ import { describe, expect, it } from 'vitest';
 import { buildKnowledgeGraphData, isSampleDoc } from '../graph-builder';
 
 describe('Knowledge Graph Data Builder', () => {
-  it('correctly identifies default sample documents', () => {
+  it('correctly identifies default sample documents in English and Vietnamese', () => {
     expect(isSampleDoc('Getting Started')).toBe(true);
     expect(isSampleDoc('Write, Draw, Plan with AFFiNE')).toBe(true);
     expect(isSampleDoc('How to use folder and Tags in AFFiNE')).toBe(true);
     expect(isSampleDoc("AFFiNE's Edge")).toBe(true);
     expect(isSampleDoc('Bắt đầu sử dụng AFFiNE')).toBe(true);
+    expect(isSampleDoc('Viết, vẽ, lập kế hoạch với AFFiNE')).toBe(true);
+    expect(isSampleDoc('Cách sử dụng thư mục và thẻ trong AFFiNE')).toBe(true);
+    expect(isSampleDoc('Tính năng vượt trội của AFFiNE')).toBe(true);
+    expect(isSampleDoc('Chào mừng đến với AFFiNE')).toBe(true);
     expect(isSampleDoc('Tài liệu thiết kế hệ thống')).toBe(false);
     expect(isSampleDoc('Kế hoạch Sprint 4')).toBe(false);
   });
 
-  it('filters out trash and sample docs when hideSamples is true', () => {
+  it('filters out trash, templates (isTemplate), and sample docs when hideSamples is true', () => {
     const rawDocs = [
       { id: '1', title: 'Getting Started', isTrash: false },
-      { id: '2', title: 'Write, Draw, Plan with AFFiNE', isTrash: false },
-      { id: '3', title: 'Dự án Backend API', isTrash: false },
-      { id: '4', title: 'Tài liệu bị xóa', isTrash: true },
+      {
+        id: '2',
+        title: 'Cách sử dụng thư mục và thẻ trong AFFiNE',
+        isTrash: false,
+      },
+      { id: '3', title: 'Mẫu tài liệu họp', isTrash: false, isTemplate: true },
+      { id: '4', title: 'Dự án Backend API', isTrash: false },
+      { id: '5', title: 'Tài liệu bị xóa', isTrash: true },
     ];
 
     const graph = buildKnowledgeGraphData({
@@ -27,14 +36,15 @@ describe('Knowledge Graph Data Builder', () => {
       references: [],
     });
 
-    expect(graph.nodes.map(n => n.id)).toEqual(['3']);
+    expect(graph.nodes.map(n => n.id)).toEqual(['4']);
   });
 
-  it('includes sample docs when hideSamples is false', () => {
+  it('includes sample and template docs when hideSamples is false', () => {
     const rawDocs = [
       { id: '1', title: 'Getting Started', isTrash: false },
-      { id: '2', title: 'Dự án Backend API', isTrash: false },
-      { id: '3', title: 'Tài liệu bị xóa', isTrash: true },
+      { id: '2', title: 'Mẫu tài liệu họp', isTrash: false, isTemplate: true },
+      { id: '3', title: 'Dự án Backend API', isTrash: false },
+      { id: '4', title: 'Tài liệu bị xóa', isTrash: true },
     ];
 
     const graph = buildKnowledgeGraphData({
@@ -43,7 +53,7 @@ describe('Knowledge Graph Data Builder', () => {
       references: [],
     });
 
-    expect(graph.nodes.map(n => n.id)).toEqual(['1', '2']);
+    expect(graph.nodes.map(n => n.id)).toEqual(['1', '2', '3']);
   });
 
   it('builds real edges between referenced docs and calculates degree', () => {

@@ -1,15 +1,21 @@
+import {
+  type ExportDoc,
+  type ExportFile,
+  layoutMarkdownFiles,
+} from '../markdown-export/utils/layout';
 import { invokeTauri } from '../mcp-bridge/tauri';
 
 export interface BackupFileEntry {
   filename: string;
   content: string;
+  is_base64?: boolean;
 }
 
 export interface BackupResult {
   success: boolean;
   folder_path: string;
-  files_written: usize;
-  total_backups_kept: usize;
+  files_written: number;
+  total_backups_kept: number;
   error?: string | null;
 }
 
@@ -20,76 +26,76 @@ export interface BackupStatus {
   backup_folders: string[];
 }
 
-type usize = number;
-
-interface MinimalDocRecord {
-  id: string;
-  title$: { value: string };
-  trash$: { value: boolean };
+export interface MarkdownCollector {
+  collect(
+    onProgress?: (progress: { done: number; total: number }) => void
+  ): Promise<{ docs: ExportDoc[]; skipped: number }>;
 }
 
-interface MinimalDocCollection {
-  getDoc?: (id: string) => {
-    getBlocks?: () => Array<{
-      model?: {
-        flavour?: string;
-        text?: { toString: () => string };
-        title?: string;
-        spec?: unknown;
-      };
-    }>;
-  } | null;
-}
-
-const LAST_AUTO_BACKUP_KEY = 'affine:last-auto-backup-date';
+export const LAST_AUTO_BACKUP_KEY = 'affine:last-auto-backup-date';
 
 /**
- * Transforms active workspace documents into clean Markdown files for backup.
+ * Converts a browser Blob to a base64 encoded string.
  */
-export function prepareBackupFiles(
-  docs: MinimalDocRecord[],
-  collection?: MinimalDocCollection | null
-): BackupFileEntry[] {
-  const activeDocs = docs.filter(d => !d.trash$.value);
-  const files: BackupFileEntry[] = [];
-
-  for (const doc of activeDocs) {
-    const rawTitle = doc.title$.value.trim();
-    const title = rawTitle.length > 0 ? rawTitle : 'Untitled';
-    const lines: string[] = [`# ${title}\n`];
-
-    const bsDoc = collection?.getDoc ? collection.getDoc(doc.id) : null;
-    if (bsDoc?.getBlocks) {
-      const blocks = bsDoc.getBlocks();
-      for (const b of blocks) {
-        const text = b.model?.text?.toString();
-        if (text && text.trim().length > 0) {
-          lines.push(text);
-        } else if (b.model?.flavour === 'affine:system-diagram') {
-          lines.push(
-            `\n> [!NOTE] Sơ đồ hệ thống kiến trúc: ${b.model.title || title}\n`
-          );
-        }
-      }
-    }
-
-    files.push({
-      filename: `${title}.md`,
-      content: lines.join('\n\n'),
-    });
+export async function blobToBase64(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
-
-  return files;
+  return btoa(binary);
 }
 
 /**
- * Triggers an immediate full workspace backup to the local filesystem.
+ * Transforms layout Markdown and asset files into Tauri backup entries.
+ */
+export async function convertExportFilesToBackupEntries(
+  files: ExportFile[]
+): Promise<BackupFileEntry[]> {
+  const entries: BackupFileEntry[] = [];
+  for (const file of files) {
+    if (typeof file.content === 'string') {
+      entries.push({
+        filename: file.path,
+        content: file.content,
+        is_base64: false,
+      });
+    } else {
+      const b64 = await blobToBase64(file.content);
+      entries.push({
+        filename: file.path,
+        content: b64,
+        is_base64: true,
+      });
+    }
+  }
+  return entries;
+}
+
+/**
+ * Triggers an immediate full workspace backup using MarkdownExportService.
+ * Properly exports all document content and attachments without empty files.
  */
 export async function runAutoBackupNow(
-  docs: MinimalDocRecord[],
-  collection?: MinimalDocCollection | null
+  collector: MarkdownCollector,
+  onProgress?: (progress: { done: number; total: number }) => void
 ): Promise<BackupResult> {
-  const files = prepareBackupFiles(docs, collection);
+  const { docs } = await collector.collect(onProgress);
+  if (!docs || docs.length === 0) {
+    return {
+      success: false,
+      folder_path: '',
+      files_written: 0,
+      total_backups_kept: 0,
+      error: 'Không có tài liệu nào để sao lưu trong không gian làm việc.',
+    };
+  }
+
+  const exportFiles = layoutMarkdownFiles(docs);
+  const backupEntries = await convertExportFilesToBackupEntries(exportFiles);
+
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -98,10 +104,11 @@ export async function runAutoBackupNow(
 
   const res = (await invokeTauri('save_backup', {
     dateStr,
-    files,
+    files: backupEntries,
   })) as BackupResult;
 
-  if (typeof localStorage !== 'undefined') {
+  // Only record backup date if files were actually written successfully
+  if (res.success && typeof localStorage !== 'undefined') {
     localStorage.setItem(LAST_AUTO_BACKUP_KEY, dateStr);
   }
 
@@ -131,8 +138,7 @@ export async function openBackupFolder(): Promise<void> {
  * Automatically checks and runs daily backup once per calendar day.
  */
 export async function checkAndRunScheduledAutoBackup(
-  docs: MinimalDocRecord[],
-  collection?: MinimalDocCollection | null
+  collector: MarkdownCollector
 ): Promise<boolean> {
   if (typeof localStorage === 'undefined') return false;
 
@@ -148,8 +154,8 @@ export async function checkAndRunScheduledAutoBackup(
   }
 
   try {
-    await runAutoBackupNow(docs, collection);
-    return true;
+    const res = await runAutoBackupNow(collector);
+    return res.success;
   } catch (err) {
     console.error('Scheduled daily auto-backup failed:', err);
     return false;

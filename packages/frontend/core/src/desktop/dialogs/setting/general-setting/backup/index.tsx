@@ -23,7 +23,7 @@ import {
   runAutoBackupNow,
 } from '@affine/core/modules/backup/auto-backup';
 import { BackupService } from '@affine/core/modules/backup/services';
-import { DocsService } from '@affine/core/modules/doc';
+import { MarkdownExportService } from '@affine/core/modules/markdown-export';
 import { toArrayBuffer } from '@affine/core/utils/array-buffer';
 import { i18nTime, useI18n } from '@affine/i18n';
 import track from '@affine/track';
@@ -39,8 +39,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as styles from './styles.css';
 
 const AutoBackupSection = () => {
-  const docsService = useService(DocsService);
-  const docs = useLiveData(docsService.list.docs$);
+  const markdownExportService = useService(MarkdownExportService);
   const [status, setStatus] = useState<BackupStatus | null>(null);
   const [backingUp, setBackingUp] = useState(false);
 
@@ -54,17 +53,22 @@ const AutoBackupSection = () => {
   }, [refreshStatus]);
 
   const handleBackupNow = async () => {
-    if (!docs || backingUp) return;
+    if (backingUp) return;
     setBackingUp(true);
     try {
-      const docCollection = (docsService.list as any).docCollection;
-      const res = await runAutoBackupNow(docs as any, docCollection);
+      const res = await runAutoBackupNow(markdownExportService);
       if (res.success) {
         notify.success({
-          title: `Đã sao lưu thành công ${res.files_written} tài liệu!`,
+          title: `Đã sao lưu thành công ${res.files_written} tệp!`,
           message: `Lưu tại: ${res.folder_path} (duy trì ${res.total_backups_kept} bản sao lưu gần nhất)`,
         });
         await refreshStatus();
+      } else {
+        notify.error({
+          title: 'Sao lưu không hoàn tất',
+          message:
+            res.error || 'Có lỗi xảy ra trong quá trình ghi tệp sao lưu.',
+        });
       }
     } catch (error) {
       console.error(error);
@@ -105,7 +109,6 @@ const AutoBackupSection = () => {
             onClick={() => {
               handleOpenFolder().catch(console.error);
             }}
-            size="small"
           >
             Mở thư mục
           </Button>
@@ -114,8 +117,7 @@ const AutoBackupSection = () => {
               handleBackupNow().catch(console.error);
             }}
             disabled={backingUp}
-            size="small"
-            type="primary"
+            variant="primary"
           >
             {backingUp ? 'Đang sao lưu...' : 'Sao lưu ngay'}
           </Button>
@@ -308,8 +310,7 @@ const BackupWorkspaceItem = ({ item }: { item: BackupWorkspaceItem }) => {
 
 const PAGE_SIZE = 6;
 
-export const BackupSettingPanel = () => {
-  const t = useI18n();
+const ElectronArchivedWorkspacesList = () => {
   const backupService = useService(BackupService);
 
   useEffect(() => {
@@ -362,6 +363,16 @@ export const BackupSettingPanel = () => {
   const isEmpty =
     (backupWorkspaces?.items.length === 0 || !backupWorkspaces) && !isLoading;
 
+  return isEmpty ? (
+    <Empty />
+  ) : (
+    <div className={styles.listContainer}>{innerElement}</div>
+  );
+};
+
+export const BackupSettingPanel = () => {
+  const t = useI18n();
+
   return (
     <>
       <SettingHeader
@@ -370,11 +381,7 @@ export const BackupSettingPanel = () => {
         data-testid="backup-title"
       />
       <AutoBackupSection />
-      {isEmpty ? (
-        <Empty />
-      ) : (
-        <div className={styles.listContainer}>{innerElement}</div>
-      )}
+      {BUILD_CONFIG.isElectron && <ElectronArchivedWorkspacesList />}
     </>
   );
 };

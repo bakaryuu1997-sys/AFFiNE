@@ -22,13 +22,7 @@ import { ViewIslandRegistryProvider } from './view-islands';
 import { ViewRoot } from './view-root';
 import * as styles from './workbench-root.css';
 
-const isDesktopApp =
-  BUILD_CONFIG.isElectron ||
-  (typeof window !== 'undefined' &&
-    (Boolean((window as any).__TAURI_INTERNALS__) ||
-      Boolean((window as any).__TAURI__) ||
-      window.location.protocol === 'tauri:' ||
-      window.location.hostname === 'tauri.localhost'));
+const isDesktopApp = BUILD_CONFIG.isElectron;
 
 const useAdapter = isDesktopApp
   ? useBindWorkbenchToDesktopRouter
