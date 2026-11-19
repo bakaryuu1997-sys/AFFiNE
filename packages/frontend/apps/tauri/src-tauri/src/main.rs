@@ -1,6 +1,7 @@
 // Keeps the console window away in release builds on Windows.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod backup;
 mod mcp_install;
 
 use affine_mcp_bridge::{Config, DEFAULT_PORT, Server, load_token, run_stdio};
@@ -28,10 +29,7 @@ pub(crate) fn ensure_trusted_window(window: &tauri::WebviewWindow) -> Result<(),
     .map_err(|e| format!("Không xác minh được nguồn cửa sổ: {e}"))?;
   let scheme = url.scheme();
   let host = url.host_str().unwrap_or("");
-  let is_local_origin = scheme == "tauri"
-    || host == "tauri.localhost"
-    || host == "localhost"
-    || host == "127.0.0.1";
+  let is_local_origin = scheme == "tauri" || host == "tauri.localhost" || host == "localhost" || host == "127.0.0.1";
   if !is_local_origin {
     return Err(format!(
       "Từ chối thực thi lệnh từ nguồn không tin cậy: {scheme}://{host}"
@@ -48,10 +46,7 @@ fn app_version() -> &'static str {
 
 /// Lets the web app configure its MCP panel without the person copying a token.
 #[tauri::command]
-fn mcp_info(
-  window: tauri::WebviewWindow,
-  state: tauri::State<'_, McpState>,
-) -> Result<Option<McpInfo>, String> {
+fn mcp_info(window: tauri::WebviewWindow, state: tauri::State<'_, McpState>) -> Result<Option<McpInfo>, String> {
   ensure_trusted_window(&window)?;
   Ok(state.info.clone())
 }
@@ -79,6 +74,9 @@ fn main() {
       mcp_info,
       mcp_install::get_mcp_status,
       mcp_install::install_mcp_config,
+      backup::save_backup,
+      backup::get_backup_status,
+      backup::open_backup_folder,
     ])
     .setup(move |app| {
       if let Some(win) = app.get_webview_window("main") {

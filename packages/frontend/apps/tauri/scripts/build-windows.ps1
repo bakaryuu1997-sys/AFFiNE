@@ -68,6 +68,10 @@ try {
   npx --yes '@tauri-apps/cli@2' build
   if ($LASTEXITCODE -ne 0) { throw 'tauri build failed' }
 
+  Write-Host '==> Running automated CDP smoke test on the built binary'
+  node (Join-Path $Here 'smoke.mjs') --exe (Join-Path $Work 'target\release\affine-personal.exe')
+  if ($LASTEXITCODE -ne 0) { throw 'Automated smoke test failed!' }
+
   $Installer = Get-ChildItem (Join-Path $Work 'target\release\bundle\nsis') -Filter *.exe | Select-Object -First 1
   Write-Host ''
   Write-Host 'Done:'
@@ -78,3 +82,4 @@ try {
 finally {
   Pop-Location
 }
+

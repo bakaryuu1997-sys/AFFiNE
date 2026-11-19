@@ -31,10 +31,34 @@ export interface McpClientStatus {
 export const APP_PERSONAL_VERSION = '0.3.0';
 
 export function isTauri(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    Boolean((window as unknown as { __TAURI__?: unknown }).__TAURI__)
-  );
+  if (typeof window === 'undefined') return false;
+  const anyWin = window as any;
+  return Boolean(anyWin.__TAURI_INTERNALS__) || Boolean(anyWin.__TAURI__);
+}
+
+/**
+ * Invokes a Tauri command securely through __TAURI_INTERNALS__ (works with withGlobalTauri: false)
+ * or falls back to __TAURI__.core.invoke if global is still present.
+ */
+export async function invokeTauri<T = unknown>(
+  command: string,
+  args?: Record<string, unknown>
+): Promise<T> {
+  if (typeof window === 'undefined') {
+    throw new Error('Môi trường trình duyệt không khả dụng.');
+  }
+  const anyWin = window as any;
+  if (
+    anyWin.__TAURI_INTERNALS__ &&
+    typeof anyWin.__TAURI_INTERNALS__.invoke === 'function'
+  ) {
+    return (await anyWin.__TAURI_INTERNALS__.invoke(command, args)) as T;
+  }
+  const globalTauri = anyWin.__TAURI__ as TauriGlobal | undefined;
+  if (globalTauri?.core?.invoke) {
+    return (await globalTauri.core.invoke(command, args)) as T;
+  }
+  throw new Error(`Tauri API không khả dụng cho lệnh "${command}".`);
 }
 
 function getFallbackMcpClients(): McpClientStatus[] {
@@ -109,11 +133,8 @@ export function parseMcpInfo(value: unknown): TauriMcpInfo | null {
 /** Reads the desktop app version from Tauri's Cargo.toml, falling back outside Tauri. */
 export async function fetchTauriAppVersion(): Promise<string> {
   if (!isTauri()) return APP_PERSONAL_VERSION;
-  const invoke = (window as unknown as { __TAURI__: TauriGlobal }).__TAURI__
-    .core?.invoke;
-  if (!invoke) return APP_PERSONAL_VERSION;
   try {
-    const version = await invoke('app_version');
+    const version = await invokeTauri<string>('app_version');
     if (typeof version === 'string' && version.trim()) {
       return version.trim();
     }
@@ -126,11 +147,8 @@ export async function fetchTauriAppVersion(): Promise<string> {
 /** Asks the Tauri shell for the bridge settings; null outside Tauri. */
 export async function fetchTauriMcpInfo(): Promise<TauriMcpInfo | null> {
   if (!isTauri()) return null;
-  const invoke = (window as unknown as { __TAURI__: TauriGlobal }).__TAURI__
-    .core?.invoke;
-  if (!invoke) return null;
   try {
-    return parseMcpInfo(await invoke('mcp_info'));
+    return parseMcpInfo(await invokeTauri('mcp_info'));
   } catch {
     return null;
   }
@@ -139,12 +157,9 @@ export async function fetchTauriMcpInfo(): Promise<TauriMcpInfo | null> {
 /** Asks the Tauri shell for MCP client statuses; falls back in browser. */
 export async function fetchMcpClientStatuses(): Promise<McpClientStatus[]> {
   if (!isTauri()) return getFallbackMcpClients();
-  const invoke = (window as unknown as { __TAURI__: TauriGlobal }).__TAURI__
-    .core?.invoke;
-  if (!invoke) return getFallbackMcpClients();
   try {
-    const res = await invoke('get_mcp_status');
-    if (Array.isArray(res)) return res as McpClientStatus[];
+    const res = await invokeTauri<McpClientStatus[]>('get_mcp_status');
+    if (Array.isArray(res)) return res;
     return getFallbackMcpClients();
   } catch {
     return getFallbackMcpClients();
@@ -160,10 +175,5 @@ export async function installMcpClientConfig(
       'Chức năng cài đặt tự động yêu cầu ứng dụng AFFiNE Desktop.'
     );
   }
-  const invoke = (window as unknown as { __TAURI__: TauriGlobal }).__TAURI__
-    .core?.invoke;
-  if (!invoke) {
-    throw new Error('Tauri API không khả dụng.');
-  }
-  return (await invoke('install_mcp_config', { clientId })) as string;
+  return await invokeTauri<string>('install_mcp_config', { clientId });
 }

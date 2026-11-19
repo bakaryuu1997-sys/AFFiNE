@@ -10,9 +10,13 @@ import { useService } from '@toeverything/infra';
 import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
 
+import { findLatestDiagramDoc } from './diagram-finder';
+
+const LAST_DIAGRAM_STORAGE_KEY = 'affine:last-system-diagram-id';
+
 /**
  * Sidebar entry for the 2.5D system diagram:
- * - Clicking the row opens an existing diagram document if present (preventing accidental duplicates).
+ * - Clicking the row opens the most recently updated diagram document if present (preventing accidental duplicates even when renamed).
  * - Clicking the "+" action button creates a brand-new diagram document explicitly.
  */
 export const AppSidebarDiagramButton = () => {
@@ -37,6 +41,9 @@ export const AppSidebarDiagramButton = () => {
           },
         },
       });
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(LAST_DIAGRAM_STORAGE_KEY, record.id);
+      }
       workbench.openDoc(record.id);
     } catch (error) {
       console.error(error);
@@ -48,18 +55,24 @@ export const AppSidebarDiagramButton = () => {
 
   const onOpenOrCreate = useCallback(() => {
     try {
-      const existing = docsService.list.docs$.value.find(
-        doc =>
-          !doc.trash$.value &&
-          (doc.title$.value === S.untitled ||
-            doc.title$.value === 'Sơ đồ hệ thống' ||
-            doc.title$.value === 'System diagram' ||
-            doc.title$.value === 'システム構成図')
+      const lastOpenedId =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem(LAST_DIAGRAM_STORAGE_KEY)
+          : null;
+
+      const targetDocId = findLatestDiagramDoc(
+        docsService.list.docs$.value as any,
+        lastOpenedId
       );
-      if (existing) {
-        workbench.openDoc(existing.id);
+
+      if (targetDocId) {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(LAST_DIAGRAM_STORAGE_KEY, targetDocId);
+        }
+        workbench.openDoc(targetDocId);
         return;
       }
+
       createNewDiagram();
     } catch (error) {
       console.error(error);

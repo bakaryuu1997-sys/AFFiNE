@@ -14,6 +14,7 @@
  *  3. N different docs open from "All docs" and stay open (they used to bounce)
  *  4. no cloud leftovers (sign in / sync / share / Discord / AFFiNE Cloud) on
  *     the main screen, the workspace menu or the settings tabs
+ *  5. page reload (F5 / location.reload()) cleanly reloads without freezing on splash screen
  * It only reads: it never types into a doc, so the user's data is untouched.
  * Note: it closes any running affine-personal.exe first.
  */
@@ -266,6 +267,33 @@ if (st) {
     windowsVirtualKeyCode: 27,
   });
 }
+
+// 5. page reload (F5 / location.reload()) recovers workspace and does not freeze on splash
+await evalJs('location.reload()');
+await sleep(2500);
+
+let reloadReady = false,
+  reloadHung = false;
+for (let i = 0; i < 20 && !reloadReady; i++) {
+  await sleep(1000);
+  const r = await evalJs(
+    'document.title + "|" + document.body.innerText.length',
+    3000
+  );
+  if (r.hung) {
+    reloadHung = true;
+    continue;
+  }
+  reloadHung = false;
+  reloadReady =
+    /Tất cả tài liệu|All docs|すべてのドキュメント|·/.test(r.value ?? '') &&
+    !(r.value ?? '').startsWith('AFFiNE|');
+}
+check(
+  'page reload (F5) recovers workspace and does not freeze on splash',
+  reloadReady && !reloadHung,
+  reloadHung ? 'hung at splash screen' : await title()
+);
 
 // 2. errors while using the app
 const csp = (await evalJs('JSON.stringify([...new Set(window.__csp)])')).value;

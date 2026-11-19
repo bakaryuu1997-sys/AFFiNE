@@ -450,6 +450,11 @@ export class SystemDiagramBlockComponent extends BlockComponent<SystemDiagramBlo
       })
     );
     this.raf = requestAnimationFrame(this.frame);
+    try {
+      if (typeof localStorage !== 'undefined' && this.doc?.id) {
+        localStorage.setItem('affine:last-system-diagram-id', this.doc.id);
+      }
+    } catch {}
     queueMicrotask(() => {
       if (!this.isConnected || this.isReadonly) return;
       const blockTitle = this.model.props.title;

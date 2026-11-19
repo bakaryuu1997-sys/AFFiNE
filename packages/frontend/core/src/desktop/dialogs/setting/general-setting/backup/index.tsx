@@ -1,4 +1,5 @@
 import {
+  Button,
   IconButton,
   Loading,
   Menu,
@@ -10,11 +11,19 @@ import {
 import {
   Pagination,
   SettingHeader,
+  SettingRow,
 } from '@affine/component/setting-components';
 import { Avatar } from '@affine/component/ui/avatar';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/components/hooks/use-navigate-helper';
+import {
+  type BackupStatus,
+  fetchBackupStatus,
+  openBackupFolder,
+  runAutoBackupNow,
+} from '@affine/core/modules/backup/auto-backup';
 import { BackupService } from '@affine/core/modules/backup/services';
+import { DocsService } from '@affine/core/modules/doc';
 import { toArrayBuffer } from '@affine/core/utils/array-buffer';
 import { i18nTime, useI18n } from '@affine/i18n';
 import track from '@affine/track';
@@ -28,6 +37,114 @@ import bytes from 'bytes';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import * as styles from './styles.css';
+
+const AutoBackupSection = () => {
+  const docsService = useService(DocsService);
+  const docs = useLiveData(docsService.list.docs$);
+  const [status, setStatus] = useState<BackupStatus | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+
+  const refreshStatus = useCallback(async () => {
+    const s = await fetchBackupStatus();
+    if (s) setStatus(s);
+  }, []);
+
+  useEffect(() => {
+    refreshStatus().catch(console.error);
+  }, [refreshStatus]);
+
+  const handleBackupNow = async () => {
+    if (!docs || backingUp) return;
+    setBackingUp(true);
+    try {
+      const docCollection = (docsService.list as any).docCollection;
+      const res = await runAutoBackupNow(docs as any, docCollection);
+      if (res.success) {
+        notify.success({
+          title: `Đã sao lưu thành công ${res.files_written} tài liệu!`,
+          message: `Lưu tại: ${res.folder_path} (duy trì ${res.total_backups_kept} bản sao lưu gần nhất)`,
+        });
+        await refreshStatus();
+      }
+    } catch (error) {
+      console.error(error);
+      notify.error({
+        title: 'Sao lưu thất bại',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
+  const handleOpenFolder = async () => {
+    try {
+      await openBackupFolder();
+    } catch (err) {
+      notify.error({
+        title: 'Không thể mở thư mục',
+        message: String(err),
+      });
+    }
+  };
+
+  return (
+    <div
+      style={{
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid var(--affine-border-color, #333)',
+      }}
+    >
+      <SettingRow
+        name="Sao lưu Markdown tự động cục bộ"
+        desc="Xuất toàn bộ tài liệu thành các tệp Markdown (.md) theo ngày, tự động xoay vòng duy trì 14 bản gần nhất để bảo vệ dữ liệu chống mất mát."
+      >
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            onClick={() => {
+              handleOpenFolder().catch(console.error);
+            }}
+            size="small"
+          >
+            Mở thư mục
+          </Button>
+          <Button
+            onClick={() => {
+              handleBackupNow().catch(console.error);
+            }}
+            disabled={backingUp}
+            size="small"
+            type="primary"
+          >
+            {backingUp ? 'Đang sao lưu...' : 'Sao lưu ngay'}
+          </Button>
+        </div>
+      </SettingRow>
+      <div
+        style={{
+          fontSize: '12px',
+          color: 'var(--affine-text-secondary-color, #888)',
+          marginTop: '8px',
+          paddingLeft: '4px',
+        }}
+      >
+        {status ? (
+          <span>
+            Đang lưu {status.total_backups} bản sao lưu · Lần cuối:{' '}
+            {status.last_backup_date || 'Chưa sao lưu'} · Thư mục:{' '}
+            {status.backup_dir}
+          </span>
+        ) : (
+          <span>
+            Chức năng tự động lưu trữ Markdown an toàn cho bản AFFiNE Cá nhân
+            Desktop.
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Empty = () => {
   const t = useI18n();
@@ -252,6 +369,7 @@ export const BackupSettingPanel = () => {
         subtitle={t['com.affine.settings.workspace.backup.subtitle']()}
         data-testid="backup-title"
       />
+      <AutoBackupSection />
       {isEmpty ? (
         <Empty />
       ) : (

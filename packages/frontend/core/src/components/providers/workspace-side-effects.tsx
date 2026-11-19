@@ -10,6 +10,7 @@ import {
 } from '@affine/core/blocksuite/ai';
 import { useRegisterFindInPageCommands } from '@affine/core/components/hooks/affine/use-register-find-in-page-commands';
 import { useRegisterWorkspaceCommands } from '@affine/core/components/hooks/use-register-workspace-commands';
+import { checkAndRunScheduledAutoBackup } from '@affine/core/modules/backup/auto-backup';
 import {
   AuthService,
   EventSourceService,
@@ -180,6 +181,17 @@ export const WorkspaceSideEffects = () => {
     globalDialogService,
     authService,
   ]);
+
+  // Automatic daily local Markdown backup (background snapshot)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      checkAndRunScheduledAutoBackup(
+        docsList.docs$.value as any,
+        currentWorkspace.docCollection as any
+      ).catch(console.error);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [currentWorkspace.docCollection, docsList.docs$]);
 
   useRegisterWorkspaceCommands();
   useRegisterNavigationCommands();

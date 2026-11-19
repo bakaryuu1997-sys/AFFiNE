@@ -27,7 +27,17 @@ let storeManagerClient: StoreManagerClient;
 
 const workerUrl = getWorkerUrl('nbstore');
 
+// In the single-window desktop app (Tauri/WebView2), a dedicated Worker is strictly
+// preferred over SharedWorker: SharedWorker processes persist across page reloads (F5)
+// keeping stale IndexedDB locks and message queues, which can freeze the splash screen.
+const isDesktopEnvironment =
+  typeof window !== 'undefined' &&
+  (Boolean((window as any).__TAURI__) ||
+    Boolean((window as any).__TAURI_INTERNALS__) ||
+    localStorage.getItem('disableSharedWorker') === 'true');
+
 if (
+  !isDesktopEnvironment &&
   window.SharedWorker &&
   localStorage.getItem('disableSharedWorker') !== 'true'
 ) {

@@ -16,8 +16,20 @@ export class StoreManagerConsumer {
   >();
   private readonly pending = new Map<string, Promise<void>>();
 
+  public watchdogTimeoutMs = 3000;
+
   private serialize<T>(key: string, operation: () => Promise<T>): Promise<T> {
-    const result = (this.pending.get(key) ?? Promise.resolve()).then(operation);
+    const prev = this.pending.get(key);
+    const safePrev = prev
+      ? Promise.race([
+          prev,
+          new Promise<void>(resolve =>
+            setTimeout(resolve, this.watchdogTimeoutMs)
+          ),
+        ])
+      : Promise.resolve();
+
+    const result = safePrev.then(operation);
     const settled = result.then(
       () => {},
       () => {}
