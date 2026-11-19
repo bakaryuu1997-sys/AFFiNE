@@ -134,27 +134,19 @@ fn build_manual_command(client_id: &str, exe_str: &str) -> Option<String> {
 
 /// Merges the AFFiNE MCP entry into an existing JSON config without overwriting
 /// corrupt or non-object config files. Returns an error on invalid JSON.
-pub fn merge_mcp_json_config(
-  existing_content: Option<&str>,
-  exe_str: &str,
-) -> Result<String, String> {
+pub fn merge_mcp_json_config(existing_content: Option<&str>, exe_str: &str) -> Result<String, String> {
   let mut config: serde_json::Value = match existing_content {
     Some(raw) if !raw.trim().is_empty() => serde_json::from_str(raw).map_err(|e| {
-      format!(
-        "Tệp cấu hình JSON hiện có bị lỗi cú pháp ({e}). Đã dừng lại và giữ nguyên tệp gốc để tránh mất dữ liệu."
-      )
+      format!("Tệp cấu hình JSON hiện có bị lỗi cú pháp ({e}). Đã dừng lại và giữ nguyên tệp gốc để tránh mất dữ liệu.")
     })?,
     _ => json!({}),
   };
 
   let root = config.as_object_mut().ok_or_else(|| {
-    "Tệp cấu hình hiện có không phải là một JSON object hợp lệ. Đã dừng lại và giữ nguyên tệp gốc."
-      .to_string()
+    "Tệp cấu hình hiện có không phải là một JSON object hợp lệ. Đã dừng lại và giữ nguyên tệp gốc.".to_string()
   })?;
 
-  let servers = root
-    .entry("mcpServers".to_string())
-    .or_insert_with(|| json!({}));
+  let servers = root.entry("mcpServers".to_string()).or_insert_with(|| json!({}));
   let servers_obj = servers.as_object_mut().ok_or_else(|| {
     "Trường \"mcpServers\" trong tệp cấu hình không phải là một JSON object hợp lệ. Đã dừng lại để tránh ghi đè."
       .to_string()
@@ -212,10 +204,7 @@ pub fn get_mcp_status(window: tauri::WebviewWindow) -> Result<Vec<McpClientStatu
 }
 
 #[tauri::command]
-pub fn install_mcp_config(
-  window: tauri::WebviewWindow,
-  client_id: String,
-) -> Result<String, String> {
+pub fn install_mcp_config(window: tauri::WebviewWindow, client_id: String) -> Result<String, String> {
   crate::ensure_trusted_window(&window)?;
   let exe_path = std::env::current_exe().map_err(|e| format!("Không lấy được đường dẫn tệp thực thi: {e}"))?;
   let exe_str = exe_path.to_string_lossy().to_string();
@@ -349,8 +338,6 @@ mod tests {
   #[test]
   fn refuses_non_object_root_or_mcp_servers() {
     assert!(merge_mcp_json_config(Some("[]"), "C:\\affine.exe").is_err());
-    assert!(
-      merge_mcp_json_config(Some(r#"{ "mcpServers": [] }"#), "C:\\affine.exe").is_err()
-    );
+    assert!(merge_mcp_json_config(Some(r#"{ "mcpServers": [] }"#), "C:\\affine.exe").is_err());
   }
 }

@@ -92,8 +92,17 @@ if (!ws) {
 }
 let id = 0;
 const pend = new Map();
+const caughtExceptions = [];
+
 ws.onmessage = e => {
   const m = JSON.parse(e.data);
+  if (m.method === 'Runtime.exceptionThrown') {
+    const desc =
+      m.params?.exceptionDetails?.exception?.description ||
+      m.params?.exceptionDetails?.text ||
+      JSON.stringify(m.params?.exceptionDetails);
+    caughtExceptions.push(desc);
+  }
   if (m.id && pend.has(m.id)) {
     pend.get(m.id)(m);
     pend.delete(m.id);
@@ -106,6 +115,17 @@ const send = (method, params = {}, ms = 5000) =>
     ws.send(JSON.stringify({ id: i, method, params }));
     setTimeout(() => r({ timeout: true }), ms);
   });
+
+await send('Runtime.enable');
+await send('Page.enable');
+await send('Page.addScriptToEvaluateOnNewDocument', {
+  source: `
+    window.__csp = window.__csp || [];
+    window.__errs = window.__errs || [];
+    document.addEventListener('securitypolicyviolation', e => window.__csp.push(e.effectiveDirective + ' ' + e.blockedURI));
+    window.addEventListener('error', e => window.__errs.push(e.message || String(e)));
+  `,
+});
 const evalJs = async (expression, ms = 5000) => {
   const r = await send(
     'Runtime.evaluate',
@@ -296,10 +316,26 @@ check(
 );
 
 // 2. errors while using the app
-const csp = (await evalJs('JSON.stringify([...new Set(window.__csp)])')).value;
-const errs = (await evalJs('JSON.stringify(window.__errs.slice(0,3))')).value;
+const csp =
+  (await evalJs('JSON.stringify([...new Set(window.__csp || [])])')).value ??
+  '[]';
+const inPageErrs =
+  (await evalJs('JSON.stringify((window.__errs || []).slice(0, 3))')).value ??
+  '[]';
+const pageErrList = (() => {
+  try {
+    return JSON.parse(inPageErrs);
+  } catch {
+    return [inPageErrs];
+  }
+})();
+const allErrs = [...caughtExceptions, ...pageErrList];
 check('no CSP violations', csp === '[]', csp);
-check('no uncaught JS errors', errs === '[]', errs);
+check(
+  'no uncaught JS errors',
+  allErrs.length === 0,
+  allErrs.length ? JSON.stringify(allErrs.slice(0, 3)) : ''
+);
 
 ws.close();
 if (!KEEP) execSync('taskkill /IM affine-personal.exe /F', { stdio: 'ignore' });
